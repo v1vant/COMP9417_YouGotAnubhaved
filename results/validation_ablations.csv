@@ -1,0 +1,5 @@
+task,ablation,MAPE,MAE,accuracy,balanced_accuracy
+demand,without_weather,2.5030587090693257,202.82614292506997,,
+demand,NSW_only,2.096322428828051,167.62186482459717,,
+price,without_weather,,,81.01027397260275,81.09536459142367
+price,NSW_only,,,81.30136986301369,81.41983910984105

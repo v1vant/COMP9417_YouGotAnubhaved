@@ -1,0 +1,125 @@
+{
+  "selected": {
+    "demand": {
+      "name": "demand_boosted_3",
+      "config": {
+        "family": "boosted",
+        "leaves": 63,
+        "trees": 900,
+        "learning_rate": 0.025
+      }
+    },
+    "price": {
+      "name": "price_boosted_2",
+      "config": {
+        "family": "boosted",
+        "leaves": 31,
+        "trees": 600,
+        "learning_rate": 0.04,
+        "threshold": 0.5700000000000001
+      }
+    }
+  },
+  "validation": [
+    {
+      "model": "demand_linear_0",
+      "task": "demand",
+      "config": {
+        "family": "linear",
+        "regularization": 10.0
+      },
+      "validation_MAPE_or_negative_BA": 3.022034246355117,
+      "MAPE": 3.022034246355117,
+      "MAE": 234.36274495331227
+    },
+    {
+      "model": "demand_linear_1",
+      "task": "demand",
+      "config": {
+        "family": "linear",
+        "regularization": 1000.0
+      },
+      "validation_MAPE_or_negative_BA": 2.9442677335124783,
+      "MAPE": 2.9442677335124783,
+      "MAE": 228.77127238401647
+    },
+    {
+      "model": "demand_boosted_2",
+      "task": "demand",
+      "config": {
+        "family": "boosted",
+        "leaves": 31,
+        "trees": 600,
+        "learning_rate": 0.04
+      },
+      "validation_MAPE_or_negative_BA": 2.1238020147683447,
+      "MAPE": 2.1238020147683447,
+      "MAE": 169.33781213269532
+    },
+    {
+      "model": "demand_boosted_3",
+      "task": "demand",
+      "config": {
+        "family": "boosted",
+        "leaves": 63,
+        "trees": 900,
+        "learning_rate": 0.025
+      },
+      "validation_MAPE_or_negative_BA": 2.114436630225692,
+      "MAPE": 2.114436630225692,
+      "MAE": 168.9698025953498
+    },
+    {
+      "model": "price_linear_0",
+      "task": "price",
+      "config": {
+        "family": "linear",
+        "regularization": 0.01,
+        "threshold": 0.5800000000000001
+      },
+      "validation_MAPE_or_negative_BA": -79.27392124095091,
+      "balanced_accuracy": 79.27392124095091,
+      "accuracy": 79.26369863013699
+    },
+    {
+      "model": "price_linear_1",
+      "task": "price",
+      "config": {
+        "family": "linear",
+        "regularization": 0.1,
+        "threshold": 0.55
+      },
+      "validation_MAPE_or_negative_BA": -79.21017866583122,
+      "balanced_accuracy": 79.21017866583122,
+      "accuracy": 79.15525114155251
+    },
+    {
+      "model": "price_boosted_2",
+      "task": "price",
+      "config": {
+        "family": "boosted",
+        "leaves": 31,
+        "trees": 600,
+        "learning_rate": 0.04,
+        "threshold": 0.5700000000000001
+      },
+      "validation_MAPE_or_negative_BA": -81.74244937556271,
+      "balanced_accuracy": 81.74244937556271,
+      "accuracy": 81.64383561643835
+    },
+    {
+      "model": "price_boosted_3",
+      "task": "price",
+      "config": {
+        "family": "boosted",
+        "leaves": 63,
+        "trees": 900,
+        "learning_rate": 0.025,
+        "threshold": 0.5900000000000001
+      },
+      "validation_MAPE_or_negative_BA": -81.72128922717943,
+      "balanced_accuracy": 81.72128922717943,
+      "accuracy": 81.64954337899543
+    }
+  ]
+}

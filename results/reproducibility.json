@@ -1,0 +1,8 @@
+{
+  "status": "passed",
+  "comparison_days": 7,
+  "maximum_demand_difference_MW": 0.0,
+  "price_predictions_identical": true,
+  "seconds": 355.5,
+  "rebuild": "Bare train.py CSV invocation with both artifact files removed"
+}

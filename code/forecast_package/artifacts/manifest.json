@@ -1,0 +1,43 @@
+{
+  "seed": 9417,
+  "data_end": "2026-10-31 00:00:00",
+  "selection": {
+    "demand": {
+      "name": "demand_boosted_3",
+      "config": {
+        "family": "boosted",
+        "leaves": 63,
+        "trees": 900,
+        "learning_rate": 0.025
+      },
+      "window_years": null,
+      "strategy": "periodic_expanding",
+      "training_end": null
+    },
+    "price": {
+      "name": "price_boosted_2",
+      "config": {
+        "family": "boosted",
+        "leaves": 31,
+        "trees": 600,
+        "learning_rate": 0.04,
+        "threshold": 0.5700000000000001
+      },
+      "window_years": null,
+      "strategy": "periodic_expanding",
+      "training_end": null
+    },
+    "strategy_selection_end": "2024-12-31",
+    "quick": false
+  },
+  "quick": false,
+  "seconds": 416.422,
+  "versions": {
+    "python": "3.11.14",
+    "numpy": "2.4.6",
+    "pandas": "3.1.0",
+    "sklearn": "1.9.1",
+    "lightgbm": "4.7.0",
+    "joblib": "1.6.0"
+  }
+}

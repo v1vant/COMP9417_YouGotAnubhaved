@@ -1,0 +1,72 @@
+test_baselines_use_previous_day_threshold (test_forecasting.FeatureTests.test_baselines_use_previous_day_threshold) ... ok
+test_batch_and_live_features_match (test_forecasting.FeatureTests.test_batch_and_live_features_match) ... ok
+test_future_market_and_later_weather_cannot_leak (test_forecasting.FeatureTests.test_future_market_and_later_weather_cannot_leak) ... ok
+test_midnight_belongs_to_previous_market_day (test_forecasting.FeatureTests.test_midnight_belongs_to_previous_market_day) ... ok
+test_rejects_nonconsecutive_forecast_day (test_forecasting.FeatureTests.test_rejects_nonconsecutive_forecast_day) ... ok
+test_strict_price_target_preserves_float64_precision (test_forecasting.FeatureTests.test_strict_price_target_preserves_float64_precision) ... ok
+test_targets_match_authoritative_harness (test_forecasting.FeatureTests.test_targets_match_authoritative_harness) ... ok
+test_day_bootstrap_preserves_within_day_dependence (test_forecasting.StatisticalTests.test_day_bootstrap_preserves_within_day_dependence) ... ok
+test_detector_uses_only_observed_days_and_cooldown (test_forecasting.StatisticalTests.test_detector_uses_only_observed_days_and_cooldown) ... ok
+test_drift_retraining_is_effective_the_following_day (test_forecasting.StatisticalTests.test_drift_retraining_is_effective_the_following_day) ... Retrain demand/drift_sliding effective 2015-01-02 (1/6)
+ok
+test_metrics_match_harness_in_single_class_period (test_forecasting.StatisticalTests.test_metrics_match_harness_in_single_class_period) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 1.106s
+
+OK
+Retrain price/drift_sliding effective 2015-01-02 (1/6)
+Retrain price/drift_sliding effective 2015-07-24 (2/6)
+Retrain price/drift_sliding effective 2016-01-28 (3/6)
+Retrain price/drift_sliding effective 2016-08-08 (4/6)
+Retrain price/drift_sliding effective 2017-02-08 (5/6)
+Retrain price/drift_sliding effective 2017-09-02 (6/6)
+                     model  period      MAPE        MAE  accuracy  balanced_accuracy
+               baseline_1d holdout  7.533000 532.345776 76.958769          76.974656
+               baseline_7d holdout 10.000662 703.824671 73.066143          73.031402
+          frozen_boosted_2 holdout  5.273324 361.767890 78.920653          78.691873
+          frozen_boosted_3 holdout  5.187377 353.635476 79.390882          79.173021
+           frozen_linear_0 holdout  6.435841 429.583739 67.825112          67.356934
+           frozen_linear_1 holdout  6.340201 422.338699 67.828226          67.357666
+            adapted_frozen holdout  5.187377 353.635476 78.920653          78.691873
+adapted_periodic_expanding holdout  3.665529 253.491219 82.607748          82.543786
+  adapted_periodic_sliding holdout  3.875466 271.230822 82.953413          82.901672
+     adapted_drift_sliding holdout  5.302461 353.994003 79.204036          79.039756
+Experiment outputs saved to C:\Users\Anthony.Ivanov\Downloads\comp9417_project_kit\comp9417_project_kit\results in 511.7s
+Saved artifacts to C:\Users\Anthony.Ivanov\Downloads\comp9417_project_kit\comp9417_project_kit\forecast_package\artifacts in 416.4s
+Created C:\Users\Anthony.Ivanov\Downloads\comp9417_project_kit\comp9417_project_kit\submission.zip and C:\Users\Anthony.Ivanov\Downloads\comp9417_project_kit\comp9417_project_kit\experiment_code.zip
+Package found at C:\Users\Anthony.Ivanov\AppData\Local\Temp\c9417check_japoh2dp\pkg
+
+2026-10-18  ok    init   4.2s  predict   0.9s
+2026-10-19  ok    init   1.3s  predict   0.4s
+2026-10-20  ok    init   1.5s  predict   0.5s
+2026-10-21  ok    init   1.5s  predict   0.9s
+2026-10-22  ok    init   1.5s  predict   0.5s
+2026-10-23  ok    init   1.6s  predict   0.9s
+2026-10-24  ok    init   1.4s  predict   0.5s
+2026-10-25  ok    init   1.5s  predict   0.8s
+2026-10-26  ok    init   1.4s  predict   0.4s
+2026-10-27  ok    init   1.4s  predict   0.4s
+2026-10-28  ok    init   1.4s  predict   0.5s
+2026-10-29  ok    init   1.4s  predict   0.5s
+2026-10-30  ok    init   1.6s  predict   0.8s
+2026-10-31  ok    init   1.5s  predict   0.7s
+
+Scores:
+(in-sample if your models were trained on these days: they check that the package
+ runs, not how it will perform in the live week)
+                              MAPE %   MAE MW  BalAcc %   Acc %
+Your package                    2.82    166.1      87.5    87.5
+Same half-hour yesterday        7.12    415.3      78.0    78.1
+Same half-hour last week        9.95    556.2      73.2    73.5
+
+All days ran successfully.
+Saved artifacts to C:\Users\Anthony.Ivanov\AppData\Local\Temp\c9417_reproduce_8o4y_6yd\package\artifacts in 347.5s
+{
+  "status": "passed",
+  "comparison_days": 7,
+  "maximum_demand_difference_MW": 0.0,
+  "price_predictions_identical": true,
+  "seconds": 355.5,
+  "rebuild": "Bare train.py CSV invocation with both artifact files removed"
+}

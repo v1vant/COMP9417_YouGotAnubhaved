@@ -1,0 +1,29 @@
+{
+  "demand": {
+    "name": "demand_boosted_3",
+    "config": {
+      "family": "boosted",
+      "leaves": 63,
+      "trees": 900,
+      "learning_rate": 0.025
+    },
+    "window_years": null,
+    "strategy": "periodic_expanding",
+    "training_end": null
+  },
+  "price": {
+    "name": "price_boosted_2",
+    "config": {
+      "family": "boosted",
+      "leaves": 31,
+      "trees": 600,
+      "learning_rate": 0.04,
+      "threshold": 0.5700000000000001
+    },
+    "window_years": null,
+    "strategy": "periodic_expanding",
+    "training_end": null
+  },
+  "strategy_selection_end": "2024-12-31",
+  "quick": false
+}
