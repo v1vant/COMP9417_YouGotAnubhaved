@@ -14,7 +14,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(HERE, "forecast_package"))
 from model import load_data, market_days, predict_task, training_table
-from train import fit_model, select_models
+from train import DEFAULT_FAMILIES, FAMILIES, fit_model, select_models
 from analysis_tools import (
     OnlineDetector, day_type_analysis, metric_values, period_metrics, save_figures,
 )
@@ -142,6 +142,9 @@ def validation_analysis(frame, features, labels, selected, frozen, output):
         if hasattr(estimator, "booster_"):
             values = estimator.booster_.feature_importance(importance_type="gain")
             kind = "training_split_gain"
+        elif hasattr(estimator, "feature_importances_"):
+            values = estimator.feature_importances_
+            kind = "mean_decrease_in_impurity"
         else:
             values = np.abs(estimator.steps[-1][1].coef_).ravel()
             kind = "absolute_standardized_coefficient"
@@ -170,6 +173,8 @@ def main():
     parser.add_argument("--selection-end", default="2024-12-31",
                         help="Choose adaptation on earlier simulation; later days are holdout")
     parser.add_argument("--resume", action="store_true", help="Reuse completed selection/policies")
+    parser.add_argument("--families", nargs="+", choices=FAMILIES, default=DEFAULT_FAMILIES,
+                        help="Algorithms to compare; defaults to linear and boosted")
     args = parser.parse_args()
     if args.bootstrap < 1000:
         parser.error("--bootstrap must be at least 1000")
@@ -188,11 +193,13 @@ def main():
     fingerprint = {
         "rows": len(frame), "end": str(frame.index[-1]), "quick": args.quick,
         "feature_columns": list(features.columns),
+        "families": args.families,
         "source_hashes": {},
     }
     import hashlib
     for source in ("run_experiments.py", "analysis_tools.py",
                    os.path.join("forecast_package", "model.py"),
+                   os.path.join("forecast_package", "random_forest.py"),
                    os.path.join("forecast_package", "train.py")):
         with open(os.path.join(HERE, source), "rb") as handle:
             fingerprint["source_hashes"][source] = hashlib.sha256(handle.read()).hexdigest()
@@ -204,7 +211,8 @@ def main():
     if cached_selection is not None and cached_selection["fingerprint"] == fingerprint:
         selected, validation, frozen, calibration = cached_selection["payload"]
     else:
-        selected, validation, frozen, calibration = select_models(features, labels, args.quick)
+        selected, validation, frozen, calibration = select_models(
+            features, labels, args.quick, args.families)
         joblib.dump({"fingerprint": fingerprint,
                      "payload": (selected, validation, frozen, calibration)}, selection_path)
     with open(os.path.join(args.output, "selection.json"), "w", encoding="utf-8") as handle:

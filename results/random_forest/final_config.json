@@ -1,0 +1,31 @@
+{
+  "demand": {
+    "name": "demand_random_forest_1",
+    "config": {
+      "family": "random_forest",
+      "trees": 200,
+      "max_depth": 20,
+      "min_samples_leaf": 40,
+      "max_features": 0.7
+    },
+    "window_years": null,
+    "strategy": "periodic_expanding",
+    "training_end": null
+  },
+  "price": {
+    "name": "price_random_forest_0",
+    "config": {
+      "family": "random_forest",
+      "trees": 200,
+      "max_depth": 12,
+      "min_samples_leaf": 20,
+      "max_features": 0.7,
+      "threshold": 0.51
+    },
+    "window_years": null,
+    "strategy": "periodic_expanding",
+    "training_end": null
+  },
+  "strategy_selection_end": "2024-12-31",
+  "quick": false
+}

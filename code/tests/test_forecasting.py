@@ -1,5 +1,6 @@
 import os
 import sys
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -11,7 +12,10 @@ sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, "forecast_package"))
 sys.path.insert(0, os.path.join(os.path.dirname(HERE), "harness"))
 import dayahead as da
-from model import MARKET, WEATHER, feature_frame, forecast_features, market_days, training_table
+import joblib
+from model import (Forecaster, MARKET, WEATHER, feature_frame, forecast_features,
+                   market_days, predict_task, training_table)
+from train import candidates, fit_model
 from analysis_tools import OnlineDetector, confidence_intervals, metric_values
 from run_experiments import baseline_predictions, simulate_policy
 
@@ -129,6 +133,34 @@ class StatisticalTests(unittest.TestCase):
         self.assertEqual(retrains[0]["effective_day"], "2015-01-02")
         self.assertEqual(fits[0], pd.Timestamp("2015-01-01"))
         self.assertLessEqual(len(retrains), 6)
+
+
+class RandomForestTests(unittest.TestCase):
+    def test_family_selection_is_explicit(self):
+        self.assertEqual({c["family"] for c in candidates("demand")}, {"linear", "boosted"})
+        configs = candidates("price", quick=True, families=["random_forest"])
+        self.assertEqual(len(configs), 1)
+        self.assertEqual(configs[0]["family"], "random_forest")
+
+    def test_fitted_forests_can_be_loaded_for_live_prediction(self):
+        frame = synthetic_data()
+        day = market_days(frame.index).unique()[-1]
+        history, weather = da.make_inputs(frame, day)
+        features, truth = training_table(history)
+        config = dict(candidates("demand", quick=True, families=["random_forest"])[0],
+                      trees=3, max_depth=3)
+        models = {task: fit_model(task, config, features, truth) for task in ("demand", "price")}
+        live = forecast_features(history, weather)
+        with tempfile.TemporaryDirectory() as directory:
+            joblib.dump(models, os.path.join(directory, "models.joblib"))
+            prediction = Forecaster(directory).predict(history, weather)
+        self.assertEqual(prediction.shape, (48, 2))
+        self.assertTrue(prediction.index.equals(weather.index))
+        self.assertTrue(np.isfinite(prediction.to_numpy()).all())
+        self.assertTrue(prediction["nsw_price_up"].isin([0, 1]).all())
+        self.assertTrue(prediction["nsw_demand_mw"].between(0, 20000).all())
+        np.testing.assert_allclose(prediction["nsw_demand_mw"], predict_task(models["demand"], live))
+        np.testing.assert_array_equal(prediction["nsw_price_up"], predict_task(models["price"], live))
 
 
 if __name__ == "__main__":

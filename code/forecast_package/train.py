@@ -15,12 +15,15 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
 from model import load_data, market_days, predict_task, training_table
+import random_forest
 
 SEED = 9417
 DEFAULT_SELECTION = None
+FAMILIES = ("linear", "boosted", "random_forest")
+DEFAULT_FAMILIES = ("linear", "boosted")
 
 
-def candidates(task, quick=False):
+def candidates(task, quick=False, families=DEFAULT_FAMILIES):
     linear = [{"family": "linear", "regularization": 10.0 if task == "demand" else 0.01}]
     boosted = [{"family": "boosted", "leaves": 31, "trees": 120 if quick else 600,
                 "learning_rate": 0.04}]
@@ -28,7 +31,11 @@ def candidates(task, quick=False):
         linear.append({"family": "linear", "regularization": 1000.0 if task == "demand" else 0.1})
         boosted.append({"family": "boosted", "leaves": 63, "trees": 900,
                         "learning_rate": 0.025})
-    return linear + boosted
+    unknown = set(families) - set(FAMILIES)
+    if unknown or not families:
+        raise ValueError(f"Expected model families from {FAMILIES}, got {families}")
+    configs = linear + boosted + random_forest.candidates(quick)
+    return [config for config in configs if config["family"] in families]
 
 
 def fit_model(task, config, features, truth):
@@ -46,7 +53,10 @@ def fit_model(task, config, features, truth):
                      LogisticRegression(C=config["regularization"], class_weight="balanced",
                                         max_iter=1200, random_state=SEED))
         estimator = make_pipeline(StandardScaler(), estimator)
-    else:
+    elif config["family"] == "random_forest":
+        columns = list(features.columns)
+        estimator = random_forest.make_estimator(task, config, SEED)
+    elif config["family"] == "boosted":
         columns = list(features.columns)
         cls = LGBMRegressor if task == "demand" else LGBMClassifier
         estimator = cls(
@@ -58,6 +68,8 @@ def fit_model(task, config, features, truth):
             deterministic=True, force_col_wise=True, random_state=SEED,
             **({"class_weight": "balanced"} if task == "price" else {}),
         )
+    else:
+        raise ValueError(f"Unknown model family: {config['family']}")
     target = (truth["demand"].to_numpy() - features["demand_anchor"].to_numpy()
               if task == "demand" else truth["price"].to_numpy())
     kwargs = {}
@@ -70,7 +82,7 @@ def fit_model(task, config, features, truth):
             "estimator": estimator, "threshold": config.get("threshold", 0.5)}
 
 
-def select_models(features, truth, quick=False):
+def select_models(features, truth, quick=False, families=DEFAULT_FAMILIES):
     days = market_days(features.index)
     train = days.year <= 2013
     valid = days.year == 2014
@@ -79,7 +91,7 @@ def select_models(features, truth, quick=False):
     selected, results, frozen, calibration = {}, [], {}, {}
     for task in ("demand", "price"):
         best_score = np.inf
-        for number, config in enumerate(candidates(task, quick)):
+        for number, config in enumerate(candidates(task, quick, families)):
             name = f"{task}_{config['family']}_{number}"
             model = fit_model(task, config, features.loc[train], truth.loc[train])
             if task == "price":
@@ -122,6 +134,11 @@ def main():
     parser.add_argument("csv")
     parser.add_argument("--selection", help="final_config.json produced by run_experiments.py")
     parser.add_argument("--quick", action="store_true", help="Smoke-test models, not final accuracy")
+    parser.add_argument("--families", nargs="+", choices=FAMILIES, default=DEFAULT_FAMILIES,
+                        help="Candidate families used when --selection is not supplied")
+    parser.add_argument("--output", default=os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                       "artifacts"),
+                        help="Directory for models.joblib and manifest.json")
     args = parser.parse_args()
     started = time.monotonic()
     features, truth = training_table(load_data(args.csv))
@@ -131,7 +148,7 @@ def main():
     elif DEFAULT_SELECTION is not None:
         selection = DEFAULT_SELECTION
     else:
-        selected, scores, _, _ = select_models(features, truth, args.quick)
+        selected, scores, _, _ = select_models(features, truth, args.quick, args.families)
         selection = {
             task: dict(selected[task], window_years=4, training_end=None,
                        strategy="unvalidated_four_year_window")
@@ -149,10 +166,11 @@ def main():
         if policy.get("window_years"):
             mask &= days > end - pd.DateOffset(years=policy["window_years"])
         config = dict(policy["config"])
-        if args.quick and config["family"] == "boosted":
-            config["trees"] = min(config["trees"], 120)
+        if args.quick and config["family"] in ("boosted", "random_forest"):
+            limit = 20 if config["family"] == "random_forest" else 120
+            config["trees"] = min(config["trees"], limit)
         models[task] = fit_model(task, config, features.loc[mask], truth.loc[mask])
-    output = os.path.join(os.path.dirname(os.path.abspath(__file__)), "artifacts")
+    output = args.output
     os.makedirs(output, exist_ok=True)
     joblib.dump(models, os.path.join(output, "models.joblib"), compress=3)
     import lightgbm

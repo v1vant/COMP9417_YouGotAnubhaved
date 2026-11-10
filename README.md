@@ -112,6 +112,9 @@ Tips:
 
 ## 5. Run the project code
 
+For an explanation of the existing work, random forest training commands, and
+instructions for comparing or adding algorithms, see [the model guide](code/MODEL_GUIDE.md).
+
 ```
 python code/run_project.py --resume
 ```

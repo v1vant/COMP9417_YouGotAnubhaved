@@ -1,0 +1,85 @@
+{
+  "selected": {
+    "demand": {
+      "name": "demand_random_forest_1",
+      "config": {
+        "family": "random_forest",
+        "trees": 200,
+        "max_depth": 20,
+        "min_samples_leaf": 40,
+        "max_features": 0.7
+      }
+    },
+    "price": {
+      "name": "price_random_forest_0",
+      "config": {
+        "family": "random_forest",
+        "trees": 200,
+        "max_depth": 12,
+        "min_samples_leaf": 20,
+        "max_features": 0.7,
+        "threshold": 0.51
+      }
+    }
+  },
+  "validation": [
+    {
+      "model": "demand_random_forest_0",
+      "task": "demand",
+      "config": {
+        "family": "random_forest",
+        "trees": 200,
+        "max_depth": 12,
+        "min_samples_leaf": 20,
+        "max_features": 0.7
+      },
+      "validation_MAPE_or_negative_BA": 2.550903166509807,
+      "MAPE": 2.550903166509807,
+      "MAE": 204.43793229978735
+    },
+    {
+      "model": "demand_random_forest_1",
+      "task": "demand",
+      "config": {
+        "family": "random_forest",
+        "trees": 200,
+        "max_depth": 20,
+        "min_samples_leaf": 40,
+        "max_features": 0.7
+      },
+      "validation_MAPE_or_negative_BA": 2.4122649575010513,
+      "MAPE": 2.4122649575010513,
+      "MAE": 193.58469572857274
+    },
+    {
+      "model": "price_random_forest_0",
+      "task": "price",
+      "config": {
+        "family": "random_forest",
+        "trees": 200,
+        "max_depth": 12,
+        "min_samples_leaf": 20,
+        "max_features": 0.7,
+        "threshold": 0.51
+      },
+      "validation_MAPE_or_negative_BA": -81.16181193051042,
+      "balanced_accuracy": 81.16181193051042,
+      "accuracy": 81.0730593607306
+    },
+    {
+      "model": "price_random_forest_1",
+      "task": "price",
+      "config": {
+        "family": "random_forest",
+        "trees": 200,
+        "max_depth": 20,
+        "min_samples_leaf": 40,
+        "max_features": 0.7,
+        "threshold": 0.53
+      },
+      "validation_MAPE_or_negative_BA": -81.12231311727452,
+      "balanced_accuracy": 81.12231311727452,
+      "accuracy": 81.06735159817352
+    }
+  ]
+}
