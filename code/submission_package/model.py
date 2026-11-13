@@ -149,10 +149,28 @@ def forecast_features(history, weather_next):
     return features
 
 
+def holiday_context_features(features):
+    """Calendar-only context; independent of batch length and market outcomes."""
+    days = market_days(features.index)
+    calendar = holidays.Australia(
+        subdiv="NSW", years=range(days.min().year - 1, days.max().year + 2))
+    extra = {}
+    for name, offset in (("holiday_yesterday", -1), ("holiday_tomorrow", 1)):
+        values = {day: float((day + pd.Timedelta(days=offset)).date() in calendar)
+                  for day in days.unique()}
+        extra[name] = [values[day] for day in days]
+    extra["christmas_shutdown"] = ((days.month == 12) & (days.day >= 20)) | (
+        (days.month == 1) & (days.day <= 5))
+    return pd.concat([features, pd.DataFrame(extra, index=features.index,
+                                            dtype=np.float32)], axis=1)
+
+
 def predict_task(bundle, features):
     if (bundle.get("training_end") is not None
             and (market_days(features.index) <= pd.Timestamp(bundle["training_end"])).any()):
         raise ValueError("Forecast days must be after the model's training_end; use chronological backtests")
+    if bundle.get("holiday_context"):
+        features = holiday_context_features(features)
     x = features.loc[:, bundle["features"]]
     if bundle["task"] == "demand":
         residual = bundle["estimator"].predict(x)

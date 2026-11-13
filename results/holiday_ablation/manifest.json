@@ -1,0 +1,24 @@
+{
+  "seed": 9417,
+  "config": {
+    "family": "boosted",
+    "leaves": 63,
+    "trees": 900,
+    "learning_rate": 0.025
+  },
+  "quick": false,
+  "evaluation": "2015-01-01 through 2024-12-31 (development)",
+  "extra_features": [
+    "holiday_yesterday",
+    "holiday_tomorrow",
+    "christmas_shutdown"
+  ],
+  "source_hashes": {
+    "code/ablate_holiday_context.py": "7598880b268c31305754b5daa88b6eaadc6a34f1269074639653a49908a1c12f",
+    "code/forecast_package/model.py": "ba6e1eb73e6d8fcb10cd1314e0201bd045264bf59d452e6423ae44453a036f27",
+    "code/forecast_package/train.py": "d9d3008ec8a15001673b08fde2e0eade65800622a6db532da1619972bc98cffa"
+  },
+  "data_hash_through_2024": "87d17c759bcbde561775b0bd06edb86e4dea506d0af933aaad8f8738a222c8fd",
+  "seconds": 715.1379290490004,
+  "note": "Paired day bootstrap; exploratory intervals do not adjust for experiment selection"
+}

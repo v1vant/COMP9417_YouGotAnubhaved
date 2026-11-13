@@ -74,6 +74,56 @@ feed the detector after that day finishes.
 Regression tests check batch/live feature agreement, invariance to future-data
 changes, training cutoffs, midnight boundaries, and adaptive forecast timing.
 
+## Holiday-context demand ablation
+
+The existing `holiday` flag already marks NSW public holidays. An optional
+`holiday_context: true` model configuration adds three calendar-only features:
+whether yesterday or tomorrow is a NSW holiday, and a Christmas shutdown window
+from 20 December through 5 January inclusive. Holiday proximity is computed from
+calendar dates, including across year boundaries, rather than by shifting rows.
+It is identical for a batch and a single forecast day. The flag is supported by
+the standard trainer and staged submission; it is off by default.
+
+Run the paired demand experiment from the repository root:
+
+```bash
+python code/ablate_holiday_context.py
+python -m unittest discover -s code/tests -v
+```
+
+Both variants retain the selected standard LightGBM demand settings and the
+periodic expanding-history schedule: initial fitting through 2014, then updates
+effective in 2016, 2018, 2020, 2022 and 2024. The baseline is refitted too, rather
+than compared against a different training window. Only the three extra calendar
+features differ. No 2025–2026 data enter feature generation, fitting or scoring.
+This is an exploratory development ablation prompted by previous error inspection.
+
+Results go to `results/holiday_ablation/`: `metrics.csv` has aggregate and per-year
+MAPE, MAE and bias for overall, public holiday, adjacent nonholiday, shutdown,
+ordinary, midday and evening intervals. These groups overlap; ordinary excludes
+all holidays, adjacent days and shutdown days. `paired_deltas.csv` reports the
+change in MAPE and exploratory 95% paired-day bootstrap intervals; negative
+changes favour the extra features. `daily_paired_errors.csv` lets you inspect
+individual dates. `fits.csv` records training cutoffs, and `manifest.json` records
+settings and hashes. Existing results and final model artifacts are preserved.
+
+For a shorter pipeline check, use `--quick --output /tmp/holiday_ablation_quick`;
+this caps both variants at 120 trees and is not the full accuracy comparison.
+To retain results elsewhere, pass `--output PATH`.
+
+The full development run improved aggregate demand MAPE from 2.594458% to
+2.542052% (about 2.02% relative), and MAE from 200.33 MW to 196.41 MW.
+Overall MAPE improved in all ten years; adjacent nonholiday MAPE improved from
+3.723046% to 3.091225%, also in all ten years. Ordinary-day MAPE improved from
+2.485347% to 2.462347%, with improvement in nine of ten years. Christmas-window
+MAPE improved from 3.908904% to 3.720895%, with improvement in nine years.
+The baseline exactly reproduced the previously saved strategy-selection score.
+These results support the combined feature set, but do not isolate which of the
+three flags contributes most. Final artifacts and default configurations remain
+unchanged. To opt in during a later rebuild, set `holiday_context` to `true` in
+the demand model's `config` inside a separate selection JSON and pass that file
+to `forecast_package/train.py --selection`, using a separate `--output` directory.
+
 ## Train random forests
 
 Run commands from the repository root, in the **Python 3.11** environment with
