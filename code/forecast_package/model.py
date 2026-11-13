@@ -1,5 +1,6 @@
 """Leakage-safe features shared by training and live day-ahead prediction."""
 import os
+import json
 
 import holidays
 import joblib
@@ -17,6 +18,26 @@ def market_days(index):
     return (index - pd.Timedelta(minutes=30)).normalize()
 
 
+def validate_day_index(index):
+    """Row lags are day lags only on consecutive, complete market days."""
+    if (not isinstance(index, pd.DatetimeIndex) or index.empty or index.hasnans
+            or not index.is_unique or not index.is_monotonic_increasing):
+        raise ValueError("Expected nonempty, ordered, unique timestamps")
+    expected = pd.date_range(index[0], index[-1], freq="30min")
+    if (not index.equals(expected)
+            or index[0] != market_days(index[:1])[0] + pd.Timedelta(minutes=30)
+            or index[-1] != market_days(index[-1:])[0] + pd.Timedelta(days=1)):
+        raise ValueError("Expected consecutive complete market days")
+
+
+def training_span(features, truth):
+    if not features.index.equals(truth.index):
+        raise ValueError("Features and targets must have identical training indices")
+    validate_day_index(features.index)
+    days = market_days(features.index)
+    return {"training_start": str(days.min()), "training_end": str(days.max())}
+
+
 def load_data(path):
     frame = pd.read_csv(path, index_col="timestamp", parse_dates=["timestamp"]).sort_index()
     if frame.empty or not frame.index.is_unique:
@@ -32,6 +53,7 @@ def load_data(path):
 
 def feature_frame(frame):
     """Current-day weather is allowed; all market features use completed days."""
+    validate_day_index(frame.index)
     days = market_days(frame.index)
     start = frame.index - pd.Timedelta(minutes=30)
     slot = np.asarray(start.hour * 2 + start.minute // 30)
@@ -112,6 +134,7 @@ def forecast_features(history, weather_next):
         raise ValueError("Expected 48 rows and the 12 weather columns")
     if history.empty or not history.index.is_monotonic_increasing or not history.index.is_unique:
         raise ValueError("History must be nonempty, ordered and unique")
+    validate_day_index(history.index)
     expected = pd.date_range(history.index[-1] + pd.Timedelta(minutes=30),
                              periods=48, freq="30min")
     if not weather_next.index.equals(expected) or len(market_days(weather_next.index).unique()) != 1:
@@ -127,6 +150,9 @@ def forecast_features(history, weather_next):
 
 
 def predict_task(bundle, features):
+    if (bundle.get("training_end") is not None
+            and (market_days(features.index) <= pd.Timestamp(bundle["training_end"])).any()):
+        raise ValueError("Forecast days must be after the model's training_end; use chronological backtests")
     x = features.loc[:, bundle["features"]]
     if bundle["task"] == "demand":
         residual = bundle["estimator"].predict(x)
@@ -138,6 +164,21 @@ def predict_task(bundle, features):
 class Forecaster:
     def __init__(self, artifact_dir: str):
         self.models = joblib.load(os.path.join(artifact_dir, "models.joblib"))
+        # Older artifacts store provenance only in the companion manifest.
+        manifest_path = os.path.join(artifact_dir, "manifest.json")
+        manifest = None
+        for task, bundle in self.models.items():
+            if bundle.get("training_end") is None:
+                if manifest is None:
+                    if not os.path.exists(manifest_path):
+                        raise ValueError("Missing training provenance; rebuild artifacts before forecasting")
+                    with open(manifest_path, encoding="utf-8") as handle:
+                        manifest = json.load(handle)
+                end = pd.Timestamp(manifest["data_end"])
+                cutoff = manifest.get("selection", {}).get(task, {}).get("training_end")
+                if cutoff:
+                    end = min(end, pd.Timestamp(cutoff))
+                bundle["training_end"] = str(end)
         for bundle in self.models.values():
             estimator = bundle["estimator"]
             if "n_jobs" in estimator.get_params():

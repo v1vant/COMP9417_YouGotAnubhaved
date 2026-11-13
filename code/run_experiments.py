@@ -13,7 +13,7 @@ from threadpoolctl import threadpool_limits
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(HERE, "forecast_package"))
-from model import load_data, market_days, predict_task, training_table
+from model import load_data, market_days, predict_task, training_table, training_span
 from train import DEFAULT_FAMILIES, FAMILIES, fit_model, select_models
 from analysis_tools import (
     OnlineDetector, day_type_analysis, metric_values, period_metrics, save_figures,
@@ -30,13 +30,18 @@ STRATEGIES = {
 def simulate_policy(task, strategy, initial, config, features, truth, simulation_days,
                     input_scores, input_reference, error_reference):
     """Predict D first, then observe D; any triggered replacement starts on D+1."""
+    training_span(features, truth)
+    if (len(simulation_days) == 0 or not simulation_days.equals(
+            pd.date_range(simulation_days[0], simulation_days[-1], freq="D"))):
+        raise ValueError("Simulation days must be nonempty, ordered and consecutive")
     output = np.empty((len(simulation_days), 48), dtype=float if task == "demand" else int)
     model = initial
     input_detector = OnlineDetector(input_reference)
     error_detector = OnlineDetector(error_reference)
     feature_days = market_days(features.index)
     positions = np.flatnonzero(feature_days >= simulation_days[0])
-    if len(positions) != len(simulation_days) * 48:
+    if (len(positions) != len(simulation_days) * 48
+            or not feature_days[positions].unique().equals(simulation_days)):
         raise ValueError("Simulation must consist of consecutive complete days to data end")
     last_fit = pd.Timestamp("2014-12-31")
     retrains, signals = [], []

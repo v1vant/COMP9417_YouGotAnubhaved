@@ -14,7 +14,7 @@ from sklearn.metrics import balanced_accuracy_score
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
-from model import load_data, market_days, predict_task, training_table
+from model import load_data, market_days, predict_task, training_table, training_span
 import random_forest
 
 SEED = 9417
@@ -41,6 +41,7 @@ def candidates(task, quick=False, families=DEFAULT_FAMILIES):
 def fit_model(task, config, features, truth):
     if not len(features):
         raise ValueError("No training observations")
+    span = training_span(features, truth)
     if task == "price" and truth["price"].nunique() < 2:
         raise ValueError("Classification training requires both classes")
     if config["family"] == "linear":
@@ -78,7 +79,7 @@ def fit_model(task, config, features, truth):
         weights /= weights.mean()
         kwargs["ridge__sample_weight" if config["family"] == "linear" else "sample_weight"] = weights
     estimator.fit(features[columns], target, **kwargs)
-    return {"task": task, "config": config, "features": columns,
+    return {**span, "task": task, "config": config, "features": columns,
             "estimator": estimator, "threshold": config.get("threshold", 0.5)}
 
 

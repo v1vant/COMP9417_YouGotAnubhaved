@@ -15,7 +15,7 @@ import dayahead as da
 import joblib
 from model import (Forecaster, MARKET, WEATHER, feature_frame, forecast_features,
                    market_days, predict_task, training_table)
-from train import candidates, fit_model
+from train import candidates, fit_model, select_models
 from analysis_tools import OnlineDetector, confidence_intervals, metric_values
 from run_experiments import baseline_predictions, simulate_policy
 
@@ -82,6 +82,21 @@ class FeatureTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             forecast_features(history, weather)
 
+    def test_incomplete_unordered_or_duplicate_days_are_rejected(self):
+        for frame in (self.frame.iloc[1:], self.frame.drop(self.frame.index[100]),
+                      self.frame.iloc[::-1], pd.concat([self.frame, self.frame.iloc[-1:]])):
+            with self.subTest(rows=len(frame)), self.assertRaises(ValueError):
+                feature_frame(frame)
+
+    def test_training_prefix_unchanged_when_future_observations_change(self):
+        original_x, original_y = training_table(self.frame)
+        changed = self.frame.copy()
+        changed.loc[market_days(changed.index) >= self.day, MARKET + WEATHER] = 999999
+        altered_x, altered_y = training_table(changed)
+        past = market_days(original_x.index) < self.day
+        pd.testing.assert_frame_equal(original_x.loc[past], altered_x.loc[past])
+        pd.testing.assert_frame_equal(original_y.loc[past], altered_y.loc[past])
+
     def test_strict_price_target_preserves_float64_precision(self):
         yesterday = market_days(self.frame.index) == self.day - pd.Timedelta(days=1)
         today = market_days(self.frame.index) == self.day
@@ -134,8 +149,87 @@ class StatisticalTests(unittest.TestCase):
         self.assertEqual(fits[0], pd.Timestamp("2015-01-01"))
         self.assertLessEqual(len(retrains), 6)
 
+    def test_future_observations_do_not_change_earlier_adaptive_forecasts(self):
+        frame = synthetic_data()
+        cutoff = pd.Timestamp("2015-01-08")
+        changed = frame.copy()
+        changed.loc[market_days(changed.index) >= cutoff, MARKET + WEATHER] *= 10
+        config = dict(candidates("demand", quick=True, families=["random_forest"])[0],
+                      trees=2, max_depth=2)
+        results = []
+        for data in (frame, changed):
+            features, truth = training_table(data)
+            feature_days = market_days(features.index)
+            past = feature_days.year <= 2014
+            initial = fit_model("demand", config, features.loc[past], truth.loc[past])
+            days = feature_days[feature_days.year >= 2015].unique()
+            result, retrains, signals = simulate_policy(
+                "demand", "drift_sliding", initial, config, features, truth, days,
+                pd.Series(100.0, index=days), np.zeros(365), np.zeros(365))
+            results.append((result[days < cutoff], retrains,
+                            [s for s in signals if pd.Timestamp(s["day"]) < cutoff]))
+        np.testing.assert_array_equal(results[0][0], results[1][0])
+        self.assertEqual(results[0][1:], results[1][1:])
+
+    def test_initial_selection_never_fits_post_2014_data(self):
+        features, truth = training_table(synthetic_data(days=760, start="2013-01-01"))
+        fits = []
+
+        class Estimator:
+            def predict_proba(self, x):
+                return np.tile([0.4, 0.6], (len(x), 1))
+
+        def fitted(task, config, x, y):
+            fits.append(market_days(x.index).max().year)
+            return {"task": task, "estimator": Estimator(), "features": list(x),
+                    "threshold": config.get("threshold", 0.5)}
+
+        with patch("train.fit_model", side_effect=fitted), \
+                patch("train.predict_task", side_effect=lambda m, x: np.full(
+                    len(x), 7000 if m["task"] == "demand" else 1)):
+            select_models(features, truth, quick=True, families=["random_forest"])
+        self.assertEqual(fits, [2013, 2014, 2013, 2014])
+
+    def test_simulation_rejects_shuffled_or_skipped_days(self):
+        features, truth = training_table(synthetic_data())
+        days = market_days(features.index).unique()
+        for invalid in (days[::-1], days.delete(2)):
+            with self.assertRaisesRegex(ValueError, "ordered and consecutive"):
+                simulate_policy("demand", "frozen", {}, {}, features, truth, invalid,
+                                pd.Series(0.0, index=days), np.zeros(365), np.zeros(365))
+
 
 class RandomForestTests(unittest.TestCase):
+    def test_saved_model_cannot_predict_its_training_days(self):
+        features, truth = training_table(synthetic_data())
+        config = dict(candidates("demand", quick=True, families=["random_forest"])[0],
+                      trees=2, max_depth=2)
+        model = fit_model("demand", config, features, truth)
+        self.assertEqual(pd.Timestamp(model["training_end"]), market_days(features.index).max())
+        with self.assertRaisesRegex(ValueError, "training_end"):
+            predict_task(model, features.iloc[-48:])
+
+    def test_misaligned_training_labels_are_rejected(self):
+        features, truth = training_table(synthetic_data())
+        with self.assertRaisesRegex(ValueError, "identical training indices"):
+            fit_model("demand", {"family": "linear", "regularization": 10},
+                      features, truth.iloc[::-1])
+
+    def test_legacy_artifact_manifest_blocks_historical_predictions(self):
+        import json
+        from sklearn.linear_model import Ridge
+        with tempfile.TemporaryDirectory() as directory:
+            bundle = {"estimator": Ridge()}
+            joblib.dump({"demand": bundle, "price": bundle.copy()},
+                        os.path.join(directory, "models.joblib"))
+            with open(os.path.join(directory, "manifest.json"), "w") as handle:
+                json.dump({"data_end": "2016-01-01"}, handle)
+            forecaster = Forecaster(directory)
+            frame = synthetic_data()
+            history, weather = frame.iloc[:-48], frame.iloc[-48:][WEATHER]
+            with self.assertRaisesRegex(ValueError, "training_end"):
+                forecaster.predict(history, weather)
+
     def test_family_selection_is_explicit(self):
         self.assertEqual({c["family"] for c in candidates("demand")}, {"linear", "boosted"})
         configs = candidates("price", quick=True, families=["random_forest"])

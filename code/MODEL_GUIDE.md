@@ -46,6 +46,34 @@ end (or the policy's explicit training cutoff); it does not replay the simulatio
 historical retraining dates. The staged submission directory is a separate copy
 and does not update automatically.
 
+## Temporal leakage safeguards
+
+Feature construction requires consecutive complete market days (00:30 through
+the following midnight). This keeps row shifts aligned with past days, including
+at year boundaries. Market lags and rolling summaries end on the previous day;
+forecast-day weather and its daily summaries are allowed by the project protocol.
+The supplied weather is reanalysis treated as available in advance, so these
+scores describe that idealised scenario rather than actual weather forecasts.
+
+Every newly fitted model records its training date range and rejects predictions
+on or before its last training day. `Forecaster` reads the companion manifest for
+older artifacts without embedded dates and rejects artifacts with no provenance.
+Use `run_experiments.py` for historical testing: final artifacts fitted through
+October 2026 cannot be used to score 2015–2026. The same safeguards are included
+in the staged submission code.
+
+The 2014 scores are tuning scores because they select both models and price
+thresholds. Strategy selection uses 2015–2024; assess the selected policy on the
+later holdout without choosing a different policy based on its holdout score.
+The holdout is a chronological deployment simulation: past holdout observations
+can enter subsequent scheduled or drift-triggered retraining. Each day's outcome
+is observed after its forecast, and triggered replacements start the next day.
+PCA and clustering remain fixed from 2010–2013; completed-day cluster distances
+feed the detector after that day finishes.
+
+Regression tests check batch/live feature agreement, invariance to future-data
+changes, training cutoffs, midnight boundaries, and adaptive forecast timing.
+
 ## Train random forests
 
 Run commands from the repository root, in the **Python 3.11** environment with
