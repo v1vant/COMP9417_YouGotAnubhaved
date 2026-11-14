@@ -124,6 +124,60 @@ unchanged. To opt in during a later rebuild, set `holiday_context` to `true` in
 the demand model's `config` inside a separate selection JSON and pass that file
 to `forecast_package/train.py --selection`, using a separate `--output` directory.
 
+## Solar-response trend demand ablation
+
+`solar_trend: true` in a demand configuration adds three optional features:
+
+- `solar_delta_anchor`: half the sum of Sydney solar changes from yesterday
+  and last week; equivalent to today's solar minus the average of those days.
+- `trend_years`: elapsed market days since 1 January 2010 divided by 365.25.
+  The reference date is fixed and does not depend on the training/evaluation span.
+- `solar_delta_trend`: the product of those two features.
+
+The shared helper is used for fitting and live prediction in both the main and
+staged submission packages. It uses calendar dates and the already permitted
+weather inputs, with no forecast-day market outcomes. The demand anchor, target,
+loss and hyperparameters remain unchanged. Price classification is unchanged.
+This option is off by default and does not require the weighted LightGBM module.
+
+Run the full demand comparison from the repository root:
+
+```bash
+python code/ablate_solar_trend.py --output results/solar_trend_ablation
+```
+
+The two variants are `holiday_context` (243 features) and `holiday_solar_trend`
+(246). Both use holiday context, fixed standard LightGBM settings from
+`results/final_config.json`, initial fitting through 2014, and expanding-history
+updates effective in 2016/2018/2020/2022/2024. Forecasts are evaluated only on
+2015–2024 development market days; 2025–2026 market days are excluded before
+feature generation. This is an exploratory ablation prompted by error inspection.
+
+For a faster 120-tree pipeline check and feature tests:
+
+```bash
+python code/ablate_solar_trend.py --quick --output /tmp/solar_trend_smoke
+python -m unittest discover -s code/tests -p 'test_solar_trend.py' -v
+```
+
+Inspect `metrics.csv` with `group=all, year=all` for aggregate MAPE, MAE and bias.
+Use `group=midday_10_15` for interval starts 10:00–14:30, `other_hours` for the
+rest, and `midday_solar_*` groups for signed solar changes relative to the anchor
+weather. Each has aggregate and yearly rows. `yearly_deltas.csv` computes
+candidate minus baseline MAPE, so negative is better. `paired_deltas.csv`
+contains the same aggregate direction with exploratory paired-day bootstrap
+intervals, weighted by interval counts when solar-bin sample sizes differ.
+Inspect signed `bias_mw` as well as MAPE to check whether the residual solar
+pattern shrinks in both directions.
+
+The runner also saves `error_overview.png` with both variants' half-hour MAPE,
+MAE, bias and monthly MAPE; `half_hour_predictions.parquet` stores actual demand,
+both forecasts and diagnostic context for further demand analysis. `fits.csv`
+records cutoffs and `manifest.json` records settings and source/data hashes.
+No final artifacts or existing experiment reports are replaced when using the
+new output directory. Keep a feature set only if gains repeat across years and
+do not materially harm other hours; a quick-mode result is not the full comparison.
+
 ## Train random forests
 
 Run commands from the repository root, in the **Python 3.11** environment with

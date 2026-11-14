@@ -165,12 +165,25 @@ def holiday_context_features(features):
                                             dtype=np.float32)], axis=1)
 
 
+def solar_trend_features(features):
+    """Date and supplied weather only; the reference date never depends on the fit."""
+    days = market_days(features.index)
+    delta = 0.5 * (features["syd_solar_change_1d"] + features["syd_solar_change_7d"])
+    years = np.asarray((days - pd.Timestamp("2010-01-01")).days, dtype=float) / 365.25
+    extra = pd.DataFrame({"solar_delta_anchor": delta, "trend_years": years,
+                          "solar_delta_trend": delta * years}, index=features.index,
+                         dtype=np.float32)
+    return pd.concat([features, extra], axis=1)
+
+
 def predict_task(bundle, features):
     if (bundle.get("training_end") is not None
             and (market_days(features.index) <= pd.Timestamp(bundle["training_end"])).any()):
         raise ValueError("Forecast days must be after the model's training_end; use chronological backtests")
     if bundle.get("holiday_context"):
         features = holiday_context_features(features)
+    if bundle.get("solar_trend"):
+        features = solar_trend_features(features)
     x = features.loc[:, bundle["features"]]
     if bundle["task"] == "demand":
         residual = bundle["estimator"].predict(x)

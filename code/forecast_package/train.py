@@ -15,7 +15,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
 from model import (holiday_context_features, load_data, market_days, predict_task,
-                   training_table, training_span)
+                   solar_trend_features, training_table, training_span)
 import random_forest
 
 SEED = 9417
@@ -45,6 +45,9 @@ def fit_model(task, config, features, truth):
     span = training_span(features, truth)
     if config.get("holiday_context", False):
         features = holiday_context_features(features)
+    use_solar_trend = task == "demand" and bool(config.get("solar_trend", False))
+    if use_solar_trend:
+        features = solar_trend_features(features)
     if task == "price" and truth["price"].nunique() < 2:
         raise ValueError("Classification training requires both classes")
     if config["family"] == "linear":
@@ -84,6 +87,7 @@ def fit_model(task, config, features, truth):
     estimator.fit(features[columns], target, **kwargs)
     return {**span, "task": task, "config": config, "features": columns,
             "holiday_context": bool(config.get("holiday_context", False)),
+            "solar_trend": use_solar_trend,
             "estimator": estimator, "threshold": config.get("threshold", 0.5)}
 
 
