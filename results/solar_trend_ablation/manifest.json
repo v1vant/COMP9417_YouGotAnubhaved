@@ -1,0 +1,36 @@
+{
+  "seed": 9417,
+  "config": {
+    "family": "boosted",
+    "leaves": 63,
+    "trees": 900,
+    "learning_rate": 0.025
+  },
+  "quick": false,
+  "evaluation": "2015-01-01 through 2024-12-31 (development)",
+  "feature_set": "solar_trend",
+  "variants": {
+    "holiday_context": {
+      "holiday_context": true,
+      "solar_trend": false
+    },
+    "holiday_solar_trend": {
+      "holiday_context": true,
+      "solar_trend": true
+    }
+  },
+  "extra_features": [
+    "solar_delta_anchor",
+    "trend_years",
+    "solar_delta_trend"
+  ],
+  "source_hashes": {
+    "code/ablate_holiday_context.py": "d02ce343a9fe886e29ff5c8927d00ff61f7082276bb29b9a8850b36e3b31ec56",
+    "code/forecast_package/model.py": "eca3b7a7214f6a26172cbacf2de6ca37f384a7e450c3f1614118c83fbbe9d3e6",
+    "code/forecast_package/train.py": "8c7c6b4e9faf8c1c1df0c08690598582ef1df1574d98fece74b874393252565c",
+    "code/ablate_solar_trend.py": "fd709bc1eefdf7bbf3f22bcfe654150f082c93ae7b67b28976bb98bbb3f7016f"
+  },
+  "data_hash_through_2024": "87d17c759bcbde561775b0bd06edb86e4dea506d0af933aaad8f8738a222c8fd",
+  "seconds": 716.2621988180008,
+  "note": "Paired day bootstrap; exploratory intervals do not adjust for experiment selection"
+}
