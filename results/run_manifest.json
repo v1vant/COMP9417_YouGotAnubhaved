@@ -1,5 +1,5 @@
 {
-  "seconds": 511.7180000000001,
+  "seconds": 2022.1674856659956,
   "fingerprint": {
     "rows": 295104,
     "end": "2026-11-01 00:00:00",
@@ -247,10 +247,10 @@
       "demand_anchor"
     ],
     "source_hashes": {
-      "run_experiments.py": "faaf8d98adecd2fdfdd60f18ab0842d70bf56a8317ca36fe6528c286030007ea",
-      "analysis_tools.py": "2e57b407478026fea4258588b552e9f9d1363d1c87b2f7b330ba10020e4d9fb8",
-      "forecast_package\\model.py": "b3503bdd1ec604ffabcb619746d5203b8d001bbdd58572ed1c58eff600055ecb",
-      "forecast_package\\train.py": "7c7447164dd1ec8cda294204aea9795ac9797a2dcbfce35ecde40cd1a4fd6579"
+      "run_experiments.py": "784dc3150f3ec0fc859818b7bcb91d89fe716ef1b3821f012ac237bac8b7f32f",
+      "analysis_tools.py": "ce564359969412f6dd5224d70b79c13e5dd24ce8e2bc62e2f981a75c6d8a0e04",
+      "forecast_package/model.py": "78abef4a8bce3ccf98bb1dc93a04a0c9978da70b604fe841a5a7e388338fb9af",
+      "forecast_package/train.py": "75fd851c618b6afcb424e13e8019158903834dad7788c75eb3c3f4532dee7bd4"
     },
     "data_hash": "16d07a6cc5e43b91d23e071c4b7dcfff910d7062d9f6d90e6722141961da64db"
   },

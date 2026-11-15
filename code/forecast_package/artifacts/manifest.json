@@ -31,9 +31,9 @@
     "quick": false
   },
   "quick": false,
-  "seconds": 416.422,
+  "seconds": 235.14193012518808,
   "versions": {
-    "python": "3.11.14",
+    "python": "3.11.18",
     "numpy": "2.4.6",
     "pandas": "3.1.0",
     "sklearn": "1.9.1",

@@ -28,9 +28,9 @@
         "family": "linear",
         "regularization": 10.0
       },
-      "validation_MAPE_or_negative_BA": 3.022034246355117,
-      "MAPE": 3.022034246355117,
-      "MAE": 234.36274495331227
+      "validation_MAPE_or_negative_BA": 3.022245237076814,
+      "MAPE": 3.022245237076814,
+      "MAE": 234.37789409647905
     },
     {
       "model": "demand_linear_1",
@@ -39,9 +39,9 @@
         "family": "linear",
         "regularization": 1000.0
       },
-      "validation_MAPE_or_negative_BA": 2.9442677335124783,
-      "MAPE": 2.9442677335124783,
-      "MAE": 228.77127238401647
+      "validation_MAPE_or_negative_BA": 2.944322634115377,
+      "MAPE": 2.944322634115377,
+      "MAE": 228.7752056332941
     },
     {
       "model": "demand_boosted_2",
@@ -77,9 +77,9 @@
         "regularization": 0.01,
         "threshold": 0.5800000000000001
       },
-      "validation_MAPE_or_negative_BA": -79.27392124095091,
-      "balanced_accuracy": 79.27392124095091,
-      "accuracy": 79.26369863013699
+      "validation_MAPE_or_negative_BA": -79.25044430703849,
+      "balanced_accuracy": 79.25044430703849,
+      "accuracy": 79.24086757990868
     },
     {
       "model": "price_linear_1",
@@ -89,8 +89,8 @@
         "regularization": 0.1,
         "threshold": 0.55
       },
-      "validation_MAPE_or_negative_BA": -79.21017866583122,
-      "balanced_accuracy": 79.21017866583122,
+      "validation_MAPE_or_negative_BA": -79.21143584638291,
+      "balanced_accuracy": 79.21143584638291,
       "accuracy": 79.15525114155251
     },
     {
@@ -120,6 +120,56 @@
       "validation_MAPE_or_negative_BA": -81.72128922717943,
       "balanced_accuracy": 81.72128922717943,
       "accuracy": 81.64954337899543
+    },
+    {
+      "model": "price_naive_bayes_4",
+      "task": "price",
+      "config": {
+        "family": "naive_bayes",
+        "discrete": [
+          "slot",
+          "weekend"
+        ],
+        "continuous": [
+          "price_margin_1",
+          "price_margin_7",
+          "price_threshold",
+          "qld_demand_recent_change",
+          "vic_demand_previous_min",
+          "vic_price_recent_change",
+          "dow_0_sin",
+          "dow_0_cos",
+          "dow_5_sin",
+          "dow_6_sin",
+          "syd_temp_anomaly",
+          "mel_cool_sin",
+          "mel_solar",
+          "mel_cloud_today_mean",
+          "bne_temp_change_7d",
+          "mel_temp_change_7d"
+        ],
+        "alpha": 1.0,
+        "threshold": 0.55
+      },
+      "validation_MAPE_or_negative_BA": -78.93358655523126,
+      "balanced_accuracy": 78.93358655523126,
+      "accuracy": 78.87557077625571
+    },
+    {
+      "model": "price_svm_5",
+      "task": "price",
+      "config": {
+        "family": "svm",
+        "kernel": "rbf",
+        "gamma": 1.0,
+        "C": 0.3,
+        "max_rows": 20000,
+        "features": null,
+        "threshold": 0.54
+      },
+      "validation_MAPE_or_negative_BA": -81.4546665322718,
+      "balanced_accuracy": 81.4546665322718,
+      "accuracy": 81.40981735159816
     }
   ]
 }
