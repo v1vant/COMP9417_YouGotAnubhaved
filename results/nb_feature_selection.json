@@ -1,0 +1,724 @@
+{
+  "settings": {
+    "train_end": 2012,
+    "select_year": 2013,
+    "test_year": 2014,
+    "max_corr": 0.4,
+    "rank": "univariate",
+    "min_drop": 0.1,
+    "keep": [
+      "price_margin_7"
+    ],
+    "output": null
+  },
+  "stages": [
+    {
+      "stage": "all features",
+      "features": 241,
+      "threshold": 0.6000000000000001,
+      "BA_select_2013": 73.37,
+      "BA_test_2014": 76.35
+    },
+    {
+      "stage": "after correlation screen (|r| < 0.4)",
+      "features": 61,
+      "threshold": 0.21000000000000002,
+      "BA_select_2013": 72.3,
+      "BA_test_2014": 73.89
+    },
+    {
+      "stage": "after impact pruning (>= 0.1 pts each)",
+      "features": 18,
+      "threshold": 0.28,
+      "BA_select_2013": 77.88,
+      "BA_test_2014": 78.06
+    },
+    {
+      "stage": "hand-picked set (train.NAIVE_BAYES)",
+      "features": 9,
+      "threshold": 0.43000000000000005,
+      "BA_select_2013": 76.51,
+      "BA_test_2014": 77.78
+    }
+  ],
+  "selected": {
+    "family": "naive_bayes",
+    "alpha": 1.0,
+    "discrete": [
+      "slot",
+      "weekend"
+    ],
+    "continuous": [
+      "price_margin_1",
+      "price_margin_7",
+      "qld_demand_recent_change",
+      "dow_6_sin",
+      "vic_demand_previous_min",
+      "dow_0_cos",
+      "price_threshold",
+      "dow_5_sin",
+      "mel_cool_sin",
+      "dow_0_sin",
+      "syd_temp_anomaly",
+      "mel_solar",
+      "mel_cloud_today_mean",
+      "vic_price_recent_change",
+      "bne_temp_change_7d",
+      "mel_temp_change_7d"
+    ]
+  },
+  "final_features": [
+    {
+      "feature": "price_margin_1",
+      "standalone_BA": 74.7045,
+      "evidence": 1.1031,
+      "drop_points": 4.5763,
+      "evidence_share_%": 14.4706,
+      "zero_inflated": false
+    },
+    {
+      "feature": "slot",
+      "standalone_BA": 69.9904,
+      "evidence": 1.0578,
+      "drop_points": 3.3185,
+      "evidence_share_%": 13.8767,
+      "zero_inflated": false
+    },
+    {
+      "feature": "price_margin_7",
+      "standalone_BA": 72.9155,
+      "evidence": 0.9117,
+      "drop_points": 2.796,
+      "evidence_share_%": 11.9595,
+      "zero_inflated": false
+    },
+    {
+      "feature": "qld_demand_recent_change",
+      "standalone_BA": 59.8623,
+      "evidence": 0.5678,
+      "drop_points": 0.6857,
+      "evidence_share_%": 7.4482,
+      "zero_inflated": false
+    },
+    {
+      "feature": "dow_6_sin",
+      "standalone_BA": 54.318,
+      "evidence": 0.2188,
+      "drop_points": 0.6119,
+      "evidence_share_%": 2.8697,
+      "zero_inflated": true
+    },
+    {
+      "feature": "vic_demand_previous_min",
+      "standalone_BA": 58.349,
+      "evidence": 0.3609,
+      "drop_points": 0.5314,
+      "evidence_share_%": 4.7342,
+      "zero_inflated": false
+    },
+    {
+      "feature": "dow_0_cos",
+      "standalone_BA": 56.9008,
+      "evidence": 0.301,
+      "drop_points": 0.45,
+      "evidence_share_%": 3.9489,
+      "zero_inflated": true
+    },
+    {
+      "feature": "price_threshold",
+      "standalone_BA": 61.5469,
+      "evidence": 0.8393,
+      "drop_points": 0.4368,
+      "evidence_share_%": 11.0097,
+      "zero_inflated": false
+    },
+    {
+      "feature": "dow_5_sin",
+      "standalone_BA": 54.0955,
+      "evidence": 0.1234,
+      "drop_points": 0.4088,
+      "evidence_share_%": 1.6189,
+      "zero_inflated": true
+    },
+    {
+      "feature": "mel_cool_sin",
+      "standalone_BA": 55.6215,
+      "evidence": 0.2768,
+      "drop_points": 0.39,
+      "evidence_share_%": 3.6306,
+      "zero_inflated": true
+    },
+    {
+      "feature": "weekend",
+      "standalone_BA": 56.8853,
+      "evidence": 0.2312,
+      "drop_points": 0.3686,
+      "evidence_share_%": 3.0323,
+      "zero_inflated": false
+    },
+    {
+      "feature": "dow_0_sin",
+      "standalone_BA": 56.4891,
+      "evidence": 0.2759,
+      "drop_points": 0.3074,
+      "evidence_share_%": 3.6192,
+      "zero_inflated": true
+    },
+    {
+      "feature": "syd_temp_anomaly",
+      "standalone_BA": 52.8876,
+      "evidence": 0.1379,
+      "drop_points": 0.2932,
+      "evidence_share_%": 1.809,
+      "zero_inflated": false
+    },
+    {
+      "feature": "mel_solar",
+      "standalone_BA": 65.2461,
+      "evidence": 0.643,
+      "drop_points": 0.2848,
+      "evidence_share_%": 8.4345,
+      "zero_inflated": true
+    },
+    {
+      "feature": "mel_cloud_today_mean",
+      "standalone_BA": 53.9791,
+      "evidence": 0.1194,
+      "drop_points": 0.1997,
+      "evidence_share_%": 1.5661,
+      "zero_inflated": false
+    },
+    {
+      "feature": "vic_price_recent_change",
+      "standalone_BA": 56.7778,
+      "evidence": 0.2069,
+      "drop_points": 0.1138,
+      "evidence_share_%": 2.7144,
+      "zero_inflated": false
+    },
+    {
+      "feature": "bne_temp_change_7d",
+      "standalone_BA": 50.8352,
+      "evidence": 0.1028,
+      "drop_points": 0.1015,
+      "evidence_share_%": 1.3484,
+      "zero_inflated": false
+    },
+    {
+      "feature": "mel_temp_change_7d",
+      "standalone_BA": 52.379,
+      "evidence": 0.1455,
+      "drop_points": 0.0884,
+      "evidence_share_%": 1.9091,
+      "zero_inflated": false
+    }
+  ],
+  "removed_as_correlated": {
+    "price_margin_14": "price_margin_1",
+    "vic_demand_weekly_mean": "price_margin_1",
+    "price_margin_2": "price_margin_1",
+    "price_margin_28": "price_margin_1",
+    "price_margin_21": "price_margin_1",
+    "qld_demand_weekly_mean": "price_margin_1",
+    "price_margin_3": "price_margin_1",
+    "nsw_demand_weekly_mean": "price_margin_1",
+    "qld_demand_lag_14": "price_margin_1",
+    "qld_demand_lag_7": "price_margin_1",
+    "nsw_demand_lag_14": "price_margin_1",
+    "qld_demand_lag_28": "price_margin_1",
+    "qld_demand_lag_21": "price_margin_1",
+    "vic_demand_lag_21": "price_margin_1",
+    "vic_demand_lag_14": "price_margin_1",
+    "nsw_demand_lag_7": "price_margin_1",
+    "vic_demand_lag_7": "price_margin_1",
+    "nsw_demand_lag_28": "price_margin_1",
+    "vic_demand_lag_28": "price_margin_1",
+    "nsw_demand_lag_21": "price_margin_1",
+    "qld_price_lag_14": "qld_price_weekly_mean",
+    "qld_price_loglag_14": "qld_price_weekly_mean",
+    "demand_anchor": "price_margin_1",
+    "qld_price_lag_7": "qld_price_weekly_mean",
+    "qld_price_loglag_7": "qld_price_weekly_mean",
+    "qld_demand_lag_3": "price_margin_1",
+    "qld_price_loglag_28": "qld_price_weekly_mean",
+    "qld_price_lag_28": "qld_price_weekly_mean",
+    "qld_price_lag_21": "qld_price_weekly_mean",
+    "qld_price_loglag_21": "qld_price_weekly_mean",
+    "nsw_price_weekly_mean": "qld_price_weekly_mean",
+    "qld_demand_lag_1": "price_margin_1",
+    "qld_demand_lag_2": "price_margin_1",
+    "vic_price_weekly_mean": "qld_price_weekly_mean",
+    "mel_solar_change_1d": "mel_solar_change_7d",
+    "nsw_demand_lag_3": "price_margin_1",
+    "hour_cos": "mel_solar",
+    "nsw_price_loglag_14": "qld_price_weekly_mean",
+    "nsw_price_lag_14": "qld_price_weekly_mean",
+    "nsw_price_loglag_7": "qld_price_weekly_mean",
+    "nsw_price_lag_7": "qld_price_weekly_mean",
+    "nsw_price_loglag_28": "qld_price_weekly_mean",
+    "nsw_price_lag_28": "qld_price_weekly_mean",
+    "nsw_demand_lag_1": "price_margin_1",
+    "syd_solar": "mel_solar",
+    "bne_solar": "mel_solar",
+    "nsw_price_loglag_21": "qld_price_weekly_mean",
+    "nsw_price_lag_21": "qld_price_weekly_mean",
+    "syd_solar_change_1d": "syd_solar_change_7d",
+    "nsw_demand_lag_2": "price_margin_1",
+    "qld_price_lag_3": "qld_price_weekly_mean",
+    "qld_price_loglag_3": "qld_price_weekly_mean",
+    "vic_demand_lag_3": "price_margin_1",
+    "mel_heat_sin": "slot",
+    "vic_demand_lag_1": "price_margin_1",
+    "vic_price_lag_28": "qld_price_weekly_mean",
+    "vic_price_loglag_28": "qld_price_weekly_mean",
+    "hour_sin": "slot",
+    "nsw_price_previous_mean": "price_threshold",
+    "bne_cool_cos": "mel_solar",
+    "vic_demand_lag_2": "price_margin_1",
+    "bne_temp": "mel_solar",
+    "bne_cool": "mel_solar",
+    "qld_price_lag_2": "qld_price_weekly_mean",
+    "qld_price_loglag_2": "qld_price_weekly_mean",
+    "syd_heat_sin": "slot",
+    "nsw_price_lag_3": "qld_price_weekly_mean",
+    "nsw_price_loglag_3": "qld_price_weekly_mean",
+    "vic_price_lag_14": "qld_price_weekly_mean",
+    "vic_price_loglag_14": "qld_price_weekly_mean",
+    "nsw_price_previous_max": "price_threshold",
+    "bne_rh": "mel_solar",
+    "qld_price_lag_1": "qld_price_weekly_mean",
+    "qld_price_loglag_1": "qld_price_weekly_mean",
+    "syd_heat_cos": "mel_heat_cos",
+    "nsw_demand_recent_change": "qld_demand_recent_change",
+    "bne_heat_sin": "slot",
+    "syd_temp": "mel_solar",
+    "syd_rh": "mel_solar",
+    "vic_demand_recent_change": "qld_demand_recent_change",
+    "nsw_price_previous_std": "price_threshold",
+    "weekday": "qld_demand_recent_change",
+    "vic_price_previous_mean": "price_threshold",
+    "bne_heat_cos": "mel_heat_cos",
+    "vic_price_previous_max": "price_threshold",
+    "qld_price_recent_change": "qld_demand_recent_change",
+    "nsw_price_mean_7d": "price_threshold",
+    "mel_heat": "mel_solar",
+    "mel_rh": "mel_solar",
+    "syd_cool_sin": "bne_cool_sin",
+    "nsw_demand_previous_max": "vic_demand_previous_min",
+    "syd_cool": "syd_cool_cos",
+    "mel_temp": "mel_solar",
+    "qld_price_previous_mean": "price_threshold",
+    "nsw_demand_previous_min": "vic_demand_previous_min",
+    "nsw_demand_previous_mean": "vic_demand_previous_min",
+    "syd_heat": "vic_demand_previous_min",
+    "vic_price_mean_7d": "price_threshold",
+    "dow_0": "qld_demand_recent_change",
+    "syd_temp_today_min": "bne_heat",
+    "vic_demand_previous_max": "vic_demand_previous_min",
+    "vic_demand_previous_mean": "vic_demand_previous_min",
+    "nsw_price_recent_change": "vic_price_recent_change",
+    "qld_price_previous_max": "price_threshold",
+    "mel_cool": "mel_cool_sin",
+    "mel_cool_cos": "mel_solar",
+    "vic_price_loglag_3": "qld_price_weekly_mean",
+    "vic_price_lag_3": "qld_price_weekly_mean",
+    "bne_temp_today_mean": "vic_demand_previous_min",
+    "bne_temp_today_min": "vic_demand_previous_min",
+    "nsw_price_mean_28d": "qld_price_weekly_mean",
+    "vic_demand_mean_7d": "vic_demand_previous_min",
+    "qld_price_previous_std": "qld_price_previous_min",
+    "bne_temp_today_max": "vic_demand_previous_min",
+    "mel_solar_today_mean": "bne_heat",
+    "annual_cos": "vic_demand_previous_min",
+    "syd_temp_today_mean": "bne_heat",
+    "qld_price_mean_7d": "qld_price_weekly_mean",
+    "mel_solar_today_max": "bne_heat",
+    "vic_price_loglag_7": "qld_price_weekly_mean",
+    "vic_price_lag_7": "qld_price_weekly_mean",
+    "month": "qld_demand_mean_28d",
+    "nsw_demand_previous_std": "vic_demand_previous_min",
+    "mel_temp_today_mean": "bne_heat",
+    "qld_demand_previous_mean": "qld_demand_mean_28d",
+    "mel_rh_today_min": "syd_solar_today_mean",
+    "vic_demand_previous_std": "vic_demand_previous_min",
+    "dow_5": "weekend",
+    "mel_temp_today_max": "bne_heat",
+    "vic_demand_mean_28d": "vic_demand_previous_min",
+    "nsw_demand_mean_7d": "vic_demand_previous_min",
+    "vic_price_mean_28d": "price_threshold",
+    "syd_solar_today_max": "syd_solar_today_mean",
+    "bne_solar_today_mean": "syd_solar_today_mean",
+    "vic_price_loglag_21": "qld_price_weekly_mean",
+    "vic_price_lag_21": "qld_price_weekly_mean",
+    "nsw_demand_mean_28d": "vic_demand_previous_min",
+    "mel_cloud_today_min": "mel_cloud_today_mean",
+    "qld_demand_previous_min": "qld_demand_mean_28d",
+    "qld_demand_previous_max": "qld_demand_mean_28d",
+    "dow_6": "weekend",
+    "syd_temp_today_max": "bne_heat",
+    "bne_temp_change_1d": "bne_solar_change_1d",
+    "syd_temp_change_7d": "syd_temp_anomaly",
+    "bne_rh_change_7d": "bne_solar_change_7d",
+    "mel_temp_today_min": "bne_heat",
+    "mel_cloud_change_7d": "mel_solar_change_7d",
+    "annual_sin": "qld_demand_mean_28d",
+    "bne_rh_change_1d": "bne_solar_change_1d",
+    "qld_price_mean_28d": "qld_price_weekly_mean",
+    "mel_rh_today_mean": "syd_solar_today_mean",
+    "qld_demand_previous_std": "qld_demand_mean_28d",
+    "syd_rh_change_7d": "syd_rh_today_max",
+    "mel_cloud": "mel_cloud_today_mean",
+    "syd_temp_change_1d": "syd_temp_anomaly",
+    "mel_cloud_today_max": "mel_cloud_today_mean",
+    "bne_cloud_today_min": "bne_cloud_today_mean",
+    "syd_rh_today_mean": "syd_rh_today_max",
+    "bne_cloud_today_max": "bne_cloud_today_mean",
+    "qld_demand_mean_7d": "qld_demand_mean_28d",
+    "syd_cloud_today_max": "syd_cloud_today_mean",
+    "bne_cloud_change_7d": "bne_solar_change_7d",
+    "syd_cloud_change_7d": "syd_solar_change_7d",
+    "syd_cloud_today_min": "syd_solar_today_mean",
+    "syd_rh_today_min": "syd_rh_today_max",
+    "bne_rh_today_mean": "syd_rh_today_max",
+    "mel_rh_change_1d": "mel_temp_change_1d",
+    "bne_cloud": "bne_cloud_today_mean",
+    "bne_rh_today_min": "bne_cloud_today_mean",
+    "bne_solar_today_max": "syd_solar_today_mean",
+    "vic_price_lag_1": "qld_price_weekly_mean",
+    "vic_price_loglag_1": "qld_price_weekly_mean",
+    "mel_rh_change_7d": "mel_temp_change_7d",
+    "nsw_price_lag_1": "qld_price_weekly_mean",
+    "nsw_price_loglag_1": "qld_price_weekly_mean",
+    "vic_price_lag_2": "qld_price_weekly_mean",
+    "vic_price_loglag_2": "qld_price_weekly_mean",
+    "nsw_price_loglag_2": "qld_price_weekly_mean",
+    "nsw_price_lag_2": "qld_price_weekly_mean",
+    "syd_cloud": "syd_cloud_today_mean"
+  },
+  "removed_as_low_impact": [
+    {
+      "feature": "mel_solar_change_7d",
+      "drop_points": -0.95
+    },
+    {
+      "feature": "bne_solar_change_7d",
+      "drop_points": -0.659
+    },
+    {
+      "feature": "bne_solar_change_1d",
+      "drop_points": -0.513
+    },
+    {
+      "feature": "syd_solar_change_7d",
+      "drop_points": -0.512
+    },
+    {
+      "feature": "mel_heat_cos",
+      "drop_points": -0.446
+    },
+    {
+      "feature": "bne_cool_sin",
+      "drop_points": -0.111
+    },
+    {
+      "feature": "bne_heat",
+      "drop_points": -0.157
+    },
+    {
+      "feature": "dow_4_cos",
+      "drop_points": -0.041
+    },
+    {
+      "feature": "dow_2_cos",
+      "drop_points": -0.077
+    },
+    {
+      "feature": "dow_3_cos",
+      "drop_points": -0.069
+    },
+    {
+      "feature": "dow_1_cos",
+      "drop_points": -0.094
+    },
+    {
+      "feature": "dow_6_cos",
+      "drop_points": -0.185
+    },
+    {
+      "feature": "bne_rh_today_max",
+      "drop_points": -0.027
+    },
+    {
+      "feature": "dow_5_cos",
+      "drop_points": -0.049
+    },
+    {
+      "feature": "syd_solar_today_mean",
+      "drop_points": -0.071
+    },
+    {
+      "feature": "dow_3",
+      "drop_points": -0.023
+    },
+    {
+      "feature": "dow_4_sin",
+      "drop_points": -0.016
+    },
+    {
+      "feature": "syd_solar_today_min",
+      "drop_points": 0.0
+    },
+    {
+      "feature": "mel_solar_today_min",
+      "drop_points": 0.0
+    },
+    {
+      "feature": "holiday",
+      "drop_points": -0.001
+    },
+    {
+      "feature": "mel_cloud_change_1d",
+      "drop_points": -0.009
+    },
+    {
+      "feature": "bne_cloud_change_1d",
+      "drop_points": -0.013
+    },
+    {
+      "feature": "syd_cloud_change_1d",
+      "drop_points": -0.007
+    },
+    {
+      "feature": "mel_temp_change_1d",
+      "drop_points": -0.024
+    },
+    {
+      "feature": "vic_price_previous_std",
+      "drop_points": -0.023
+    },
+    {
+      "feature": "dow_4",
+      "drop_points": -0.003
+    },
+    {
+      "feature": "qld_demand_mean_28d",
+      "drop_points": -0.015
+    },
+    {
+      "feature": "bne_cloud_today_mean",
+      "drop_points": -0.007
+    },
+    {
+      "feature": "vic_price_previous_min",
+      "drop_points": -0.046
+    },
+    {
+      "feature": "bne_solar_today_min",
+      "drop_points": 0.0
+    },
+    {
+      "feature": "qld_price_previous_min",
+      "drop_points": 0.008
+    },
+    {
+      "feature": "dow_2_sin",
+      "drop_points": -0.005
+    },
+    {
+      "feature": "syd_cloud_today_mean",
+      "drop_points": -0.015
+    },
+    {
+      "feature": "syd_rh_change_1d",
+      "drop_points": 0.007
+    },
+    {
+      "feature": "dow_1",
+      "drop_points": 0.008
+    },
+    {
+      "feature": "nsw_price_previous_min",
+      "drop_points": 0.038
+    },
+    {
+      "feature": "syd_rh_today_max",
+      "drop_points": 0.026
+    },
+    {
+      "feature": "dow_1_sin",
+      "drop_points": 0.035
+    },
+    {
+      "feature": "syd_cool_cos",
+      "drop_points": 0.032
+    },
+    {
+      "feature": "dow_2",
+      "drop_points": 0.051
+    },
+    {
+      "feature": "qld_price_weekly_mean",
+      "drop_points": 0.029
+    },
+    {
+      "feature": "mel_rh_today_max",
+      "drop_points": 0.089
+    },
+    {
+      "feature": "dow_3_sin",
+      "drop_points": 0.077
+    }
+  ],
+  "top_correlated_pairs": [
+    {
+      "a": "nsw_price_previous_mean",
+      "b": "price_threshold",
+      "r": 1.0
+    },
+    {
+      "a": "qld_price_lag_14",
+      "b": "qld_price_loglag_14",
+      "r": 1.0
+    },
+    {
+      "a": "vic_price_lag_21",
+      "b": "vic_price_loglag_21",
+      "r": 1.0
+    },
+    {
+      "a": "qld_price_lag_21",
+      "b": "qld_price_loglag_21",
+      "r": 1.0
+    },
+    {
+      "a": "vic_price_lag_2",
+      "b": "vic_price_loglag_2",
+      "r": 1.0
+    },
+    {
+      "a": "vic_price_lag_1",
+      "b": "vic_price_loglag_1",
+      "r": 1.0
+    },
+    {
+      "a": "qld_price_lag_2",
+      "b": "qld_price_loglag_2",
+      "r": 1.0
+    },
+    {
+      "a": "qld_price_lag_7",
+      "b": "qld_price_loglag_7",
+      "r": 1.0
+    },
+    {
+      "a": "vic_price_lag_14",
+      "b": "vic_price_loglag_14",
+      "r": 1.0
+    },
+    {
+      "a": "qld_price_lag_28",
+      "b": "qld_price_loglag_28",
+      "r": 1.0
+    },
+    {
+      "a": "nsw_price_lag_1",
+      "b": "nsw_price_loglag_1",
+      "r": 1.0
+    },
+    {
+      "a": "vic_price_lag_28",
+      "b": "vic_price_loglag_28",
+      "r": 1.0
+    },
+    {
+      "a": "nsw_price_lag_14",
+      "b": "nsw_price_loglag_14",
+      "r": 1.0
+    },
+    {
+      "a": "vic_price_lag_3",
+      "b": "vic_price_loglag_3",
+      "r": 1.0
+    },
+    {
+      "a": "qld_price_lag_3",
+      "b": "qld_price_loglag_3",
+      "r": 1.0
+    },
+    {
+      "a": "nsw_price_lag_7",
+      "b": "nsw_price_loglag_7",
+      "r": 1.0
+    },
+    {
+      "a": "vic_price_lag_7",
+      "b": "vic_price_loglag_7",
+      "r": 1.0
+    },
+    {
+      "a": "qld_price_lag_1",
+      "b": "qld_price_loglag_1",
+      "r": 1.0
+    },
+    {
+      "a": "nsw_price_lag_3",
+      "b": "nsw_price_loglag_3",
+      "r": 1.0
+    },
+    {
+      "a": "nsw_price_lag_21",
+      "b": "nsw_price_loglag_21",
+      "r": 1.0
+    },
+    {
+      "a": "nsw_price_lag_28",
+      "b": "nsw_price_loglag_28",
+      "r": 1.0
+    },
+    {
+      "a": "nsw_price_lag_2",
+      "b": "nsw_price_loglag_2",
+      "r": 1.0
+    },
+    {
+      "a": "qld_demand_lag_21",
+      "b": "qld_demand_weekly_mean",
+      "r": 0.974
+    },
+    {
+      "a": "qld_demand_lag_14",
+      "b": "qld_demand_weekly_mean",
+      "r": 0.972
+    },
+    {
+      "a": "mel_solar_today_mean",
+      "b": "mel_solar_today_max",
+      "r": 0.971
+    },
+    {
+      "a": "nsw_demand_previous_mean",
+      "b": "nsw_demand_previous_max",
+      "r": 0.968
+    },
+    {
+      "a": "syd_solar_today_mean",
+      "b": "syd_solar_today_max",
+      "r": 0.967
+    },
+    {
+      "a": "qld_demand_lag_28",
+      "b": "qld_demand_weekly_mean",
+      "r": 0.965
+    },
+    {
+      "a": "qld_demand_lag_7",
+      "b": "qld_demand_weekly_mean",
+      "r": 0.965
+    },
+    {
+      "a": "bne_solar_today_mean",
+      "b": "bne_solar_today_max",
+      "r": 0.96
+    }
+  ]
+}
