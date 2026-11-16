@@ -1,0 +1,10 @@
+{
+  "relative_MAPE_improvement_percent": 0.8510745863526061,
+  "years_improved": 7,
+  "paired_7day_bootstrap_MAPE_improvement_pp_CI95": [
+    -0.027425506810596776,
+    0.07016357681880632
+  ],
+  "bootstrap_draws": 5000,
+  "note": "Positive bootstrap differences favour MLP; exploratory pre-holdout comparison."
+}

@@ -4,6 +4,8 @@ import json
 import os
 import platform
 import time
+import subprocess
+import sys
 
 import joblib
 import numpy as np
@@ -174,6 +176,21 @@ def main():
                      "pandas": pd.__version__, "sklearn": sklearn.__version__,
                      "lightgbm": lightgbm.__version__, "joblib": joblib.__version__},
     }
+    with open(os.path.join(output, "manifest.json"), "w", encoding="utf-8") as handle:
+        json.dump(manifest, handle, indent=2)
+    # Train PyTorch in its own process; inference uses only exported NumPy weights.
+    selection_path = os.path.join(output, "blend_training_selection.json")
+    with open(selection_path, "w", encoding="utf-8") as handle:
+        json.dump(selection, handle, indent=2)
+    subprocess.run([sys.executable, os.path.join(os.path.dirname(__file__), "mlp_train.py"),
+                    os.path.abspath(args.csv), "--output", output,
+                    "--selection", selection_path], check=True)
+    manifest["demand_blend"] = {"LightGBM": 0.5, "MLP": 0.5}
+    manifest["mlp_epochs"] = 10
+    with open(os.path.join(output, "demand_mlp_manifest.json"), encoding="utf-8") as handle:
+        manifest["mlp_training"] = json.load(handle)
+    manifest["inference"] = "LightGBM plus NumPy MLP; PyTorch used only in isolated training process"
+    manifest["seconds"] = time.monotonic() - started
     with open(os.path.join(output, "manifest.json"), "w", encoding="utf-8") as handle:
         json.dump(manifest, handle, indent=2)
     print(f"Saved artifacts to {output} in {manifest['seconds']:.1f}s", flush=True)

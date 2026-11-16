@@ -36,7 +36,17 @@
   },
   "artifacts": "code/forecast_package/artifacts",
   "staged_submission": "code/submission_package",
-  "holdout_results": "results/holdout_original_vs_current/aggregate_metrics.csv",
+  "holdout_results": "results/frozen_demand_blend_holdout/aggregate_metrics.csv",
   "pre_holdout_results": "results/feature_comparison_2015_2024/aggregate_metrics.csv",
-  "separate_candidate_branch": "feature/price-regression"
+  "separate_candidate_branch": "feature/price-regression",
+  "demand_model": "Frozen 50/50 current LightGBM + ten-epoch demand MLP",
+  "demand_blend": {
+    "LightGBM": 0.5,
+    "MLP": 0.5
+  },
+  "mlp_epochs": 10,
+  "context_gate_enabled": false,
+  "price_model": "Unchanged 571-feature LightGBM classifier",
+  "price_holdout_results": "results/holdout_original_vs_current/aggregate_metrics.csv",
+  "source_branch": "feature/demand-mlp"
 }

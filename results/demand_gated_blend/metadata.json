@@ -1,0 +1,36 @@
+{
+  "selection_years": [
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020
+  ],
+  "check_years": [
+    2021,
+    2022,
+    2023,
+    2024
+  ],
+  "later_MAPE_improvement_pp": 0.0159322536573157,
+  "later_relative_MAPE_reduction_percent": 0.5647208782189199,
+  "paired_7day_bootstrap_improvement_CI95": [
+    0.009057442067331061,
+    0.022274930527662152
+  ],
+  "check_mean_LightGBM_weight": 0.49356127490066026,
+  "check_weight_5th_95th_percentile": [
+    0.4294300528300283,
+    0.5395822484494481
+  ],
+  "coefficients": {
+    "intercept": -0.08846759862969947,
+    "hour_sin": -0.04777558902220238,
+    "hour_cos": 0.07400899012698302,
+    "prediction_gap": -0.1725169869145471,
+    "temperature": -0.0544077651913665,
+    "solar": -0.0944583050870503
+  },
+  "note": "Exploratory development check; later years had previously been inspected. No post-2020 rows used for scaler or gate fitting; no penalty/weight-bound tuning."
+}

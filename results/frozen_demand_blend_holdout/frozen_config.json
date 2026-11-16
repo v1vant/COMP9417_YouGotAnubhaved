@@ -1,0 +1,32 @@
+{
+  "demand_weights": {
+    "current_LightGBM": 0.5,
+    "MLP": 0.5
+  },
+  "MLP": {
+    "architecture": [
+      405,
+      128,
+      64,
+      1
+    ],
+    "epochs": 10,
+    "seed": 9417,
+    "batch_size": 1024,
+    "optimizer": "Adam",
+    "learning_rate": 0.001,
+    "loss": "Inverse-demand-weighted absolute residual error",
+    "anchor": "Mean of yesterday and last-week same-slot demand"
+  },
+  "initial_training_end": "2023-12-31",
+  "retrain_day": "2026-01-01",
+  "retrain_training_end": "2025-12-31",
+  "evaluation_start": "2025-01-01",
+  "evaluation_end": "2026-10-31",
+  "feature_schema_sha256": "3b3de4aefa058cb63a5631a7b5ef41e8baa8bef5fa02aade6ddd79c3f9e0279d",
+  "MLP_source_sha256": "71ff093a73c5ecebc230b494015b616910715d7157180afa6a7df74471416ad4",
+  "price": "Unchanged current LightGBM",
+  "gate_enabled": false,
+  "tuning_on_this_period": false,
+  "note": "Later period already inspected for standalone LightGBM; first blend evaluation."
+}

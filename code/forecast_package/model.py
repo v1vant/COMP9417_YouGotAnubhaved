@@ -1,5 +1,6 @@
 """Leakage-safe features shared by training and live day-ahead prediction."""
 import os
+import json
 
 import holidays
 import joblib
@@ -218,6 +219,19 @@ def predict_task(bundle, features):
     return (probability > bundle["threshold"]).astype(np.int64)
 
 
+def predict_numpy_mlp(bundle, features):
+    """Run exported MLP weights without importing PyTorch beside LightGBM."""
+    columns = bundle["features"].tolist()
+    x = features.loc[:, columns].to_numpy(dtype=np.float32, copy=True)
+    x -= bundle["mean"]
+    x /= bundle["scale"]
+    for layer in (0, 2):
+        x = np.maximum(x @ bundle[f"network_{layer}_weight"].T +
+                       bundle[f"network_{layer}_bias"], 0)
+    residual = (x @ bundle["network_4_weight"].T + bundle["network_4_bias"]).ravel()*1000
+    return np.clip(features["demand_anchor"].to_numpy()+residual, 0, 20000)
+
+
 class Forecaster:
     def __init__(self, artifact_dir: str):
         self.models = joblib.load(os.path.join(artifact_dir, "models.joblib"))
@@ -225,10 +239,23 @@ class Forecaster:
             estimator = bundle["estimator"]
             if "n_jobs" in estimator.get_params():
                 estimator.set_params(n_jobs=2)
+        self.demand_mlp = None
+        manifest_path = os.path.join(artifact_dir, "manifest.json")
+        if os.path.exists(manifest_path):
+            with open(manifest_path, encoding="utf-8") as handle:
+                manifest = json.load(handle)
+            if manifest.get("demand_blend"):
+                if manifest["demand_blend"] != {"LightGBM": 0.5, "MLP": 0.5}:
+                    raise ValueError("Expected frozen 50/50 demand blend")
+                with np.load(os.path.join(artifact_dir, "demand_mlp.npz"), allow_pickle=False) as saved:
+                    self.demand_mlp = {key: saved[key] for key in saved.files}
 
     def predict(self, history: pd.DataFrame, weather_next: pd.DataFrame) -> pd.DataFrame:
         features = forecast_features(history, weather_next)
+        demand = predict_task(self.models["demand"], features)
+        if self.demand_mlp is not None:
+            demand = 0.5*demand + 0.5*predict_numpy_mlp(self.demand_mlp, features)
         return pd.DataFrame({
-            "nsw_demand_mw": predict_task(self.models["demand"], features),
+            "nsw_demand_mw": demand,
             "nsw_price_up": predict_task(self.models["price"], features),
         }, index=weather_next.index)
