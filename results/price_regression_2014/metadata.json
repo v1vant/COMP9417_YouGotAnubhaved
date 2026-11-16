@@ -1,0 +1,16 @@
+{
+  "training_end": "2013-12-31",
+  "validation_year": 2014,
+  "features": 571,
+  "quick": false,
+  "config": {
+    "family": "boosted",
+    "trees": 600,
+    "leaves": 31,
+    "learning_rate": 0.04,
+    "threshold": 0.57
+  },
+  "price_MAE": 3.3085256898200703,
+  "price_RMSE": 17.981831106697985,
+  "note": "No ensemble or probability calibration fitted; holdout not evaluated."
+}
