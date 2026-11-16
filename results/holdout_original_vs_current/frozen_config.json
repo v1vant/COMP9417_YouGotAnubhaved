@@ -1,0 +1,48 @@
+{
+  "config": {
+    "demand": {
+      "name": "demand_boosted_3",
+      "config": {
+        "family": "boosted",
+        "leaves": 63,
+        "trees": 900,
+        "learning_rate": 0.025
+      },
+      "window_years": null,
+      "strategy": "periodic_expanding",
+      "training_end": null
+    },
+    "price": {
+      "name": "price_boosted_2",
+      "config": {
+        "family": "boosted",
+        "leaves": 31,
+        "trees": 600,
+        "learning_rate": 0.04,
+        "threshold": 0.5700000000000001
+      },
+      "window_years": null,
+      "strategy": "periodic_expanding",
+      "training_end": null
+    },
+    "strategy_selection_end": "2024-12-31",
+    "quick": false
+  },
+  "python": "3.12.12",
+  "initial_training_end": "2023-12-31",
+  "scheduled_retrain": "2026-01-01",
+  "evaluation_start": "2025-01-01",
+  "evaluation_end": "2026-10-31",
+  "training_start": "2010-01-29 02:30:00",
+  "data_sha256": "c13711002906140eaf7cc67c1ce17a49facd359cf3d1a84722aaa3ccd647752c",
+  "artifact_hashes_before": {
+    "manifest.json": "be0ba006f2ffecfb7ac4049c357d0d5499586b52db1ef96e32b58158d842624d",
+    "models.joblib": "58983207d23bc055f12722124cd8a3dea6fa339ee06d7bcb924c07009e4e6614"
+  },
+  "source_hashes": {
+    "code/forecast_package/model.py": "c2bae5a05d1c7300aa0f2b623583ef0facb7edc63326df490855e6be209a97ac",
+    "code/forecast_package/train.py": "93c73a2fd969a357aac13765248c1015af5ff372c4c4340389497a41f6d49b7a",
+    "code/run_experiments.py": "05d3d2ccb58cccc98cfca5e8b3eceb80b6d14f15f2a5f31177aca47ee79917c9",
+    "code/run_holdout.py": "c9dd5cac3acae853a3068af2d9aacdf92b46704c45e5ce0081390a15b6d87c7d"
+  }
+}

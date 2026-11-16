@@ -1,0 +1,7 @@
+{
+  "status": "passed",
+  "rows": 48,
+  "features_per_model": 405,
+  "load_predict_seconds": 0.8705175000359304,
+  "note": "Output validity check only; final models have seen this day during training."
+}

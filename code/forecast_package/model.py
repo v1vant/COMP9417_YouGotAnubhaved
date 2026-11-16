@@ -30,7 +30,7 @@ def load_data(path):
     return frame
 
 
-def feature_frame(frame):
+def feature_frame(frame, weather_shape=False):
     """Current-day weather is allowed; all market features use completed days."""
     days = market_days(frame.index)
     start = frame.index - pd.Timedelta(minutes=30)
@@ -63,6 +63,24 @@ def feature_frame(frame):
         daily = values.groupby(days).agg(["mean", "min", "max"])
         for stat in daily:
             f[f"{col}_today_{stat}"] = lookup.map(daily[stat])
+        if weather_shape and col in ("syd_temp", "syd_solar"):
+            for offset in (2, 4):  # One and two hours.
+                # Clamp neighbours to this market day's first/last value.
+                before = values.groupby(days).shift(offset).groupby(days).bfill()
+                after = values.groupby(days).shift(-offset).groupby(days).ffill()
+                f[f"{col}_before_{offset}"] = before
+                f[f"{col}_after_{offset}"] = after
+                ramp = values - before
+                f[f"{col}_ramp_{offset}"] = ramp
+                f[f"{col}_ramp_{offset}_change_1d"] = ramp - ramp.shift(48)
+            for stat in ("mean", "min", "max"):
+                f[f"{col}_daily_{stat}_change_1d"] = lookup.map(
+                    daily[stat] - daily[stat].shift(1))
+            peak_slot = values.groupby(days).agg(
+                lambda group: int(np.argmax(group.to_numpy())))
+            f[f"{col}_peak_slot"] = lookup.map(peak_slot)
+            f[f"{col}_peak_slot_change_1d"] = lookup.map(
+                peak_slot - peak_slot.shift(1))
     for city in ("syd", "mel", "bne"):
         temp = frame[f"{city}_temp"]
         for label, values in (
@@ -86,15 +104,80 @@ def feature_frame(frame):
                 daily["mean"].shift(1).rolling(window, min_periods=window).mean())
         f[f"{col}_weekly_mean"] = sum(f[f"{col}_lag_{lag}"] for lag in (7, 14, 21, 28)) / 4
         f[f"{col}_recent_change"] = f[f"{col}_lag_1"] - f[f"{col}_lag_7"]
+    # Align observed demand shapes to the forecast slot. Backward offsets
+    # may cross midnight, but always remain within completed historical days.
+    opening_demand = frame["nsw_demand"].groupby(days).first()
+    for lag in (1, 7):
+        aligned = f[f"nsw_demand_lag_{lag}"]
+        for offset in (1, 2, 4):
+            previous = frame["nsw_demand"].shift(48 * lag + offset)
+            f[f"nsw_demand_lag_{lag}_before_{offset}"] = previous
+            f[f"nsw_demand_lag_{lag}_ramp_{offset}"] = aligned - previous
+        opening = lookup.map(opening_demand.shift(lag))
+        f[f"nsw_demand_lag_{lag}_change_from_open"] = aligned - opening
+    # Fixed-slot profiles: every forecast row sees all 48 historical slots.
+    profiles = pd.DataFrame({"day": days, "slot": slot,
+                             "demand": frame["nsw_demand"].to_numpy()}).pivot(
+                                 index="day", columns="slot", values="demand")
+    weekly_profile = sum(profiles.shift(lag) for lag in (7, 14, 21, 28)) / 4
+    for profile_slot in range(48):
+        for lag in (1, 7):
+            f[f"nsw_demand_profile_lag_{lag}_slot_{profile_slot}"] = lookup.map(
+                profiles[profile_slot].shift(lag))
+        f[f"nsw_demand_profile_weekly_slot_{profile_slot}"] = lookup.map(
+            weekly_profile[profile_slot])
+    # Four-week averages of the aligned shape features; same-slot mean exists above.
+    for offset in (1, 2, 4):
+        previous = sum(frame["nsw_demand"].shift(48 * lag + offset)
+                       for lag in (7, 14, 21, 28)) / 4
+        f[f"nsw_demand_weekly_before_{offset}"] = previous
+        f[f"nsw_demand_weekly_ramp_{offset}"] = f["nsw_demand_weekly_mean"] - previous
+    weekly_opening = sum(lookup.map(opening_demand.shift(lag))
+                         for lag in (7, 14, 21, 28)) / 4
+    f["nsw_demand_weekly_change_from_open"] = f["nsw_demand_weekly_mean"] - weekly_opening
     f["price_threshold"] = f["nsw_price_previous_mean"]
     for lag in LAGS:
         f[f"price_margin_{lag}"] = f[f"nsw_price_lag_{lag}"] - f["price_threshold"]
+    # Historical price profiles relative to the forecast's previous-day mean.
+    price = frame["nsw_price"]
+    threshold = f["price_threshold"]
+    price_profiles = pd.DataFrame({
+        "day": days, "slot": slot, "price": price.to_numpy(),
+    }).pivot(index="day", columns="slot", values="price")
+    weekly_prices = sum(price_profiles.shift(k) for k in (7, 14, 21, 28)) / 4
+    for s in range(48):
+        for k in (1, 7):
+            f[f"nsw_price_profile_lag_{k}_margin_slot_{s}"] = (
+                lookup.map(price_profiles[s].shift(k)) - threshold)
+        f[f"nsw_price_profile_weekly_margin_slot_{s}"] = (
+            lookup.map(weekly_prices[s]) - threshold)
+
+    opening_price = price.groupby(days).first()
+    for k in (1, 7):
+        aligned = f[f"nsw_price_lag_{k}"]
+        for offset in (1, 2, 4):
+            previous = price.shift(48 * k + offset)
+            f[f"nsw_price_lag_{k}_before_margin_{offset}"] = previous - threshold
+            f[f"nsw_price_lag_{k}_ramp_{offset}"] = aligned - previous
+        f[f"nsw_price_lag_{k}_change_from_open"] = (
+            aligned - lookup.map(opening_price.shift(k)))
+
+    weekly_aligned = f["nsw_price_weekly_mean"]
+    f["nsw_price_weekly_margin"] = weekly_aligned - threshold
+    for offset in (1, 2, 4):
+        previous = sum(price.shift(48 * k + offset)
+                       for k in (7, 14, 21, 28)) / 4
+        f[f"nsw_price_weekly_before_margin_{offset}"] = previous - threshold
+        f[f"nsw_price_weekly_ramp_{offset}"] = weekly_aligned - previous
+    weekly_opening = sum(lookup.map(opening_price.shift(k))
+                         for k in (7, 14, 21, 28)) / 4
+    f["nsw_price_weekly_change_from_open"] = weekly_aligned - weekly_opening
     f["demand_anchor"] = 0.5 * (f["nsw_demand_lag_1"] + f["nsw_demand_lag_7"])
     return pd.DataFrame(f, index=frame.index, dtype=np.float32)
 
 
-def training_table(frame):
-    features = feature_frame(frame)
+def training_table(frame, weather_shape=False):
+    features = feature_frame(frame, weather_shape=weather_shape)
     keep = features.notna().all(axis=1)
     features = features.loc[keep]
     # Targets retain the original precision for the strict price comparison.
@@ -107,7 +190,7 @@ def training_table(frame):
     return features, truth
 
 
-def forecast_features(history, weather_next):
+def forecast_features(history, weather_next, weather_shape=False):
     if len(weather_next) != 48 or set(weather_next.columns) != set(WEATHER):
         raise ValueError("Expected 48 rows and the 12 weather columns")
     if history.empty or not history.index.is_monotonic_increasing or not history.index.is_unique:
@@ -120,7 +203,7 @@ def forecast_features(history, weather_next):
         raise ValueError("At least 28 complete history days are required")
     past = history.iloc[-35 * 48:][MARKET + WEATHER]
     future = weather_next.reindex(columns=MARKET + WEATHER)
-    features = feature_frame(pd.concat([past, future])).loc[weather_next.index]
+    features = feature_frame(pd.concat([past, future]), weather_shape=weather_shape).loc[weather_next.index]
     if not np.isfinite(features.to_numpy()).all():
         raise ValueError("Nonfinite forecast features")
     return features

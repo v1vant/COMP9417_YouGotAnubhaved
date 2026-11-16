@@ -1,0 +1,42 @@
+{
+  "status": "current",
+  "branch": "feature/aligned-demand-features",
+  "demand_features": 405,
+  "price_features": 571,
+  "weather_shape": false,
+  "price_probability_threshold": 0.57,
+  "config": {
+    "demand": {
+      "name": "demand_boosted_3",
+      "config": {
+        "family": "boosted",
+        "leaves": 63,
+        "trees": 900,
+        "learning_rate": 0.025
+      },
+      "window_years": null,
+      "strategy": "periodic_expanding",
+      "training_end": null
+    },
+    "price": {
+      "name": "price_boosted_2",
+      "config": {
+        "family": "boosted",
+        "leaves": 31,
+        "trees": 600,
+        "learning_rate": 0.04,
+        "threshold": 0.5700000000000001
+      },
+      "window_years": null,
+      "strategy": "periodic_expanding",
+      "training_end": null
+    },
+    "strategy_selection_end": "2024-12-31",
+    "quick": false
+  },
+  "artifacts": "code/forecast_package/artifacts",
+  "staged_submission": "code/submission_package",
+  "holdout_results": "results/holdout_original_vs_current/aggregate_metrics.csv",
+  "pre_holdout_results": "results/feature_comparison_2015_2024/aggregate_metrics.csv",
+  "separate_candidate_branch": "feature/price-regression"
+}

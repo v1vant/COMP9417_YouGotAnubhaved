@@ -1,0 +1,9 @@
+{
+  "seconds": 322.60412041598465,
+  "python": "3.12.12 (main, Oct  9 2025, 11:07:00) [Clang 17.0.0 (clang-1700.0.13.3)]",
+  "feature_count": 571,
+  "train_rows": 68780,
+  "validation_rows": 17520,
+  "training_start": "2010-01-29 02:30:00",
+  "note": "Same dates, environment and configurations as 405-feature comparison; price thresholds tuned on 2014."
+}

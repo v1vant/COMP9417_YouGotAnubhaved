@@ -1,5 +1,30 @@
 # COMP9417 26T3 Project Kit
 
+## Current validated model
+
+The current model uses LightGBM with **405 demand features** (900 trees) and
+**571 price-classification features** (600 trees, probability threshold 0.57).
+Weather-shape features are disabled. Both `code/forecast_package/` and the staged
+`code/submission_package/` contain this model and its full-data artifacts.
+Running either package's `train.py CSV` uses the selected expanding-window
+configuration by default.
+
+| Holdout metric, January 2025–October 2026 | Current | Original | Yesterday baseline |
+| --- | ---: | ---: | ---: |
+| Price accuracy | 85.08% | 82.65% | 76.96% |
+| Price balanced accuracy | 85.03% | 82.57% | 76.97% |
+| Demand MAPE | 3.61% | 3.67% | 7.53% |
+
+The current-model record is in `results/current_model.json`. Full holdout results
+are in `results/holdout_original_vs_current/`; the pre-holdout comparison is in
+`results/feature_comparison_2015_2024/`. Earlier results and model backups remain
+in their original directories. The optional weather candidate did not improve
+2014 validation. Price-regression experiments are on the separate
+`feature/price-regression` branch and are not part of the current model.
+
+Current artifacts were trained locally with Python 3.12.12; the prescribed
+Python 3.11 marking environment remains a separate compatibility/rebuild check.
+
 Everything you need for the project, apart from the specification on Moodle.
 
 | Item | What it is |

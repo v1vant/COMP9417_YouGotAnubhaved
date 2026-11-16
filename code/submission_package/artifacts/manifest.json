@@ -31,13 +31,22 @@
     "quick": false
   },
   "quick": false,
-  "seconds": 416.422,
+  "seconds": 584.5549904580112,
   "versions": {
-    "python": "3.11.14",
-    "numpy": "2.4.6",
-    "pandas": "3.1.0",
+    "python": "3.12.12",
+    "numpy": "2.5.3",
+    "pandas": "3.0.5",
     "sklearn": "1.9.1",
     "lightgbm": "4.7.0",
     "joblib": "1.6.0"
-  }
+  },
+  "task_feature_counts": {
+    "demand": 405,
+    "price": 571
+  },
+  "composition": {
+    "demand": "Restored from results/full_profiles_2014/artifacts_405_features; trained on full released CSV",
+    "price": "Retained from 571-feature full-data run"
+  },
+  "seconds_note": "seconds describes the 571-feature run; demand was subsequently restored from its preserved 405-feature run."
 }
