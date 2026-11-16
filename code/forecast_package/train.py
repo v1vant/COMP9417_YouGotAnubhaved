@@ -32,6 +32,14 @@ def candidates(task, quick=False):
 
 
 def fit_model(task, config, features, truth):
+    # Keep the price-profile additions exclusive to classification.
+    if task == "demand":
+        features = features.drop(columns=[
+            col for col in features if col.startswith("nsw_price_") and (
+                any(part in col for part in ("_profile_", "_before_margin_",
+                                             "_ramp_", "_change_from_open"))
+                or col == "nsw_price_weekly_margin")
+        ])
     if not len(features):
         raise ValueError("No training observations")
     if task == "price" and truth["price"].nunique() < 2:
@@ -160,6 +168,8 @@ def main():
     manifest = {
         "seed": SEED, "data_end": str(days.max()), "selection": selection,
         "quick": args.quick, "seconds": time.monotonic() - started,
+        "task_feature_counts": {task: len(bundle["features"])
+                                for task, bundle in models.items()},
         "versions": {"python": platform.python_version(), "numpy": np.__version__,
                      "pandas": pd.__version__, "sklearn": sklearn.__version__,
                      "lightgbm": lightgbm.__version__, "joblib": joblib.__version__},
