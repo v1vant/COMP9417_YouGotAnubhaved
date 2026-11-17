@@ -309,9 +309,68 @@ def svm_inputs(columns, features):
     return x
 
 
+# ---- Neural network (price direction) -----------------------------------------------
+# An ensemble of small multilayer perceptrons (MLPs). For one half-hour, with z the
+# standardised svm_inputs vector (218 numbers):
+#
+#     h1 = relu(W1 z  + b1)          256 hidden units,  relu(v) = max(v, 0)
+#     h2 = relu(W2 h1 + b2)          256 hidden units
+#     p  = sigmoid(w3 . h2 + b3)     one output: P(price up)
+#
+# The final probability is the mean of p over the member networks, which differ only in
+# their random seed (initial weights, mini-batch order, dropout masks).
+#
+# Training (train.fit_neural_net, plain numpy: forward pass, backpropagation, AdamW) learns
+# W1, b1, W2, b2, w3, b3 by minimising the class-weighted cross-entropy. Everything else
+# here is a hyperparameter. Evidence (code/neural_net_experiment.py, results/
+# neural_net_experiments.csv): fit on 2010-2013, every comparison and the decision
+# threshold on 2014 only. Training too long overfits (dropout 0, lr 3e-4: 2014 BA 81.31
+# at 5 epochs, 78.46 at 40 while training BA rises to 94.5); dropout 0.5 keeps 2014 BA
+# flat at 81.3-81.5 from 5 to 20 epochs; 256x256 beats 64 and 64x64 (80.8-80.9) and ties
+# 512x512 and three layers; averaging 5 seeds gives 81.53 +/- 0.06 against 81.41 +/- 0.09
+# for one network. This configuration is within the seed noise (0.09) of the best setting
+# tried on 2014 (81.54), so it was kept. Later years are never used for any choice.
+# The epoch budget is fixed, so the fit is self-contained for any training window.
+# PyTorch itself is not used: it cannot share a process with LightGBM on macOS (two OpenMP
+# runtimes), and a network this small needs nothing beyond matrix products.
+NEURAL_NET = {
+    "family": "neural_net",
+    "hidden": [256, 256],     # units in each hidden layer
+    "dropout": 0.5,           # share of hidden units zeroed at random in each training step
+    "learning_rate": 3e-4,    # AdamW step size at the start; cosine decay to 0
+    "weight_decay": 1e-4,     # on weight matrices only (no measurable effect; kept small)
+    "batch_size": 1024,
+    "epochs": 10,             # passes over the training rows; no early stopping
+    "seeds": [0, 1, 2, 3, 4],  # one network per seed; probabilities are averaged
+}
+
+
+def neural_net_inputs(params, features):
+    """Standardised inputs: same signed-log treatment as the SVM, then (x - mean) / std
+    with the mean and std of the training rows the network was fitted on."""
+    x = svm_inputs(params["columns"], features)
+    return (x - params["mean"]) / params["std"]
+
+
+def neural_net_probability(params, features):
+    """Forward pass (no dropout at prediction time), averaged over the member networks."""
+    z = neural_net_inputs(params, features)
+    total = np.zeros(len(z))
+    for layers in params["members"]:
+        h = z
+        for weight, bias in layers[:-1]:
+            h = np.maximum(h @ weight.T + bias, 0.0)                 # linear layer + ReLU
+        weight, bias = layers[-1]
+        logit = np.clip((h @ weight.T + bias)[:, 0], -60.0, 60.0)    # avoid exp overflow
+        total += 1 / (1 + np.exp(-logit))                            # sigmoid
+    return total / len(params["members"])
+
+
 def price_probability(bundle, features):
     if bundle["config"]["family"] == "naive_bayes":
         return naive_bayes_probability(bundle["estimator"], features)
+    if bundle["config"]["family"] == "neural_net":
+        return neural_net_probability(bundle["estimator"], features)
     if bundle["config"]["family"] == "svm":
         # SVMs output a signed distance to the boundary, not a probability. A sigmoid maps
         # it to (0, 1) monotonically so the shared threshold search works unchanged; the

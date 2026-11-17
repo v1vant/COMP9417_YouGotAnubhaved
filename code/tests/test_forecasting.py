@@ -177,6 +177,101 @@ class SVMTests(unittest.TestCase):
         self.assertTrue(any(c["family"] == "svm" for c in candidates("price")))
 
 
+class NeuralNetTests(unittest.TestCase):
+    CONFIG = {"family": "neural_net", "hidden": [16, 8], "dropout": 0.5,
+              "learning_rate": 3e-3, "weight_decay": 1e-4, "batch_size": 128,
+              "epochs": 20, "seeds": [0, 1]}
+
+    @classmethod
+    def setUpClass(cls):
+        from train import fit_model
+        cls.features, cls.truth = training_table(synthetic_data(days=75))
+        cls.model = fit_model("price", cls.CONFIG, cls.features, cls.truth)
+
+    def test_predicts_binary_labels_better_than_chance(self):
+        from model import predict_task
+        predictions = predict_task(self.model, self.features)
+        self.assertEqual(len(predictions), len(self.features))
+        self.assertTrue(set(np.unique(predictions)) <= {0, 1})
+        self.assertGreater(np.mean(predictions == self.truth["price"].to_numpy()), 0.6)
+
+    def test_backpropagation_matches_finite_differences(self):
+        from train import neural_net_loss_gradients
+        rng = np.random.default_rng(0)
+        layers = [[rng.normal(size=(6, 5)), rng.normal(size=6)],
+                  [rng.normal(size=(4, 6)), rng.normal(size=4)],
+                  [rng.normal(size=(1, 4)), rng.normal(size=1)]]
+        x, y = rng.normal(size=(12, 5)), (rng.random(12) < 0.4).astype(float)
+        masks = [(rng.random((12, 6)) < 0.5) / 0.5, (rng.random((12, 4)) < 0.5) / 0.5]
+        for mask in (None, masks):
+            _, gradients = neural_net_loss_gradients(layers, x, y, 1.7, mask)
+            for layer, grads in zip(layers, gradients):
+                for parameter, gradient in zip(layer, grads):
+                    numeric = np.zeros_like(parameter)
+                    for index in np.ndindex(parameter.shape):
+                        original = parameter[index]
+                        parameter[index] = original + 1e-6
+                        up = neural_net_loss_gradients(layers, x, y, 1.7, mask)[0]
+                        parameter[index] = original - 1e-6
+                        down = neural_net_loss_gradients(layers, x, y, 1.7, mask)[0]
+                        parameter[index] = original
+                        numeric[index] = (up - down) / 2e-6
+                    np.testing.assert_allclose(gradient, numeric, atol=1e-6)
+
+    def test_prediction_matches_formula_by_hand(self):
+        from model import neural_net_probability, svm_inputs
+        params = self.model["estimator"]
+        row = self.features.iloc[[100]]
+        z = (svm_inputs(params["columns"], row)[0] - params["mean"]) / params["std"]
+        expected = []
+        for (w1, b1), (w2, b2), (w3, b3) in params["members"]:
+            h1 = np.maximum(w1 @ z + b1, 0)
+            h2 = np.maximum(w2 @ h1 + b2, 0)
+            expected.append(1 / (1 + np.exp(-(w3 @ h2 + b3)[0])))
+        self.assertAlmostEqual(neural_net_probability(params, row)[0], np.mean(expected),
+                               places=10)
+
+    def test_training_is_deterministic_and_seeds_differ(self):
+        from train import fit_model
+        again = fit_model("price", self.CONFIG, self.features, self.truth)["estimator"]
+        first = self.model["estimator"]
+        for member, repeat in zip(first["members"], again["members"]):
+            for (weight, bias), (weight2, bias2) in zip(member, repeat):
+                np.testing.assert_array_equal(weight, weight2)
+                np.testing.assert_array_equal(bias, bias2)
+        self.assertFalse(np.array_equal(first["members"][0][0][0], first["members"][1][0][0]))
+
+    def test_artifact_is_plain_numpy_and_survives_joblib(self):
+        import io
+        import joblib
+        from model import neural_net_probability
+        params = self.model["estimator"]
+        self.assertEqual([w.shape for w, _ in params["members"][0]],
+                         [(16, len(params["columns"])), (8, 16), (1, 8)])
+        for member in params["members"]:
+            for weight, bias in member:
+                self.assertIs(type(weight), np.ndarray)
+                self.assertIs(type(bias), np.ndarray)
+        buffer = io.BytesIO()
+        joblib.dump(self.model, buffer)
+        buffer.seek(0)
+        restored = joblib.load(buffer)
+        np.testing.assert_array_equal(neural_net_probability(restored["estimator"], self.features),
+                                      neural_net_probability(params, self.features))
+
+    def test_standardisation_uses_training_rows_only(self):
+        from model import neural_net_inputs
+        z = neural_net_inputs(self.model["estimator"], self.features)
+        varying = z.std(axis=0) > 0
+        np.testing.assert_allclose(z.mean(axis=0), 0, atol=1e-6)
+        np.testing.assert_allclose(z.std(axis=0)[varying], 1, atol=1e-6)
+
+    def test_neural_net_is_a_price_only_candidate(self):
+        from train import candidates
+        self.assertFalse(any(c["family"] == "neural_net" for c in candidates("demand")))
+        self.assertTrue(any(c["family"] == "neural_net" for c in candidates("price")))
+
+
 class StatisticalTests(unittest.TestCase):
     def test_metrics_match_harness_in_single_class_period(self):
         values = metric_values([5000, 6000], [0, 0], [5100, 5900], [0, 1])

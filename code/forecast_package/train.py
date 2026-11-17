@@ -15,8 +15,8 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
-from model import (NAIVE_BAYES, SVM, fit_naive_bayes, load_data, market_days, predict_task,
-                   price_probability, svm_columns, svm_inputs, training_table)
+from model import (NAIVE_BAYES, NEURAL_NET, SVM, fit_naive_bayes, load_data, market_days,
+                   predict_task, price_probability, svm_columns, svm_inputs, training_table)
 
 SEED = 9417
 DEFAULT_SELECTION = None
@@ -32,11 +32,13 @@ def candidates(task, quick=False):
     # units of 1/#features.
     svm = ([dict(SVM, max_rows=2000 if quick else SVM["max_rows"])]
            if task == "price" else [])
+    neural = ([dict(NEURAL_NET, **({"seeds": [0], "epochs": 3} if quick else {}))]
+              if task == "price" else [])
     if not quick:
         linear.append({"family": "linear", "regularization": 1000.0 if task == "demand" else 0.1})
         boosted.append({"family": "boosted", "leaves": 63, "trees": 900,
                         "learning_rate": 0.025})
-    return linear + boosted + bayes + svm
+    return linear + boosted + bayes + svm + neural
 
 
 def fit_svm(config, features, labels):
@@ -61,6 +63,100 @@ def fit_svm(config, features, labels):
     estimator.fit(svm_inputs(columns, features.iloc[rows]), y)
     return {"task": "price", "config": config, "features": columns,
             "estimator": estimator, "threshold": config.get("threshold", 0.5)}
+
+
+def neural_net_loss_gradients(layers, x, y, pos_weight, masks=None):
+    """One forward pass, the class-weighted cross-entropy loss, and its gradient with
+    respect to every weight and bias by backpropagation.
+
+    layers: [(W, b), ...] with W of shape (units_out, units_in); the last layer has 1 unit.
+    masks:  one dropout mask per hidden layer (0 or 1/(1 - dropout)), or None for no dropout.
+    Returns (loss, [(dL/dW, dL/db), ...]) in the same order as layers."""
+    # Forward: keep every layer's output, because the backward pass needs them.
+    outputs, h = [x], x
+    for index, (weight, bias) in enumerate(layers[:-1]):
+        h = np.maximum(h @ weight.T + bias, 0)            # linear step, then ReLU
+        if masks is not None:
+            h = h * masks[index]                           # dropout: zero random units
+        outputs.append(h)
+    weight, bias = layers[-1]
+    logit = (h @ weight.T + bias)[:, 0]                    # one number per row
+    # Loss: -[pos_weight * y * log(p) + (1 - y) * log(1 - p)], p = sigmoid(logit),
+    # written with logaddexp so that large |logit| cannot overflow.
+    row_weight = 1 + (pos_weight - 1) * y                  # pos_weight for "up" rows, else 1
+    loss = np.mean(pos_weight * y * np.logaddexp(0, -logit) + (1 - y) * np.logaddexp(0, logit))
+    probability = 1 / (1 + np.exp(-np.clip(logit, -60, 60)))
+    # Backward: delta is dLoss/d(pre-activation) of the current layer, for every row.
+    delta = (row_weight * (probability - y) / len(y))[:, None]
+    gradients = []
+    for index in reversed(range(len(layers))):
+        gradients.append((delta.T @ outputs[index], delta.sum(axis=0)))
+        if index > 0:
+            delta = delta @ layers[index][0]               # chain rule through the linear step
+            if masks is not None:
+                delta = delta * masks[index - 1]           # ... through dropout
+            delta = delta * (outputs[index] > 0)           # ... through ReLU (slope 1 or 0)
+    return loss, gradients[::-1]
+
+
+def fit_neural_net(config, features, labels):
+    """Train the MLP ensemble by mini-batch gradient descent, in plain numpy.
+
+    For each member (seed): start from small random weights, then repeat for a fixed number
+    of epochs: shuffle the rows, and for every mini-batch (1) draw dropout masks,
+    (2) forward pass and loss, (3) backpropagation, (4) one AdamW update, with the learning
+    rate decaying to 0 along a cosine curve. The epoch budget is fixed, so nothing here
+    depends on a validation year and the fit works for any training window."""
+    columns = svm_columns(features)
+    x = svm_inputs(columns, features)
+    mean, std = x.mean(axis=0), x.std(axis=0)
+    std[std < 1e-8] = 1.0             # constant column: leave it at 0 after centring
+    inputs = ((x - mean) / std).astype(np.float32)
+    y = labels.to_numpy().astype(np.float32)
+    rows = len(y)
+    batch = min(config["batch_size"], rows)
+    steps_per_epoch = rows // batch   # the ragged last batch of each epoch is dropped
+    total_steps = config["epochs"] * steps_per_epoch
+    # Weight "up" errors by n_down / n_up so both classes count equally in the loss,
+    # matching balanced accuracy and keeping 0.5 a sensible default threshold.
+    pos_weight = np.float32((y == 0).sum() / (y == 1).sum())
+    keep = np.float32(1 - config["dropout"])
+    beta1, beta2, epsilon = 0.9, 0.999, 1e-8               # standard Adam constants
+    sizes = [len(columns)] + list(config["hidden"]) + [1]
+    members = []
+    for seed in config["seeds"]:
+        rng = np.random.default_rng(seed)                  # initial weights, order, dropout
+        layers = []
+        for units_in, units_out in zip(sizes[:-1], sizes[1:]):
+            bound = 1 / np.sqrt(units_in)                  # PyTorch's default Linear init
+            layers.append([rng.uniform(-bound, bound, (units_out, units_in)).astype(np.float32),
+                           rng.uniform(-bound, bound, units_out).astype(np.float32)])
+        first = [[np.zeros_like(p) for p in layer] for layer in layers]    # mean of gradients
+        second = [[np.zeros_like(p) for p in layer] for layer in layers]   # mean of squares
+        step = 0
+        for _ in range(config["epochs"]):
+            order = rng.permutation(rows)
+            for start in range(0, steps_per_epoch * batch, batch):
+                chosen = order[start:start + batch]
+                masks = [(rng.random((batch, units), dtype=np.float32) < keep) / keep
+                         for units in config["hidden"]]
+                _, gradients = neural_net_loss_gradients(
+                    layers, inputs[chosen], y[chosen], pos_weight, masks)
+                rate = config["learning_rate"] * 0.5 * (1 + np.cos(np.pi * step / total_steps))
+                step += 1
+                for layer, grads, means, squares in zip(layers, gradients, first, second):
+                    for k, gradient in enumerate(grads):
+                        means[k] = beta1 * means[k] + (1 - beta1) * gradient
+                        squares[k] = beta2 * squares[k] + (1 - beta2) * gradient * gradient
+                        if k == 0:                         # weight decay on matrices, not biases
+                            layer[k] *= 1 - rate * config["weight_decay"]
+                        layer[k] -= (rate * (means[k] / (1 - beta1 ** step))
+                                     / (np.sqrt(squares[k] / (1 - beta2 ** step)) + epsilon)
+                                     ).astype(np.float32)
+        members.append([(weight, bias) for weight, bias in layers])
+    params = {"columns": columns, "mean": mean, "std": std, "members": members}
+    return {"task": "price", "config": config, "features": columns,
+            "estimator": params, "threshold": config.get("threshold", 0.5)}
 
 
 def fit_model(task, config, features, truth):
@@ -89,6 +185,10 @@ def fit_model(task, config, features, truth):
         if task != "price":
             raise ValueError("The SVM is only used for price direction")
         return fit_svm(config, features, truth["price"])
+    elif config["family"] == "neural_net":
+        if task != "price":
+            raise ValueError("The neural network is only used for price direction")
+        return fit_neural_net(config, features, truth["price"])
     else:
         columns = list(features.columns)
         cls = LGBMRegressor if task == "demand" else LGBMClassifier
