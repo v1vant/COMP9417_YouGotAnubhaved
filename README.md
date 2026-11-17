@@ -1,5 +1,37 @@
 # COMP9417 26T3 Project Kit
 
+## Current validated model
+
+The current demand forecast is a frozen **50/50 blend** of the 900-tree LightGBM
+and a **ten-epoch MLP (405 → 128 → 64 → 1)**, both using 405 demand features.
+Price uses the unchanged **571-feature LightGBM classifier** (600 trees,
+probability threshold 0.57). The context gate is disabled.
+Weather-shape features are disabled. Both `code/forecast_package/` and the staged
+`code/submission_package/` contain this model and its full-data artifacts.
+Running either package's `train.py CSV` uses the selected expanding-window
+configuration by default and trains the MLP in an isolated subprocess. PyTorch
+is required for training. Inference uses exported NumPy MLP weights, avoiding
+PyTorch/LightGBM model-loading conflicts in the same process.
+
+| Holdout metric, January 2025–October 2026 | Current blend | Previous updated LightGBM | Original LightGBM | Yesterday baseline |
+| --- | ---: | ---: | ---: | ---: |
+| Price accuracy | 85.08% | 85.08% | 82.65% | 76.96% |
+| Price balanced accuracy | 85.03% | 85.03% | 82.57% | 76.97% |
+| Demand MAPE | 3.18% | 3.61% | 3.67% | 7.53% |
+
+The current-model record is in `results/current_model.json`. Full holdout results
+for the blend are in `results/frozen_demand_blend_holdout/`; prior holdout results
+are in `results/holdout_original_vs_current/`. The cross-model holdout table is
+`results/holdout_model_comparison.csv`. Pre-holdout MLP and blend results are in
+`results/demand_mlp_10epoch_2015_2024/` and
+`results/demand_error_complementarity_2015_2024/`. Earlier results and model backups remain
+in their original directories. The optional weather candidate did not improve
+2014 validation. Price-regression experiments are on the separate
+`feature/price-regression` branch and are not part of the current model.
+
+Current artifacts were trained locally with Python 3.12.12; the prescribed
+Python 3.11 marking environment remains a separate compatibility/rebuild check.
+
 Everything you need for the project, apart from the specification on Moodle.
 
 | Item | What it is |

@@ -1,0 +1,29 @@
+{
+  "selected": {
+    "LightGBM_weight": 0.43,
+    "MLP_weight": 0.5700000000000001,
+    "selection_MAPE": 1.9379391125194712,
+    "selection_MAE": 157.47292854325363
+  },
+  "selection_years": [
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020
+  ],
+  "check_years": [
+    2021,
+    2022,
+    2023,
+    2024
+  ],
+  "grid_step": 0.01,
+  "later_check_improvement_over_50_50_MAPE_pp": -0.014099463303796224,
+  "paired_7day_bootstrap_CI95": [
+    -0.0213767597669147,
+    -0.006966461601077744
+  ],
+  "note": "Weight selected on earlier years only. Later years have already been inspected during candidate development, so this is a development check, not an untouched holdout."
+}

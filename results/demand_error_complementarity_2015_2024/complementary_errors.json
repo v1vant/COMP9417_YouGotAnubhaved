@@ -1,0 +1,38 @@
+{
+  "pairs": {
+    "LightGBM_vs_MLP_5": {
+      "signed_residual_correlation": 0.7015340128185067,
+      "absolute_percentage_error_correlation": 0.6409663995805364,
+      "daily_MAPE_correlation": 0.6446238446782465,
+      "second_better_halfhours_percent": 49.51067615658363,
+      "second_better_days_percent": 49.68519025458527,
+      "opposite_sign_residuals_percent": 27.174012227393014,
+      "second_MAPE_on_first_worst10_percent": 6.721497367030474,
+      "first_MAPE_on_own_worst10_percent": 9.402498237438358,
+      "hindsight_min_absolute_error_MAPE": 1.7189841013428013
+    },
+    "LightGBM_vs_MLP_10": {
+      "signed_residual_correlation": 0.6805644331244697,
+      "absolute_percentage_error_correlation": 0.6311053653501422,
+      "daily_MAPE_correlation": 0.6356109045435445,
+      "second_better_halfhours_percent": 49.546605529701615,
+      "second_better_days_percent": 49.11032028469751,
+      "opposite_sign_residuals_percent": 28.21482343279496,
+      "second_MAPE_on_first_worst10_percent": 6.677354091180213,
+      "first_MAPE_on_own_worst10_percent": 9.402498237438358,
+      "hindsight_min_absolute_error_MAPE": 1.6979665720702357
+    },
+    "MLP_5_vs_MLP_10": {
+      "signed_residual_correlation": 0.9069625418799797,
+      "absolute_percentage_error_correlation": 0.8663195291002677,
+      "daily_MAPE_correlation": 0.8885889706491812,
+      "second_better_halfhours_percent": 50.420316634729446,
+      "second_better_days_percent": 50.94442923624418,
+      "opposite_sign_residuals_percent": 15.014485810749157,
+      "second_MAPE_on_first_worst10_percent": 8.164576684810907,
+      "first_MAPE_on_own_worst10_percent": 8.777191565322042,
+      "hindsight_min_absolute_error_MAPE": 2.0210531009170687
+    }
+  },
+  "note": "Descriptive pre-holdout analysis. Blends are fixed equal weights; no optimisation. Hindsight minimum error is an unattainable oracle, not a deployable score."
+}

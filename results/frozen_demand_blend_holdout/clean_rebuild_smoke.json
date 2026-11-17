@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "mode": "Clean train.py CSV --quick on synthetic data, no existing artifacts",
+  "feature_counts": {
+    "demand": 405,
+    "price": 571
+  },
+  "numpy_torch_max_difference_MW": 0.00048828125,
+  "load_check": "clean rebuilt package loads without torch",
+  "note": "Integration smoke test, not a full pinned-environment reproducibility run."
+}

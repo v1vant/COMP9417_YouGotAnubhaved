@@ -1,0 +1,8 @@
+{
+  "seconds": 281.453030457953,
+  "python": "3.12.12 (main, Oct  9 2025, 11:07:00) [Clang 17.0.0 (clang-1700.0.13.3)]",
+  "train_rows": 68780,
+  "validation_rows": 17520,
+  "training_start": "2010-01-29 02:30:00",
+  "comparison": "Both feature sets use exactly the same rows and original candidate configurations; price thresholds tuned on 2014."
+}

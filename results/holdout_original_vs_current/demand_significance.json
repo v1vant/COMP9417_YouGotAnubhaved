@@ -1,0 +1,46 @@
+{
+  "days": 669,
+  "original_MAPE": 3.66674676740768,
+  "current_MAPE": 3.60508451298117,
+  "MAPE_improvement_percentage_points": 0.061662254426509557,
+  "MAPE_relative_reduction_percent": 1.6816611110044992,
+  "original_MAE_MW": 253.32971880435798,
+  "current_MAE_MW": 249.93261401555012,
+  "MAE_relative_reduction_percent": 1.340981549595221,
+  "fraction_days_MAPE_improves": 0.5366218236173393,
+  "paired_daily_t": 3.3452029457002674,
+  "paired_daily_p_two_sided": 0.0008682287633329552,
+  "circular_paired_block_bootstrap_10000": {
+    "1": {
+      "MAPE_improvement_pp_CI95": [
+        0.025237616632228788,
+        0.0972020374909423
+      ],
+      "MAE_improvement_MW_CI95": [
+        0.8926675907315138,
+        5.793536593213231
+      ]
+    },
+    "7": {
+      "MAPE_improvement_pp_CI95": [
+        0.025076629068308157,
+        0.0970241456905229
+      ],
+      "MAE_improvement_MW_CI95": [
+        0.9593616109948129,
+        5.849942112644686
+      ]
+    },
+    "14": {
+      "MAPE_improvement_pp_CI95": [
+        0.025434674621632503,
+        0.09843256400253834
+      ],
+      "MAE_improvement_MW_CI95": [
+        0.9821622419247865,
+        5.845887250786877
+      ]
+    }
+  },
+  "note": "Positive differences favour updated model. Daily t-test assumes independent daily differences. Block intervals assume dependence is adequately represented by chosen block length; neither guarantees future gains."
+}

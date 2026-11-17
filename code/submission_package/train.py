@@ -4,6 +4,8 @@ import json
 import os
 import platform
 import time
+import subprocess
+import sys
 
 import joblib
 import numpy as np
@@ -32,6 +34,14 @@ def candidates(task, quick=False):
 
 
 def fit_model(task, config, features, truth):
+    # Keep the price-profile additions exclusive to classification.
+    if task == "demand":
+        features = features.drop(columns=[
+            col for col in features if col.startswith("nsw_price_") and (
+                any(part in col for part in ("_profile_", "_before_margin_",
+                                             "_ramp_", "_change_from_open"))
+                or col == "nsw_price_weekly_margin")
+        ])
     if not len(features):
         raise ValueError("No training observations")
     if task == "price" and truth["price"].nunique() < 2:
@@ -160,10 +170,27 @@ def main():
     manifest = {
         "seed": SEED, "data_end": str(days.max()), "selection": selection,
         "quick": args.quick, "seconds": time.monotonic() - started,
+        "task_feature_counts": {task: len(bundle["features"])
+                                for task, bundle in models.items()},
         "versions": {"python": platform.python_version(), "numpy": np.__version__,
                      "pandas": pd.__version__, "sklearn": sklearn.__version__,
                      "lightgbm": lightgbm.__version__, "joblib": joblib.__version__},
     }
+    with open(os.path.join(output, "manifest.json"), "w", encoding="utf-8") as handle:
+        json.dump(manifest, handle, indent=2)
+    # Train PyTorch in its own process; inference uses only exported NumPy weights.
+    selection_path = os.path.join(output, "blend_training_selection.json")
+    with open(selection_path, "w", encoding="utf-8") as handle:
+        json.dump(selection, handle, indent=2)
+    subprocess.run([sys.executable, os.path.join(os.path.dirname(__file__), "mlp_train.py"),
+                    os.path.abspath(args.csv), "--output", output,
+                    "--selection", selection_path], check=True)
+    manifest["demand_blend"] = {"LightGBM": 0.5, "MLP": 0.5}
+    manifest["mlp_epochs"] = 10
+    with open(os.path.join(output, "demand_mlp_manifest.json"), encoding="utf-8") as handle:
+        manifest["mlp_training"] = json.load(handle)
+    manifest["inference"] = "LightGBM plus NumPy MLP; PyTorch used only in isolated training process"
+    manifest["seconds"] = time.monotonic() - started
     with open(os.path.join(output, "manifest.json"), "w", encoding="utf-8") as handle:
         json.dump(manifest, handle, indent=2)
     print(f"Saved artifacts to {output} in {manifest['seconds']:.1f}s", flush=True)

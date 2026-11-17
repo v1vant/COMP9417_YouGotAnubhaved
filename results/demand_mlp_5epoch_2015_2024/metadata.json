@@ -1,0 +1,18 @@
+{
+  "epochs": 5,
+  "architecture": [
+    405,
+    128,
+    64,
+    1
+  ],
+  "seed": 9417,
+  "device": "cpu",
+  "threads": 2,
+  "torch": "2.15.0",
+  "evaluation_start": "2015-01-01",
+  "evaluation_end": "2024-12-31",
+  "holdout_evaluated": false,
+  "seconds_total": 35.4545924999984,
+  "source_sha256": "71ff093a73c5ecebc230b494015b616910715d7157180afa6a7df74471416ad4"
+}

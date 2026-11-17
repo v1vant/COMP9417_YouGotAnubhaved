@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "seconds_total": 35.27930337499129,
+  "MAPE_improvement_pp": 0.42534777125841067,
+  "relative_MAPE_improvement_percent": 11.798552009719067,
+  "paired_7day_bootstrap_CI95": [
+    0.35476765295160534,
+    0.4954115129906882
+  ],
+  "days": 669,
+  "state_dict_reload_passed": true,
+  "existing_artifacts_unchanged": true
+}

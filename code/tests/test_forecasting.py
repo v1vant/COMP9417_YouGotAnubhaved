@@ -262,7 +262,7 @@ class NeuralNetTests(unittest.TestCase):
     def test_standardisation_uses_training_rows_only(self):
         from model import neural_net_inputs
         z = neural_net_inputs(self.model["estimator"], self.features)
-        varying = z.std(axis=0) > 0
+        varying = z.std(axis=0) > 1e-6   # constant columns (up to rounding) stay unscaled
         np.testing.assert_allclose(z.mean(axis=0), 0, atol=1e-6)
         np.testing.assert_allclose(z.std(axis=0)[varying], 1, atol=1e-6)
 

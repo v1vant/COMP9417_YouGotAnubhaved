@@ -1,0 +1,23 @@
+{
+  "50_50_LightGBM_MLP_5": {
+    "MAPE_improvement_pp": 0.2142961659359785,
+    "paired_7day_bootstrap_CI95": [
+      0.18890489676429087,
+      0.23961482202707982
+    ]
+  },
+  "50_50_LightGBM_MLP_10": {
+    "MAPE_improvement_pp": 0.23133592577646536,
+    "paired_7day_bootstrap_CI95": [
+      0.2060567102974714,
+      0.2570757514094674
+    ]
+  },
+  "equal_thirds": {
+    "MAPE_improvement_pp": 0.2323600157329577,
+    "paired_7day_bootstrap_CI95": [
+      0.20013440273596836,
+      0.26470995489072086
+    ]
+  }
+}
