@@ -1,0 +1,74 @@
+== HOLDOUT 2025-01-01 .. 2026-10-31 (32112 half-hours, 669 days; up rate 48.9%). Models trained on days <= 2024-12-31 only.
+   yesterday baseline (slot above yesterday's mean): BA 76.975, accuracy 76.959
+
+== Threshold 0.5 (pre-declared)
+                                                                          BA 2025-26  acc 2025-26  BA 2025  acc 2025  BA 2026 Jan-Oct  acc 2026 Jan-Oct  pred up%
+model                                                                                                                                                            
+CHAMPION (final model)                                                        85.384       85.389   86.746    86.741           83.780            83.765    49.007
+BASELINE: Suhan's price-c2 model (C2, 5 seeds, weather shape, no demand)      85.621       85.625   86.899    86.895           84.112            84.101    49.038
+previous best (0.7 LGBM-63+A5 + 0.3 NN+D4)                                    85.171       85.183   86.462    86.461           83.688            83.649    48.695
+LightGBM part A (LGBM-63+D4+ws, 5 seeds)                                      85.265       85.264   86.578    86.547           83.734            83.724    49.268
+LightGBM part B (Suhan+A5+ws, 5 seeds)                                        85.371       85.370   86.685    86.655           83.836            83.827    49.268
+NN+D4                                                                         84.657       84.688   86.007    86.027           83.179            83.080    47.833
+NN 64                                                                         84.193       84.196   85.584    85.594           82.514            82.518    49.141
+LightGBM-63 (no demand)                                                       85.494       85.501   86.590    86.598           84.198            84.183    48.926
+package LightGBM-31                                                           85.316       85.311   86.593    86.587           83.756            83.779    49.464
+[secondary] NN+D4+neg, inputs capped +-3 sd                                   84.502       84.538   85.804    85.822           83.121            82.998    47.571
+[secondary] champion with NN+D4+neg(+-3) in place of NN+D4                    85.344       85.348   86.669    86.661           83.788            83.772    49.016
+[secondary] previous best with NN+D4+neg(+-3)                                 85.135       85.149   86.374    86.376           83.722            83.676    48.599
+   Paired day-block bootstrap at 0.5: CHAMPION minus each alternative, BA [95% CI] | accuracy [95% CI]
+     vs BASELINE: Suhan's price-c2 model (C2, 5 seeds, weather shape, no demand) BA -0.237 [-0.49, +0.02] | acc -0.237 [-0.49, +0.02]
+     vs previous best (0.7 LGBM-63+A5 + 0.3 NN+D4)                               BA +0.212 [+0.04, +0.38] | acc +0.206 [+0.03, +0.38]
+     vs LightGBM part A (LGBM-63+D4+ws, 5 seeds)                                 BA +0.119 [-0.08, +0.31] | acc +0.125 [-0.07, +0.32]
+     vs LightGBM part B (Suhan+A5+ws, 5 seeds)                                   BA +0.013 [-0.18, +0.20] | acc +0.019 [-0.18, +0.21]
+     vs NN+D4                                                                    BA +0.727 [+0.37, +1.08] | acc +0.701 [+0.35, +1.05]
+     vs NN 64                                                                    BA +1.190 [+0.78, +1.59] | acc +1.193 [+0.78, +1.59]
+     vs LightGBM-63 (no demand)                                                  BA -0.110 [-0.39, +0.18] | acc -0.112 [-0.39, +0.17]
+     vs package LightGBM-31                                                      BA +0.068 [-0.22, +0.36] | acc +0.078 [-0.21, +0.37]
+     vs [secondary] NN+D4+neg, inputs capped +-3 sd                              BA +0.882 [+0.51, +1.27] | acc +0.850 [+0.47, +1.24]
+     vs [secondary] champion with NN+D4+neg(+-3) in place of NN+D4               BA +0.040 [-0.01, +0.09] | acc +0.040 [-0.01, +0.09]
+     vs [secondary] previous best with NN+D4+neg(+-3)                            BA +0.249 [+0.07, +0.43] | acc +0.240 [+0.06, +0.42]
+
+== Threshold 0.57 (descriptive only - not a choice)
+                                                                          BA 2025-26  acc 2025-26  BA 2025  acc 2025  BA 2026 Jan-Oct  acc 2026 Jan-Oct  pred up%
+model                                                                                                                                                            
+CHAMPION (final model)                                                        85.134       85.205   86.508    86.695           83.562            83.416    45.983
+BASELINE: Suhan's price-c2 model (C2, 5 seeds, weather shape, no demand)      85.380       85.451   86.639    86.844           83.917            83.779    45.961
+previous best (0.7 LGBM-63+A5 + 0.3 NN+D4)                                    84.934       85.015   86.374    86.575           83.318            83.141    45.519
+LightGBM part A (LGBM-63+D4+ws, 5 seeds)                                      84.999       85.062   86.472    86.638           83.298            83.169    46.350
+LightGBM part B (Suhan+A5+ws, 5 seeds)                                        85.241       85.305   86.655    86.821           83.615            83.484    46.332
+NN+D4                                                                         84.151       84.261   85.693    85.959           82.470            82.223    44.217
+NN 64                                                                         83.908       83.981   85.247    85.468           82.329            82.196    45.917
+LightGBM-63 (no demand)                                                       85.117       85.192   86.381    86.587           83.670            83.518    45.790
+package LightGBM-31                                                           85.110       85.174   86.339    86.535           83.652            83.539    46.319
+[secondary] NN+D4+neg, inputs capped +-3 sd                                   84.117       84.236   85.860    86.124           82.250            81.970    43.812
+[secondary] champion with NN+D4+neg(+-3) in place of NN+D4                    85.108       85.180   86.471    86.661           83.552            83.402    45.921
+[secondary] previous best with NN+D4+neg(+-3)                                 84.871       84.953   86.290    86.490           83.287            83.107    45.494
+   Paired day-block bootstrap at 0.57: CHAMPION minus each alternative, BA [95% CI] | accuracy [95% CI]
+     vs BASELINE: Suhan's price-c2 model (C2, 5 seeds, weather shape, no demand) BA -0.246 [-0.49, +0.00] | acc -0.246 [-0.49, +0.00]
+     vs previous best (0.7 LGBM-63+A5 + 0.3 NN+D4)                               BA +0.200 [+0.03, +0.37] | acc +0.190 [+0.02, +0.36]
+     vs LightGBM part A (LGBM-63+D4+ws, 5 seeds)                                 BA +0.135 [-0.05, +0.32] | acc +0.143 [-0.04, +0.32]
+     vs LightGBM part B (Suhan+A5+ws, 5 seeds)                                   BA -0.107 [-0.29, +0.08] | acc -0.100 [-0.28, +0.08]
+     vs NN+D4                                                                    BA +0.983 [+0.58, +1.37] | acc +0.944 [+0.54, +1.33]
+     vs NN 64                                                                    BA +1.226 [+0.81, +1.63] | acc +1.224 [+0.81, +1.63]
+     vs LightGBM-63 (no demand)                                                  BA +0.017 [-0.26, +0.30] | acc +0.012 [-0.27, +0.30]
+     vs package LightGBM-31                                                      BA +0.024 [-0.29, +0.33] | acc +0.031 [-0.28, +0.34]
+     vs [secondary] NN+D4+neg, inputs capped +-3 sd                              BA +1.016 [+0.61, +1.42] | acc +0.968 [+0.56, +1.38]
+     vs [secondary] champion with NN+D4+neg(+-3) in place of NN+D4               BA +0.026 [-0.03, +0.08] | acc +0.025 [-0.03, +0.07]
+     vs [secondary] previous best with NN+D4+neg(+-3)                            BA +0.263 [+0.09, +0.44] | acc +0.252 [+0.07, +0.43]
+
+== Threshold effect on the holdout (BA 2025-26)
+threshold                                                                    0.5    0.57  0.57 minus 0.5
+model                                                                                                   
+BASELINE: Suhan's price-c2 model (C2, 5 seeds, weather shape, no demand)  85.621  85.380          -0.242
+CHAMPION (final model)                                                    85.384  85.134          -0.250
+LightGBM part A (LGBM-63+D4+ws, 5 seeds)                                  85.265  84.999          -0.266
+LightGBM part B (Suhan+A5+ws, 5 seeds)                                    85.371  85.241          -0.130
+LightGBM-63 (no demand)                                                   85.494  85.117          -0.377
+NN 64                                                                     84.193  83.908          -0.285
+NN+D4                                                                     84.657  84.151          -0.506
+[secondary] NN+D4+neg, inputs capped +-3 sd                               84.502  84.117          -0.384
+[secondary] champion with NN+D4+neg(+-3) in place of NN+D4                85.344  85.108          -0.236
+[secondary] previous best with NN+D4+neg(+-3)                             85.135  84.871          -0.264
+package LightGBM-31                                                       85.316  85.110          -0.206
+previous best (0.7 LGBM-63+A5 + 0.3 NN+D4)                                85.171  84.934          -0.238

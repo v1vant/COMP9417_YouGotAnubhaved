@@ -15,3 +15,4 @@ results/walkforward/refit/
 results/walkforward/runs/weather_shape.npy
 results/walkforward/runs/negprice.npy
 results/walkforward/runs/targets.npz
+results/walkforward/runs/solar_sens.npy

@@ -92,8 +92,8 @@ def demand_forecast(days, schedule_matched=False):
 def add_demand_features(X, truth, days, variant, schedule_matched=False, source=None):
     """D1 point; D2 + relative to recent actuals; D3 + whole-day summaries of tomorrow's forecast;
     D4 + tomorrow's 48-slot forecast profile; D5 = D3 built from ACTUAL demand (ceiling, not deployable)."""
-    if source == "anubhav_blend":   # his 0.5 LightGBM + 0.5 MLP forecast, team schedule (build_anubhav_blend.py)
-        f = np.load(f"{RUNS}/anubhav_blend_forecast.npy")
+    if source and source.endswith("_blend"):   # anubhav_blend: his 0.5 LightGBM + 0.5 MLP forecast (build_anubhav_blend.py);
+        f = np.load(f"{RUNS}/{source}_forecast.npy")   # solar_blend / ctrl_blend: solar/run_fixes.py
     else:
         f = truth["demand"].to_numpy(np.float64) if variant == "D5" else demand_forecast(days, schedule_matched).astype(np.float64)
     new = {"dfc": f}

@@ -1,0 +1,463 @@
+{
+ "note": "Every model fitted on market days <= 2024-12-31 only; predictions for 2025-01-01..2026-10-31 (32112 half-hours). Probabilities saved as float32; timestamps are int64 ns, interval END, NEM time. demand_forecast = Anubhav's recipe (0.5 LightGBM + 0.5 MLP) trained on days <= 2024.",
+ "models": {
+  "lgbm31": {
+   "spec": {
+    "kind": "sk",
+    "config": {
+     "family": "boosted",
+     "leaves": 31,
+     "trees": 600,
+     "learning_rate": 0.04
+    }
+   },
+   "seconds": 336.9985411167145,
+   "train_rows": 261644,
+   "train_end": "2024-12-31",
+   "pred_rows": 32112
+  },
+  "lgbm63": {
+   "spec": {
+    "kind": "sk",
+    "config": {
+     "family": "boosted",
+     "leaves": 63,
+     "trees": 900,
+     "learning_rate": 0.025
+    }
+   },
+   "seconds": 588.0197179317474,
+   "train_rows": 261644,
+   "train_end": "2024-12-31",
+   "pred_rows": 32112
+  },
+  "lgbm63_A5_blend": {
+   "spec": {
+    "kind": "sk",
+    "config": {
+     "family": "boosted",
+     "leaves": 63,
+     "trees": 900,
+     "learning_rate": 0.025
+    },
+    "start_year": 2011,
+    "demand": "A5",
+    "demand_source": "anubhav_blend"
+   },
+   "seconds": 437.5586919784546,
+   "train_rows": 245472,
+   "train_end": "2024-12-31",
+   "pred_rows": 32112
+  },
+  "lgbm63_D4ws_s9417": {
+   "spec": {
+    "kind": "lgbx",
+    "config": {
+     "leaves": 63,
+     "trees": 900,
+     "learning_rate": 0.025
+    },
+    "seed": 9417,
+    "weather_shape": true,
+    "start_year": 2011,
+    "demand": "D4",
+    "demand_source": "anubhav_blend"
+   },
+   "seconds": 611.2887201309204,
+   "train_rows": 245472,
+   "train_end": "2024-12-31",
+   "pred_rows": 32112
+  },
+  "lgbm63_D4ws_s9418": {
+   "spec": {
+    "kind": "lgbx",
+    "config": {
+     "leaves": 63,
+     "trees": 900,
+     "learning_rate": 0.025
+    },
+    "seed": 9418,
+    "weather_shape": true,
+    "start_year": 2011,
+    "demand": "D4",
+    "demand_source": "anubhav_blend"
+   },
+   "seconds": 616.4072601795197,
+   "train_rows": 245472,
+   "train_end": "2024-12-31",
+   "pred_rows": 32112
+  },
+  "lgbm63_D4ws_s9419": {
+   "spec": {
+    "kind": "lgbx",
+    "config": {
+     "leaves": 63,
+     "trees": 900,
+     "learning_rate": 0.025
+    },
+    "seed": 9419,
+    "weather_shape": true,
+    "start_year": 2011,
+    "demand": "D4",
+    "demand_source": "anubhav_blend"
+   },
+   "seconds": 608.1744589805603,
+   "train_rows": 245472,
+   "train_end": "2024-12-31",
+   "pred_rows": 32112
+  },
+  "lgbm63_D4ws_s9420": {
+   "spec": {
+    "kind": "lgbx",
+    "config": {
+     "leaves": 63,
+     "trees": 900,
+     "learning_rate": 0.025
+    },
+    "seed": 9420,
+    "weather_shape": true,
+    "start_year": 2011,
+    "demand": "D4",
+    "demand_source": "anubhav_blend"
+   },
+   "seconds": 598.7495360374451,
+   "train_rows": 245472,
+   "train_end": "2024-12-31",
+   "pred_rows": 32112
+  },
+  "lgbm63_D4ws_s9421": {
+   "spec": {
+    "kind": "lgbx",
+    "config": {
+     "leaves": 63,
+     "trees": 900,
+     "learning_rate": 0.025
+    },
+    "seed": 9421,
+    "weather_shape": true,
+    "start_year": 2011,
+    "demand": "D4",
+    "demand_source": "anubhav_blend"
+   },
+   "seconds": 583.3985648155212,
+   "train_rows": 245472,
+   "train_end": "2024-12-31",
+   "pred_rows": 32112
+  },
+  "nn256_D4_blend": {
+   "spec": {
+    "kind": "sk",
+    "config": {
+     "family": "neural_net",
+     "hidden": [
+      256,
+      256
+     ],
+     "dropout": 0.5,
+     "learning_rate": 0.0003,
+     "weight_decay": 0.0001,
+     "batch_size": 1024,
+     "epochs": 10,
+     "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ],
+     "log": "price",
+     "winsorise": null,
+     "bootstrap": false
+    },
+    "start_year": 2011,
+    "demand": "D4",
+    "demand_source": "anubhav_blend"
+   },
+   "seconds": 160.5124752521515,
+   "train_rows": 245472,
+   "train_end": "2024-12-31",
+   "pred_rows": 32112
+  },
+  "nn256_D4neg_z3": {
+   "spec": {
+    "kind": "nnx",
+    "config": {
+     "family": "neural_net",
+     "hidden": [
+      256,
+      256
+     ],
+     "dropout": 0.5,
+     "learning_rate": 0.0003,
+     "weight_decay": 0.0001,
+     "batch_size": 1024,
+     "epochs": 10,
+     "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ],
+     "log": "price",
+     "winsorise": null,
+     "bootstrap": false
+    },
+    "start_year": 2011,
+    "demand": "D4",
+    "demand_source": "anubhav_blend",
+    "neg_features": true,
+    "z_clip": 3.0
+   },
+   "seconds": 138.9215850830078,
+   "train_rows": 245472,
+   "train_end": "2024-12-31",
+   "pred_rows": 32112
+  },
+  "nn64": {
+   "spec": {
+    "kind": "sk",
+    "config": {
+     "family": "neural_net",
+     "hidden": [
+      64
+     ],
+     "dropout": 0.5,
+     "learning_rate": 0.0003,
+     "weight_decay": 0.0001,
+     "batch_size": 1024,
+     "epochs": 10,
+     "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ],
+     "log": "price",
+     "winsorise": null,
+     "bootstrap": false
+    }
+   },
+   "seconds": 82.27031421661377,
+   "train_rows": 261644,
+   "train_end": "2024-12-31",
+   "pred_rows": 32112
+  },
+  "suhan_c2ws_A5_s9417": {
+   "spec": {
+    "kind": "lgbx",
+    "config": {
+     "leaves": 63,
+     "trees": 1200,
+     "learning_rate": 0.02
+    },
+    "lgb_params": {
+     "colsample_bytree": 0.5,
+     "min_child_samples": 300
+    },
+    "seed": 9417,
+    "weather_shape": true,
+    "start_year": 2011,
+    "demand": "A5",
+    "demand_source": "anubhav_blend"
+   },
+   "seconds": 468.56549406051636,
+   "train_rows": 245472,
+   "train_end": "2024-12-31",
+   "pred_rows": 32112
+  },
+  "suhan_c2ws_A5_s9418": {
+   "spec": {
+    "kind": "lgbx",
+    "config": {
+     "leaves": 63,
+     "trees": 1200,
+     "learning_rate": 0.02
+    },
+    "lgb_params": {
+     "colsample_bytree": 0.5,
+     "min_child_samples": 300
+    },
+    "seed": 9418,
+    "weather_shape": true,
+    "start_year": 2011,
+    "demand": "A5",
+    "demand_source": "anubhav_blend"
+   },
+   "seconds": 463.6780068874359,
+   "train_rows": 245472,
+   "train_end": "2024-12-31",
+   "pred_rows": 32112
+  },
+  "suhan_c2ws_A5_s9419": {
+   "spec": {
+    "kind": "lgbx",
+    "config": {
+     "leaves": 63,
+     "trees": 1200,
+     "learning_rate": 0.02
+    },
+    "lgb_params": {
+     "colsample_bytree": 0.5,
+     "min_child_samples": 300
+    },
+    "seed": 9419,
+    "weather_shape": true,
+    "start_year": 2011,
+    "demand": "A5",
+    "demand_source": "anubhav_blend"
+   },
+   "seconds": 462.89393186569214,
+   "train_rows": 245472,
+   "train_end": "2024-12-31",
+   "pred_rows": 32112
+  },
+  "suhan_c2ws_A5_s9420": {
+   "spec": {
+    "kind": "lgbx",
+    "config": {
+     "leaves": 63,
+     "trees": 1200,
+     "learning_rate": 0.02
+    },
+    "lgb_params": {
+     "colsample_bytree": 0.5,
+     "min_child_samples": 300
+    },
+    "seed": 9420,
+    "weather_shape": true,
+    "start_year": 2011,
+    "demand": "A5",
+    "demand_source": "anubhav_blend"
+   },
+   "seconds": 557.2390537261963,
+   "train_rows": 245472,
+   "train_end": "2024-12-31",
+   "pred_rows": 32112
+  },
+  "suhan_c2ws_A5_s9421": {
+   "spec": {
+    "kind": "lgbx",
+    "config": {
+     "leaves": 63,
+     "trees": 1200,
+     "learning_rate": 0.02
+    },
+    "lgb_params": {
+     "colsample_bytree": 0.5,
+     "min_child_samples": 300
+    },
+    "seed": 9421,
+    "weather_shape": true,
+    "start_year": 2011,
+    "demand": "A5",
+    "demand_source": "anubhav_blend"
+   },
+   "seconds": 558.1917798519135,
+   "train_rows": 245472,
+   "train_end": "2024-12-31",
+   "pred_rows": 32112
+  },
+  "suhan_c2ws_s9417": {
+   "spec": {
+    "kind": "lgbx",
+    "config": {
+     "leaves": 63,
+     "trees": 1200,
+     "learning_rate": 0.02
+    },
+    "lgb_params": {
+     "colsample_bytree": 0.5,
+     "min_child_samples": 300
+    },
+    "seed": 9417,
+    "weather_shape": true
+   },
+   "seconds": 576.9241018295288,
+   "train_rows": 261644,
+   "train_end": "2024-12-31",
+   "pred_rows": 32112
+  },
+  "suhan_c2ws_s9418": {
+   "spec": {
+    "kind": "lgbx",
+    "config": {
+     "leaves": 63,
+     "trees": 1200,
+     "learning_rate": 0.02
+    },
+    "lgb_params": {
+     "colsample_bytree": 0.5,
+     "min_child_samples": 300
+    },
+    "seed": 9418,
+    "weather_shape": true
+   },
+   "seconds": 582.9499411582947,
+   "train_rows": 261644,
+   "train_end": "2024-12-31",
+   "pred_rows": 32112
+  },
+  "suhan_c2ws_s9419": {
+   "spec": {
+    "kind": "lgbx",
+    "config": {
+     "leaves": 63,
+     "trees": 1200,
+     "learning_rate": 0.02
+    },
+    "lgb_params": {
+     "colsample_bytree": 0.5,
+     "min_child_samples": 300
+    },
+    "seed": 9419,
+    "weather_shape": true
+   },
+   "seconds": 585.3083469867706,
+   "train_rows": 261644,
+   "train_end": "2024-12-31",
+   "pred_rows": 32112
+  },
+  "suhan_c2ws_s9420": {
+   "spec": {
+    "kind": "lgbx",
+    "config": {
+     "leaves": 63,
+     "trees": 1200,
+     "learning_rate": 0.02
+    },
+    "lgb_params": {
+     "colsample_bytree": 0.5,
+     "min_child_samples": 300
+    },
+    "seed": 9420,
+    "weather_shape": true
+   },
+   "seconds": 584.5806140899658,
+   "train_rows": 261644,
+   "train_end": "2024-12-31",
+   "pred_rows": 32112
+  },
+  "suhan_c2ws_s9421": {
+   "spec": {
+    "kind": "lgbx",
+    "config": {
+     "leaves": 63,
+     "trees": 1200,
+     "learning_rate": 0.02
+    },
+    "lgb_params": {
+     "colsample_bytree": 0.5,
+     "min_child_samples": 300
+    },
+    "seed": 9421,
+    "weather_shape": true
+   },
+   "seconds": 339.59630393981934,
+   "train_rows": 261644,
+   "train_end": "2024-12-31",
+   "pred_rows": 32112
+  }
+ }
+}

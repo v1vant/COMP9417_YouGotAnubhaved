@@ -291,5 +291,205 @@
   "start_year": 2011,
   "demand": "A5",
   "demand_source": "anubhav_blend"
+ },
+ "suhan_c2ws_s9417": {
+  "kind": "lgbx",
+  "config": {
+   "leaves": 63,
+   "trees": 1200,
+   "learning_rate": 0.02
+  },
+  "lgb_params": {
+   "colsample_bytree": 0.5,
+   "min_child_samples": 300
+  },
+  "seed": 9417,
+  "weather_shape": true
+ },
+ "suhan_c2ws_s9418": {
+  "kind": "lgbx",
+  "config": {
+   "leaves": 63,
+   "trees": 1200,
+   "learning_rate": 0.02
+  },
+  "lgb_params": {
+   "colsample_bytree": 0.5,
+   "min_child_samples": 300
+  },
+  "seed": 9418,
+  "weather_shape": true
+ },
+ "suhan_c2ws_s9419": {
+  "kind": "lgbx",
+  "config": {
+   "leaves": 63,
+   "trees": 1200,
+   "learning_rate": 0.02
+  },
+  "lgb_params": {
+   "colsample_bytree": 0.5,
+   "min_child_samples": 300
+  },
+  "seed": 9419,
+  "weather_shape": true
+ },
+ "suhan_c2ws_s9420": {
+  "kind": "lgbx",
+  "config": {
+   "leaves": 63,
+   "trees": 1200,
+   "learning_rate": 0.02
+  },
+  "lgb_params": {
+   "colsample_bytree": 0.5,
+   "min_child_samples": 300
+  },
+  "seed": 9420,
+  "weather_shape": true
+ },
+ "suhan_c2ws_s9421": {
+  "kind": "lgbx",
+  "config": {
+   "leaves": 63,
+   "trees": 1200,
+   "learning_rate": 0.02
+  },
+  "lgb_params": {
+   "colsample_bytree": 0.5,
+   "min_child_samples": 300
+  },
+  "seed": 9421,
+  "weather_shape": true
+ },
+ "lgbm63ws_from2011_s9417": {
+  "kind": "lgbx",
+  "config": {
+   "leaves": 63,
+   "trees": 900,
+   "learning_rate": 0.025
+  },
+  "seed": 9417,
+  "weather_shape": true,
+  "start_year": 2011
+ },
+ "lgbm63ws_from2011_s9418": {
+  "kind": "lgbx",
+  "config": {
+   "leaves": 63,
+   "trees": 900,
+   "learning_rate": 0.025
+  },
+  "seed": 9418,
+  "weather_shape": true,
+  "start_year": 2011
+ },
+ "lgbm63ws_from2011_s9419": {
+  "kind": "lgbx",
+  "config": {
+   "leaves": 63,
+   "trees": 900,
+   "learning_rate": 0.025
+  },
+  "seed": 9419,
+  "weather_shape": true,
+  "start_year": 2011
+ },
+ "lgbm63ws_from2011_s9420": {
+  "kind": "lgbx",
+  "config": {
+   "leaves": 63,
+   "trees": 900,
+   "learning_rate": 0.025
+  },
+  "seed": 9420,
+  "weather_shape": true,
+  "start_year": 2011
+ },
+ "lgbm63ws_from2011_s9421": {
+  "kind": "lgbx",
+  "config": {
+   "leaves": 63,
+   "trees": 900,
+   "learning_rate": 0.025
+  },
+  "seed": 9421,
+  "weather_shape": true,
+  "start_year": 2011
+ },
+ "suhan_c2ws_from2011_s9417": {
+  "kind": "lgbx",
+  "seed": 9417,
+  "weather_shape": true,
+  "start_year": 2011,
+  "config": {
+   "leaves": 63,
+   "trees": 1200,
+   "learning_rate": 0.02
+  },
+  "lgb_params": {
+   "colsample_bytree": 0.5,
+   "min_child_samples": 300
+  }
+ },
+ "suhan_c2ws_from2011_s9418": {
+  "kind": "lgbx",
+  "seed": 9418,
+  "weather_shape": true,
+  "start_year": 2011,
+  "config": {
+   "leaves": 63,
+   "trees": 1200,
+   "learning_rate": 0.02
+  },
+  "lgb_params": {
+   "colsample_bytree": 0.5,
+   "min_child_samples": 300
+  }
+ },
+ "suhan_c2ws_from2011_s9419": {
+  "kind": "lgbx",
+  "seed": 9419,
+  "weather_shape": true,
+  "start_year": 2011,
+  "config": {
+   "leaves": 63,
+   "trees": 1200,
+   "learning_rate": 0.02
+  },
+  "lgb_params": {
+   "colsample_bytree": 0.5,
+   "min_child_samples": 300
+  }
+ },
+ "suhan_c2ws_from2011_s9420": {
+  "kind": "lgbx",
+  "seed": 9420,
+  "weather_shape": true,
+  "start_year": 2011,
+  "config": {
+   "leaves": 63,
+   "trees": 1200,
+   "learning_rate": 0.02
+  },
+  "lgb_params": {
+   "colsample_bytree": 0.5,
+   "min_child_samples": 300
+  }
+ },
+ "suhan_c2ws_from2011_s9421": {
+  "kind": "lgbx",
+  "seed": 9421,
+  "weather_shape": true,
+  "start_year": 2011,
+  "config": {
+   "leaves": 63,
+   "trees": 1200,
+   "learning_rate": 0.02
+  },
+  "lgb_params": {
+   "colsample_bytree": 0.5,
+   "min_child_samples": 300
+  }
  }
 }
