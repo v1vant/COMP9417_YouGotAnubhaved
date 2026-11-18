@@ -5,6 +5,7 @@
     python code/compare_price_models.py --models mlp svm            # chosen model types or exact names
     python code/compare_price_models.py --models compact            # same-45-input comparison, ~15 s
     python code/compare_price_models.py --models all --output results/model_comparison
+    python code/compare_price_models.py --holdout --confirm-holdout --models mlp boosted_0
 
 Model names
   native   the team's own price models, each with the inputs train.py gives it
@@ -25,6 +26,16 @@ Every model is scored on the same 2014 half-hours with accuracy and balanced acc
 decision threshold that maximises 2014 balanced accuracy (as select_models does) and at 0.5.
 Both baselines are always included.  Because the threshold and the MLP epoch are chosen on 2014,
 all scores are validation numbers and slightly optimistic; they are not test scores.
+
+HOLDOUT MODE (--holdout --confirm-holdout): one-off check on 2025-26.  Models are fitted on every
+year up to 2024 and scored on 2025-26, the closest analogue of the live week.  Nothing may be
+tuned on the holdout, so the threshold is fixed at 0.5 (all models use balanced class weights),
+the MLP trains a fixed 3 epochs (its best epoch on 2014) and each score comes with a 95%
+day-block bootstrap interval.  Do not choose or tune models by this result (that would turn the
+holdout into a selection set), and say in the report that the holdout was used as a final
+check.  The saved package artifacts cannot be used for this: they were trained through Oct 2026.
+Native models here use threshold 0.5, not the tuned threshold of the deployed models, so numbers
+can differ slightly from the team's holdout results.
 
 PyTorch and LightGBM must not share a process on macOS (their OpenMP runtimes deadlock), so models
 that need PyTorch run in a child process that hands its probabilities back; the blend is
@@ -71,24 +82,30 @@ class Entry:
 
 
 class Data:
-    """Chronological split built lazily: train 2010-2013, validate 2014."""
+    """Chronological split built lazily.
+    Default: train 2010-2013, validate 2014.  holdout=True: train 2010-2024, score 2025-26."""
 
-    def __init__(self, path, quick=False):
-        self.path, self.quick = path, quick
+    def __init__(self, path, quick=False, holdout=False):
+        self.path, self.quick, self.holdout = path, quick, holdout
         self._full = self._compact = None
+
+    def bounds(self):
+        """(last training year, first scored year, last scored year)"""
+        return (2024, 2025, 9999) if self.holdout else (2013, 2014, 2014)
 
     def full(self):
         if self._full is None:
             features, truth = training_table(load_data(self.path))
-            years = market_days(features.index).year
-            train, valid = years <= 2013, years == 2014
+            year = market_days(features.index).year
+            train_until, valid_from, valid_to = self.bounds()
+            train, valid = year <= train_until, (year >= valid_from) & (year <= valid_to)
             self._full = (features.loc[train], truth.loc[train],
                           features.loc[valid], truth.loc[valid])
         return self._full
 
     def compact(self):
         if self._compact is None:
-            self._compact = pm.prepare(self.path)
+            self._compact = pm.prepare(self.path, *self.bounds())
         return self._compact
 
     def y_valid(self):
@@ -126,6 +143,10 @@ def run_compact_boosted(data, config):
 
 def run_mlp(data, config):
     _, x_train, y_train, x_valid, y_valid, _ = data.compact()
+    if data.holdout:     # never select an epoch on the holdout: use the epoch count found on 2014
+        probabilities, _, _ = pm.fit_mlp(x_train, y_train, x_valid, y_valid,
+                                         fixed_epochs=config["holdout_epochs"])
+        return probabilities, x_train.shape[1], f"{config['holdout_epochs']} epochs, fixed"
     probabilities, epoch, _ = pm.fit_mlp(x_train, y_train, x_valid, y_valid,
                                          epochs=10 if data.quick else config["epochs"],
                                          patience=config["patience"], decay=config["decay"])
@@ -168,7 +189,7 @@ def compact_entries():
 def torch_entries():
     return [Entry("mlp", "mlp", "compact", True,
                   "MLP 45-64-32-1, dropout 0.1, early stopping, 45 shared inputs", run_mlp,
-                  {"epochs": 40, "patience": 6, "decay": 1e-4})]
+                  {"epochs": 40, "patience": 6, "decay": 1e-4, "holdout_epochs": 3})]
 
 
 BLEND_WEIGHTS = (0.5, 0.5)       # LightGBM, MLP
@@ -198,8 +219,8 @@ def select(entries, tokens):
 
 
 # ---- scoring -----------------------------------------------------------------------------
-def score(name, family, inputs, probabilities, y, seconds, note=""):
-    threshold = pm.best_threshold(y, probabilities)
+def score(name, family, inputs, probabilities, y, seconds, note="", threshold=None):
+    threshold = pm.best_threshold(y, probabilities) if threshold is None else threshold
     predicted = probabilities > threshold
     return {"model": name, "family": family, "inputs": inputs, "threshold": threshold,
             "accuracy": accuracy_score(y, predicted) * 100,
@@ -208,8 +229,21 @@ def score(name, family, inputs, probabilities, y, seconds, note=""):
             "fit_seconds": seconds, "note": note}
 
 
+def ba_interval(y, predicted, days, n=1000, seed=0):
+    """95% interval for balanced accuracy, resampling whole days (they are strongly correlated)."""
+    frame = pd.DataFrame({"pos": y == 1, "neg": y == 0, "pos_hit": (y == 1) & predicted,
+                          "neg_hit": (y == 0) & ~predicted, "day": days})
+    counts = frame.groupby("day").sum().to_numpy(dtype=float)     # pos, neg, pos_hit, neg_hit
+    draws = np.random.default_rng(seed).integers(0, len(counts), (n, len(counts)))
+    sample = counts[draws]
+    ba = 100 * 0.5 * (sample[..., 2].sum(1) / sample[..., 0].sum(1)
+                      + sample[..., 3].sum(1) / sample[..., 1].sum(1))
+    return tuple(np.percentile(ba, [2.5, 97.5]))
+
+
 def baseline_rows(data):
     x_valid, y = data.full()[2], data.y_valid()
+    days = market_days(x_valid.index)
     rows = []
     for name, column in (("baseline: yesterday", "price_margin_1"),
                          ("baseline: last week", "price_margin_7")):
@@ -218,6 +252,8 @@ def baseline_rows(data):
                      "accuracy": accuracy_score(y, predicted) * 100,
                      "balanced_accuracy": balanced_accuracy_score(y, predicted) * 100,
                      "balanced_accuracy_at_0.5": np.nan, "fit_seconds": 0.0, "note": ""})
+        if data.holdout:
+            rows[-1]["ci_low"], rows[-1]["ci_high"] = ba_interval(y, predicted, days)
     return rows
 
 
@@ -248,6 +284,7 @@ def run_torch_worker(names, args):
     with tempfile.TemporaryDirectory() as directory:
         command = [sys.executable, os.path.abspath(__file__), "--worker", "--out-dir", directory,
                    "--data", args.data] + (["--quick"] if args.quick else []) + \
+                  (["--holdout", "--confirm-holdout"] if args.holdout else []) + \
                   ["--models"] + names
         result = subprocess.run(command)
         meta_path, preds_path = (os.path.join(directory, "meta.json"),
@@ -278,6 +315,8 @@ def add_blend(outputs):
 
 def build_rows(outputs, families, data):
     y = data.y_valid()
+    fixed = 0.5 if data.holdout else None          # never tune the threshold on the holdout
+    days = market_days(data.full()[2].index)
     rows = []
     for name, out in outputs.items():
         if out["prob"] is None:
@@ -286,24 +325,35 @@ def build_rows(outputs, families, data):
                          "balanced_accuracy_at_0.5": np.nan, "fit_seconds": out["seconds"],
                          "note": out["note"]})
         else:
-            rows.append(score(name, families[name], out["inputs"], out["prob"], y,
-                              out["seconds"], out["note"]))
+            row = score(name, families[name], out["inputs"], out["prob"], y,
+                        out["seconds"], out["note"], threshold=fixed)
+            if data.holdout:
+                row["ci_low"], row["ci_high"] = ba_interval(y, out["prob"] > fixed, days)
+            rows.append(row)
     return rows + baseline_rows(data)
 
 
-def print_table(rows):
+def print_table(rows, holdout=False):
     models = sorted([r for r in rows if r["family"] != "baseline"],
                     key=lambda r: -np.nan_to_num(r["balanced_accuracy"], nan=-1))
     baselines = [r for r in rows if r["family"] == "baseline"]
     header = f"{'model':20s} {'inputs':>6s} {'thr':>5s} {'acc %':>7s} {'bal.acc %':>10s} " \
-             f"{'@0.5':>7s} {'secs':>6s}  note"
+             f"{'@0.5':>7s} {'secs':>6s}" + ("  95% interval " if holdout else "") + "  note"
     print("\n" + header + "\n" + "-" * len(header))
     for r in models + baselines:
         fmt = lambda v, f: "" if pd.isna(v) else format(v, f)  # noqa: E731
         print(f"{r['model']:20s} {fmt(r['inputs'], '.0f'):>6s} {fmt(r['threshold'], '.2f'):>5s} "
               f"{fmt(r['accuracy'], '.2f'):>7s} {fmt(r['balanced_accuracy'], '.2f'):>10s} "
               f"{fmt(r['balanced_accuracy_at_0.5'], '.2f'):>7s} {r['fit_seconds']:6.0f}  "
-              f"{r['note']}")
+              + (f"[{r['ci_low']:.1f}, {r['ci_high']:.1f}]  " if holdout and not pd.isna(
+                  r.get("ci_low", np.nan)) else ("               " if holdout else ""))
+              + f"{r['note']}")
+    if holdout:
+        print("\nHOLDOUT: fit on 2010-2024, scored on 2025-26 at a fixed 0.5 threshold with a fixed "
+              "MLP epoch count;\nnothing was tuned on these days. Intervals resample whole days "
+              "(95%). Do not choose or tune\nmodels by this table; report it as a final check. 'inputs' differs between "
+              "native and compact models.")
+        return
     print("\nSplit: fit 2010-2013, validate 2014. Thresholds (and the MLP epoch) are chosen on "
           "2014, so these\nare validation scores, slightly optimistic, not test scores. "
           "'inputs' differs between native and\ncompact models; compare compact models with each "
@@ -321,12 +371,19 @@ def main():
     parser.add_argument("--data", default=DEFAULT_DATA)
     parser.add_argument("--output", help="directory to save comparison.csv")
     parser.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
+    parser.add_argument("--holdout", action="store_true",
+                        help="one-off check: fit on 2010-2024, score 2025-26 (needs --confirm-holdout)")
+    parser.add_argument("--confirm-holdout", action="store_true",
+                        help="acknowledge that this looks at the 2025-26 holdout")
     parser.add_argument("--out-dir", help=argparse.SUPPRESS)
     args = parser.parse_args()
+    if args.holdout and not args.confirm_holdout:
+        raise SystemExit("--holdout looks at the 2025-26 holdout. Decide which models and settings to "
+                         "evaluate first, then add --confirm-holdout.")
 
     if args.worker:   # child process: only the PyTorch models, no LightGBM import
         entries = [e for e in torch_entries() if e.name in args.models]
-        outputs = run_entries(entries, Data(args.data, args.quick))
+        outputs = run_entries(entries, Data(args.data, args.quick, args.holdout))
         meta = {n: {k: (None if (isinstance(v, float) and np.isnan(v)) else v)
                     for k, v in o.items() if k != "prob"} for n, o in outputs.items()}
         np.savez(os.path.join(args.out_dir, "preds.npz"),
@@ -353,10 +410,13 @@ def main():
         if needed - names:
             print(f"'blend' also runs {', '.join(sorted(needed - names))} (its components).")
         chosen = [e for e in entries if e.name in names | needed]
+    if args.holdout:
+        print("*** HOLDOUT MODE: fit on 2010-2024, scoring 2025-26. Threshold fixed at 0.5, MLP "
+              "epochs fixed. ***")
     print(f"Running {len(chosen)} model(s): {', '.join(e.name for e in chosen)}"
           f"{'  [quick]' if args.quick else ''}\n", flush=True)
 
-    data = Data(args.data, args.quick)
+    data = Data(args.data, args.quick, args.holdout)
     outputs = run_entries([e for e in chosen if not e.needs_torch and e.name != "blend"], data)
     torch_names = [e.name for e in chosen if e.needs_torch]
     if torch_names:
@@ -366,7 +426,7 @@ def main():
         add_blend(outputs)
 
     rows = build_rows(outputs, {e.name: e.family for e in chosen}, data)
-    print_table(rows)
+    print_table(rows, args.holdout)
     if args.output:
         os.makedirs(args.output, exist_ok=True)
         path = os.path.join(args.output, "comparison.csv")

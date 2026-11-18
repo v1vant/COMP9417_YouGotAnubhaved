@@ -86,11 +86,11 @@ def report(name, truth, probabilities=None, predictions=None, threshold=0.5):
             "balanced_accuracy": balanced_accuracy_score(truth, predictions) * 100}
 
 
-def prepare(data_path):
-    """Chronological split and scaled inputs: train 2010-2013, validate 2014."""
+def prepare(data_path, train_until=2013, valid_from=2014, valid_to=2014):
+    """Chronological split and scaled inputs. Default: train 2010-2013, validate 2014."""
     features, truth = training_table(load_data(data_path))
     years = market_days(features.index).year
-    train, valid = years <= 2013, years == 2014
+    train, valid = years <= train_until, (years >= valid_from) & (years <= valid_to)
     columns = [c for c in FEATURES if c in features.columns]
     missing = sorted(set(FEATURES) - set(columns))
     if missing:
@@ -104,9 +104,13 @@ def prepare(data_path):
     return columns, x_train, y_train, x_valid, y_valid, baseline
 
 
-def fit_mlp(x_train, y_train, x_valid, y_valid, epochs=40, patience=6, lr=1e-3, decay=1e-4):
+def fit_mlp(x_train, y_train, x_valid, y_valid, epochs=40, patience=6, lr=1e-3, decay=1e-4,
+            fixed_epochs=None):
     """Adam on class-balanced binary cross-entropy; keep the epoch with the best validation
-    balanced accuracy (at threshold 0.5), stop after `patience` epochs without improvement."""
+    balanced accuracy (at threshold 0.5), stop after `patience` epochs without improvement.
+
+    With `fixed_epochs=N` the network trains for exactly N epochs and the validation labels are
+    never used (no epoch selection), so the returned probabilities carry no tuning on them."""
     import torch
     from torch import nn
     torch.manual_seed(SEED)
@@ -122,6 +126,8 @@ def fit_mlp(x_train, y_train, x_valid, y_valid, epochs=40, patience=6, lr=1e-3, 
         data, batch_size=512, shuffle=True, generator=torch.Generator().manual_seed(SEED))
     valid = torch.from_numpy(x_valid)
     best, best_epoch, best_state, stale, history = -1.0, 0, None, 0, []
+    if fixed_epochs:
+        epochs = fixed_epochs
     for epoch in range(1, epochs + 1):
         model.train()
         total = 0.0
@@ -131,6 +137,10 @@ def fit_mlp(x_train, y_train, x_valid, y_valid, epochs=40, patience=6, lr=1e-3, 
             loss.backward()
             optimiser.step()
             total += loss.item() * len(batch_x)
+        if fixed_epochs:
+            history.append({"epoch": epoch, "train_loss": total / len(data)})
+            print(f"  epoch {epoch:2d}  loss {total / len(data):.4f}", flush=True)
+            continue
         model.eval()
         with torch.inference_mode():
             score = balanced_accuracy_score(y_valid, model(valid).numpy() > 0)
@@ -144,7 +154,10 @@ def fit_mlp(x_train, y_train, x_valid, y_valid, epochs=40, patience=6, lr=1e-3, 
             stale += 1
             if stale >= patience:
                 break
-    model.load_state_dict(best_state)
+    if fixed_epochs:
+        best_epoch = fixed_epochs
+    else:
+        model.load_state_dict(best_state)
     model.eval()
     with torch.inference_mode():
         probabilities = torch.sigmoid(model(valid)).numpy()

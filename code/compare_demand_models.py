@@ -5,6 +5,7 @@
     python code/compare_demand_models.py --models boosted mlp      # chosen types or exact names
     python code/compare_demand_models.py --models blend            # the deployed 50/50 blend
     python code/compare_demand_models.py --models all --output results/demand_comparison
+    python code/compare_demand_models.py --holdout --confirm-holdout --models blend
 
 Models (all use the team's own inputs from train.py / demand_mlp.py)
   linear_0, linear_1     Ridge regression, alpha 10 / 1000
@@ -22,6 +23,14 @@ quantity the live-week marking scheme uses for the demand task.
 
 These are 2014 validation scores, not test scores: 2014 was also used to choose the model
 configurations in earlier work.
+
+HOLDOUT MODE (--holdout --confirm-holdout): one-off check on 2025-26.  Models are fitted on every
+year up to 2024 and scored on 2025-26, the closest analogue of the live week.  Nothing is tuned on
+the holdout (the MLP already uses a fixed epoch count), and MAPE and the relative improvement
+over yesterday come with 95% day-block bootstrap intervals.  Do not choose or tune models by
+this result (that would turn the holdout into a selection set), and say in the report that the
+holdout was used as a final check.  The saved package artifacts cannot be used for this: they
+were trained through Oct 2026.
 
 PyTorch and LightGBM must not share a process on macOS (their OpenMP runtimes deadlock), so the
 MLP runs in a child process that hands its predictions back; the blend is computed here.
@@ -66,16 +75,22 @@ class Entry:
 
 
 class Data:
-    """Chronological split built lazily: train 2010-2013, validate 2014."""
+    """Chronological split built lazily.
+    Default: train 2010-2013, validate 2014.  holdout=True: train 2010-2024, score 2025-26."""
 
-    def __init__(self, path, quick=False):
-        self.path, self.quick, self._full = path, quick, None
+    def __init__(self, path, quick=False, holdout=False):
+        self.path, self.quick, self.holdout, self._full = path, quick, holdout, None
+
+    def bounds(self):
+        """(last training year, first scored year, last scored year)"""
+        return (2024, 2025, 9999) if self.holdout else (2013, 2014, 2014)
 
     def full(self):
         if self._full is None:
             features, truth = training_table(load_data(self.path))
-            years = market_days(features.index).year
-            train, valid = years <= 2013, years == 2014
+            year = market_days(features.index).year
+            train_until, valid_from, valid_to = self.bounds()
+            train, valid = year <= train_until, (year >= valid_from) & (year <= valid_to)
             self._full = (features.loc[train], truth.loc[train],
                           features.loc[valid], truth.loc[valid])
         return self._full
@@ -169,6 +184,7 @@ def run_torch_worker(names, args):
     with tempfile.TemporaryDirectory() as directory:
         command = [sys.executable, os.path.abspath(__file__), "--worker", "--out-dir", directory,
                    "--data", args.data] + (["--quick"] if args.quick else []) + \
+                  (["--holdout", "--confirm-holdout"] if args.holdout else []) + \
                   ["--models"] + names
         result = subprocess.run(command)
         meta_path, preds_path = (os.path.join(directory, "meta.json"),
@@ -208,6 +224,19 @@ def make_row(name, family, inputs, pred, y, seconds, note, baseline_mape=None):
             "fit_seconds": seconds, "note": note}
 
 
+def day_ape(y, pred, days):
+    """Mean absolute percentage error of each day (every day has 48 half-hours)."""
+    return pd.Series(100 * np.abs(y - pred) / y).groupby(days).mean().to_numpy()
+
+
+def demand_intervals(model_days, base_days, n=1000, seed=0):
+    """95% day-block bootstrap intervals for MAPE and for I = 100 * (1 - MAPE / MAPE_yesterday),
+    resampling the same days for model and baseline."""
+    draws = np.random.default_rng(seed).integers(0, len(model_days), (n, len(model_days)))
+    mape, base = model_days[draws].mean(1), base_days[draws].mean(1)
+    return (*np.percentile(mape, [2.5, 97.5]), *np.percentile(100 * (1 - mape / base), [2.5, 97.5]))
+
+
 def build_rows(outputs, families, data):
     y, x_valid = data.y_valid(), data.full()[2]
     baselines = {"baseline: yesterday": x_valid["nsw_demand_lag_1"].to_numpy(),
@@ -216,21 +245,42 @@ def build_rows(outputs, families, data):
     rows = [make_row(n, families[n], o["inputs"], o["pred"], y, o["seconds"], o["note"], yesterday)
             for n, o in outputs.items()]
     rows += [make_row(n, "baseline", 0, p, y, 0.0, "", yesterday) for n, p in baselines.items()]
+    if data.holdout:
+        days = np.asarray(market_days(x_valid.index))
+        base_days = day_ape(y, baselines["baseline: yesterday"], days)
+        predictions = {n: o["pred"] for n, o in outputs.items()} | baselines
+        for row in rows:
+            pred = predictions.get(row["model"])
+            if pred is not None:
+                (row["mape_low"], row["mape_high"], row["improvement_low"],
+                 row["improvement_high"]) = demand_intervals(day_ape(y, pred, days), base_days)
     return rows
 
 
-def print_table(rows):
+def print_table(rows, holdout=False):
     models = sorted([r for r in rows if r["family"] != "baseline"],
                     key=lambda r: np.nan_to_num(r["MAPE"], nan=1e9))
     baselines = [r for r in rows if r["family"] == "baseline"]
     header = (f"{'model':20s} {'inputs':>6s} {'MAPE %':>8s} {'MAE MW':>8s} "
-              f"{'vs yest.':>9s} {'secs':>6s}  note")
+              f"{'vs yest.':>9s} {'secs':>6s}"
+              + ("  MAPE 95% interval   vs yest. 95% interval" if holdout else "") + "  note")
     print("\n" + header + "\n" + "-" * len(header))
     for r in models + baselines:
         fmt = lambda v, f: "" if pd.isna(v) else format(v, f)  # noqa: E731
         print(f"{r['model']:20s} {fmt(r['inputs'], '.0f'):>6s} {fmt(r['MAPE'], '.3f'):>8s} "
               f"{fmt(r['MAE'], '.1f'):>8s} {fmt(r['vs_yesterday_%'], '+.1f') + ('%' if not pd.isna(r['vs_yesterday_%']) else ''):>9s} "
-              f"{r['fit_seconds']:6.0f}  {r['note']}")
+              f"{r['fit_seconds']:6.0f}  "
+              + (f"[{r['mape_low']:.2f}, {r['mape_high']:.2f}]   "
+                 f"[{r['improvement_low']:+.1f}%, {r['improvement_high']:+.1f}%]   "
+                 if holdout and not pd.isna(r.get("mape_low", np.nan)) else
+                 ("                                          " if holdout else ""))
+              + f"{r['note']}")
+    if holdout:
+        print("\nHOLDOUT: fit on 2010-2024, scored on 2025-26; nothing was tuned on these days. "
+              "Intervals resample whole\ndays (95%). 'vs yest.' = 100 * (1 - MAPE / MAPE of "
+              "yesterday); live-week marks use this\nquantity. Do not choose or tune models by "
+              "this table; report it as a final check.")
+        return
     print("\nSplit: fit 2010-2013, validate 2014 (validation, not test, scores). 'vs yest.' is the "
           "relative MAPE\nimprovement over the same-half-hour-yesterday baseline; the live-week "
           "marks use this quantity\n(5 marks need >= 40%).")
@@ -247,12 +297,19 @@ def main():
     parser.add_argument("--data", default=DEFAULT_DATA)
     parser.add_argument("--output", help="directory to save comparison.csv")
     parser.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
+    parser.add_argument("--holdout", action="store_true",
+                        help="one-off check: fit on 2010-2024, score 2025-26 (needs --confirm-holdout)")
+    parser.add_argument("--confirm-holdout", action="store_true",
+                        help="acknowledge that this looks at the 2025-26 holdout")
     parser.add_argument("--out-dir", help=argparse.SUPPRESS)
     args = parser.parse_args()
+    if args.holdout and not args.confirm_holdout:
+        raise SystemExit("--holdout looks at the 2025-26 holdout. Decide which models and settings to "
+                         "evaluate first, then add --confirm-holdout.")
 
     if args.worker:       # child process: PyTorch models only, no LightGBM import
         entries = [e for e in torch_entries() if e.name in args.models]
-        outputs = run_entries(entries, Data(args.data, args.quick))
+        outputs = run_entries(entries, Data(args.data, args.quick, args.holdout))
         meta = {n: {k: (None if (isinstance(v, float) and np.isnan(v)) else v)
                     for k, v in o.items() if k != "pred"} for n, o in outputs.items()}
         np.savez(os.path.join(args.out_dir, "preds.npz"),
@@ -277,10 +334,12 @@ def main():
         if needed - names:
             print(f"'blend' also runs {', '.join(sorted(needed - names))} (its components).")
         chosen = [e for e in entries if e.name in names | needed]
+    if args.holdout:
+        print("*** HOLDOUT MODE: fit on 2010-2024, scoring 2025-26. Nothing is tuned on it. ***")
     print(f"Running {len(chosen)} model(s): {', '.join(e.name for e in chosen)}"
           f"{'  [quick]' if args.quick else ''}\n", flush=True)
 
-    data = Data(args.data, args.quick)
+    data = Data(args.data, args.quick, args.holdout)
     outputs = run_entries([e for e in chosen if not e.needs_torch and e.name != "blend"], data)
     torch_names = [e.name for e in chosen if e.needs_torch]
     if torch_names:
@@ -291,7 +350,7 @@ def main():
 
     families = {e.name: e.family for e in chosen}
     rows = build_rows(outputs, families, data)
-    print_table(rows)
+    print_table(rows, args.holdout)
     if args.output:
         os.makedirs(args.output, exist_ok=True)
         path = os.path.join(args.output, "comparison.csv")
