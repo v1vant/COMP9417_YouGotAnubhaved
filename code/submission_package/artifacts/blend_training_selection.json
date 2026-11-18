@@ -18,7 +18,7 @@
       "leaves": 31,
       "trees": 600,
       "learning_rate": 0.04,
-      "threshold": 0.5700000000000001
+      "threshold": 0.5
     },
     "window_years": null,
     "strategy": "periodic_expanding",

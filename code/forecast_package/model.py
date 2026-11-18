@@ -340,7 +340,7 @@ def naive_bayes_probability(params, features):
 #
 # with 0 <= alpha_i <= C_{y_i}, C = 0.3 rescaled per class by class_weight="balanced"
 # (C_c = C * n / (2 * n_c)). alpha and b are learned; gamma and C are not.
-# Prediction: nsw_price_up = 1 if 1 / (1 + exp(-f(x))) > tuned threshold, else 0.
+# Prediction: nsw_price_up = 1 if 1 / (1 + exp(-f(x))) > 0.5 (train.PRICE_THRESHOLD), else 0.
 #
 # Exact RBF-kernel SVM on all 549 svm_columns (571 features less 22 duplicates). gamma (in units of 1/#features) and C are
 # hyperparameters chosen on validation data, not learned by training.

@@ -5,7 +5,8 @@
 The current demand forecast is a frozen **50/50 blend** of the 900-tree LightGBM
 and a **ten-epoch MLP (405 → 128 → 64 → 1)**, both using 405 demand features.
 Price uses the unchanged **571-feature LightGBM classifier** (600 trees,
-probability threshold 0.57). The context gate is disabled.
+probability threshold fixed at 0.5; the 2014-tuned 0.57 did not carry over to
+2015-2024). The context gate is disabled.
 Weather-shape features are disabled. Both `code/forecast_package/` and the staged
 `code/submission_package/` contain this model and its full-data artifacts.
 Running either package's `train.py CSV` uses the selected expanding-window

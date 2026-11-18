@@ -4,7 +4,7 @@
   "demand_features": 405,
   "price_features": 571,
   "weather_shape": false,
-  "price_probability_threshold": 0.57,
+  "price_probability_threshold": 0.5,
   "config": {
     "demand": {
       "name": "demand_boosted_3",
@@ -25,7 +25,7 @@
         "leaves": 31,
         "trees": 600,
         "learning_rate": 0.04,
-        "threshold": 0.5700000000000001
+        "threshold": 0.5
       },
       "window_years": null,
       "strategy": "periodic_expanding",

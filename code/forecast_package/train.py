@@ -19,10 +19,14 @@ from sklearn.svm import SVC
 
 from model import (NAIVE_BAYES, NEURAL_NET, SVM, fit_naive_bayes, load_data, market_days,
                    neural_net_columns, neural_net_log_mask, neural_net_transform,
-                   predict_task, price_probability, svm_columns, svm_inputs, training_table)
+                   predict_task, svm_columns, svm_inputs, training_table)
 
 SEED = 9417
-DEFAULT_SELECTION = {'demand': {'name': 'demand_boosted_3', 'config': {'family': 'boosted', 'leaves': 63, 'trees': 900, 'learning_rate': 0.025}, 'window_years': None, 'strategy': 'periodic_expanding', 'training_end': None}, 'price': {'name': 'price_boosted_2', 'config': {'family': 'boosted', 'leaves': 31, 'trees': 600, 'learning_rate': 0.04, 'threshold': 0.5700000000000001}, 'window_years': None, 'strategy': 'periodic_expanding', 'training_end': None}, 'strategy_selection_end': '2024-12-31', 'quick': False}
+# Price decision threshold, fixed at 0.5. A threshold tuned on 2014 did not carry over: on the
+# 2015-2024 team walk-forward, LightGBM-31 scores 79.89 balanced accuracy at 0.5 vs 79.45 at the
+# 2014-tuned 0.57, and 0.5 also beat 2014-tuned thresholds for every other model tested.
+PRICE_THRESHOLD = 0.5
+DEFAULT_SELECTION = {'demand': {'name': 'demand_boosted_3', 'config': {'family': 'boosted', 'leaves': 63, 'trees': 900, 'learning_rate': 0.025}, 'window_years': None, 'strategy': 'periodic_expanding', 'training_end': None}, 'price': {'name': 'price_boosted_2', 'config': {'family': 'boosted', 'leaves': 31, 'trees': 600, 'learning_rate': 0.04, 'threshold': 0.5}, 'window_years': None, 'strategy': 'periodic_expanding', 'training_end': None}, 'strategy_selection_end': '2024-12-31', 'quick': False}
 
 
 def candidates(task, quick=False):
@@ -65,7 +69,7 @@ def fit_svm(config, features, labels):
         class_weight="balanced", cache_size=1000))
     estimator.fit(svm_inputs(columns, features.iloc[rows]), y)
     return {"task": "price", "config": config, "features": columns,
-            "estimator": estimator, "threshold": config.get("threshold", 0.5)}
+            "estimator": estimator, "threshold": config.get("threshold", PRICE_THRESHOLD)}
 
 
 def neural_net_loss_gradients(layers, x, y, pos_weight, masks=None):
@@ -178,7 +182,7 @@ def fit_neural_net(config, features, labels):
     params.update(mean=mean, std=std, members=members, log=log,
                   winsorise=config.get("winsorise"))
     return {"task": "price", "config": config, "features": columns,
-            "estimator": params, "threshold": config.get("threshold", 0.5)}
+            "estimator": params, "threshold": config.get("threshold", PRICE_THRESHOLD)}
 
 
 def fit_model(task, config, features, truth):
@@ -210,7 +214,7 @@ def fit_model(task, config, features, truth):
         params = fit_naive_bayes(config, features, truth["price"])
         return {"task": task, "config": config,
                 "features": params["discrete"] + params["continuous"],
-                "estimator": params, "threshold": config.get("threshold", 0.5)}
+                "estimator": params, "threshold": config.get("threshold", PRICE_THRESHOLD)}
     elif config["family"] == "svm":
         if task != "price":
             raise ValueError("The SVM is only used for price direction")
@@ -240,7 +244,7 @@ def fit_model(task, config, features, truth):
         kwargs["ridge__sample_weight" if config["family"] == "linear" else "sample_weight"] = weights
     estimator.fit(features[columns], target, **kwargs)
     return {"task": task, "config": config, "features": columns,
-            "estimator": estimator, "threshold": config.get("threshold", 0.5)}
+            "estimator": estimator, "threshold": config.get("threshold", PRICE_THRESHOLD)}
 
 
 def select_models(features, truth, quick=False):
@@ -255,14 +259,9 @@ def select_models(features, truth, quick=False):
         for number, config in enumerate(candidates(task, quick)):
             name = f"{task}_{config['family']}_{number}"
             model = fit_model(task, config, features.loc[train], truth.loc[train])
-            if task == "price":
-                probabilities = price_probability(model, features.loc[valid])
-                thresholds = np.linspace(0.2, 0.8, 61)
-                scores = [balanced_accuracy_score(truth.loc[valid, "price"],
-                                                  probabilities > threshold)
-                          for threshold in thresholds]
-                model["threshold"] = float(thresholds[int(np.argmax(scores))])
-                config = dict(config, threshold=model["threshold"])
+            if task == "price":                      # fixed, not tuned on 2014
+                model["threshold"] = PRICE_THRESHOLD
+                config = dict(config, threshold=PRICE_THRESHOLD)
             predictions = predict_task(model, features.loc[valid])
             score = (np.mean(np.abs(truth.loc[valid, "demand"] - predictions)
                              / truth.loc[valid, "demand"]) * 100 if task == "demand" else

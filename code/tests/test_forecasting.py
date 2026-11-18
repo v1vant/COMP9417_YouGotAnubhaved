@@ -319,6 +319,40 @@ class NeuralNetTests(unittest.TestCase):
         self.assertTrue(any(c["family"] == "neural_net" for c in candidates("price")))
 
 
+class PriceThresholdTests(unittest.TestCase):
+    """The price decision threshold is fixed at 0.5 rather than tuned on 2014."""
+
+    def test_selection_keeps_threshold_at_one_half(self):
+        import train
+        # Spans late 2013 (fit rows) and early 2014 (selection rows).
+        features, truth = training_table(synthetic_data(days=75, start="2013-11-01"))
+        tiny = [{"family": "boosted", "leaves": 7, "trees": 20, "learning_rate": 0.1}]
+        with patch.object(train, "candidates", lambda task, quick=False: tiny):
+            selected, results, frozen, _ = train.select_models(features, truth)
+        self.assertEqual(train.PRICE_THRESHOLD, 0.5)
+        self.assertEqual(selected["price"]["config"]["threshold"], 0.5)
+        self.assertEqual(frozen[selected["price"]["name"]]["threshold"], 0.5)
+        self.assertTrue(all(r["config"]["threshold"] == 0.5 for r in results if r["task"] == "price"))
+
+    def test_default_selection_and_artifacts_use_one_half(self):
+        import ast
+        import json
+        import joblib
+        for package in ("forecast_package", "submission_package"):
+            with open(os.path.join(HERE, package, "train.py"), encoding="utf-8") as handle:
+                tree = ast.parse(handle.read())
+            constants = {node.targets[0].id: ast.literal_eval(node.value) for node in tree.body
+                         if isinstance(node, ast.Assign) and isinstance(node.targets[0], ast.Name)
+                         and node.targets[0].id in ("PRICE_THRESHOLD", "DEFAULT_SELECTION")}
+            self.assertEqual(constants["PRICE_THRESHOLD"], 0.5, package)
+            self.assertEqual(constants["DEFAULT_SELECTION"]["price"]["config"]["threshold"], 0.5, package)
+            artifacts = os.path.join(HERE, package, "artifacts")
+            with open(os.path.join(artifacts, "manifest.json"), encoding="utf-8") as handle:
+                self.assertEqual(json.load(handle)["selection"]["price"]["config"]["threshold"], 0.5, package)
+            self.assertEqual(joblib.load(os.path.join(artifacts, "models.joblib"))["price"]["threshold"],
+                             0.5, package)
+
+
 class StatisticalTests(unittest.TestCase):
     def test_metrics_match_harness_in_single_class_period(self):
         values = metric_values([5000, 6000], [0, 0], [5100, 5900], [0, 1])
