@@ -147,9 +147,12 @@ def validation_analysis(frame, features, labels, selected, frozen, output):
         if hasattr(estimator, "booster_"):
             values = estimator.booster_.feature_importance(importance_type="gain")
             kind = "training_split_gain"
-        else:
+        elif (hasattr(estimator, "steps") and len(estimator.steps) == 2
+              and hasattr(estimator.steps[-1][1], "coef_")):   # scaler + linear model only
             values = np.abs(estimator.steps[-1][1].coef_).ravel()
             kind = "absolute_standardized_coefficient"
+        else:
+            continue  # Naive Bayes has no coefficients or split gains
         importance.extend({"model": name, "feature": column, "importance": float(value),
                            "method": kind} for column, value in zip(bundle["features"], values))
     pd.DataFrame(importance).to_csv(os.path.join(output, "feature_importance.csv"), index=False)
@@ -224,7 +227,11 @@ def main():
                    if key not in ("pca", "clustering")}, handle, indent=2)
     reference = types.loc[types.index.year == 2014, "input_drift_score"].to_numpy()
     predictions = baseline_predictions(frame, simulation_index)
-    for suffix in sorted({name.split("_", 1)[1] for name in frozen}):
+    # Pair frozen models that exist for both tasks; price-only families (Naive Bayes)
+    # are reported in the 2014 validation results instead.
+    suffixes = [{name.split("_", 1)[1] for name in frozen if name.startswith(f"{task}_")}
+                for task in ("demand", "price")]
+    for suffix in sorted(suffixes[0] & suffixes[1]):
         predictions[f"frozen_{suffix}"] = {
             task: predict_task(frozen[f"{task}_{suffix}"], features.loc[simulation_mask])
                   .reshape(-1, 48) for task in ("demand", "price")

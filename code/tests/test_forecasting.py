@@ -104,6 +104,96 @@ class FeatureTests(unittest.TestCase):
         self.assertTrue((truth.loc[market_days(truth.index) == self.day, "price"] == 0).all())
 
 
+class NaiveBayesTests(unittest.TestCase):
+    def test_naive_bayes_fits_and_predicts_binary_labels(self):
+        from model import predict_task
+        from train import candidates, fit_model
+        features, truth = training_table(synthetic_data(days=75))
+        [config] = [c for c in candidates("price") if c["family"] == "naive_bayes"]
+        model = fit_model("price", config, features, truth)
+        predictions = predict_task(model, features)
+        self.assertEqual(len(predictions), len(features))
+        self.assertTrue(set(np.unique(predictions)) <= {0, 1})
+        # Synthetic prices follow a fixed daily shape, so slot-aware NB should beat chance.
+        self.assertGreater(np.mean(predictions == truth["price"].to_numpy()), 0.6)
+
+    def test_naive_bayes_matches_bayes_rule_by_hand(self):
+        from scipy.stats import norm
+        from model import naive_bayes_probability
+        from model import fit_naive_bayes
+        features, truth = training_table(synthetic_data(days=75))
+        config = {"discrete": ["slot"], "continuous": ["demand_anchor"], "alpha": 1.0}
+        params = fit_naive_bayes(config, features, truth["price"])
+        row, y = features.iloc[[100]], truth["price"].to_numpy()
+        slot, x = int(row["slot"].iloc[0]), row["demand_anchor"].iloc[0]
+        joint = []
+        for k in (0, 1):
+            in_class = features[y == k]
+            prior = np.mean(y == k)
+            p_slot = (np.sum(in_class["slot"] == slot) + 1) / (len(in_class) + 48)  # Laplace
+            values = in_class["demand_anchor"].to_numpy(np.float64)
+            p_x = norm.pdf(x, values.mean(), np.sqrt(values.var() + 1e-9 * params["var"].max()))
+            joint.append(prior * p_slot * p_x)
+        self.assertAlmostEqual(naive_bayes_probability(params, row)[0],
+                               joint[1] / sum(joint), places=6)
+
+    def test_zero_inflated_feature_uses_hurdle_likelihood(self):
+        from scipy.stats import norm
+        from model import naive_bayes_terms
+        from model import fit_naive_bayes
+        features, truth = training_table(synthetic_data(days=75))
+        params = fit_naive_bayes({"discrete": [], "continuous": ["syd_cool"], "alpha": 1.0},
+                                 features, truth["price"])
+        self.assertTrue(params["zero_inflated"][0])            # syd_cool is often exactly 0
+        cool, y = features["syd_cool"].to_numpy(np.float64), truth["price"].to_numpy()
+        terms = naive_bayes_terms(params, features)[:, 0, :]
+        for row in (int(np.flatnonzero(cool == 0)[0]), int(np.flatnonzero(cool > 0)[0])):
+            for k in (0, 1):
+                values = cool[y == k]
+                p_zero = (np.sum(values == 0) + 1) / (len(values) + 2)
+                nonzero = values[values != 0]
+                expected = (np.log(p_zero) if cool[row] == 0 else
+                            np.log(1 - p_zero) + norm.logpdf(
+                                cool[row], nonzero.mean(),
+                                np.sqrt(nonzero.var() + 1e-9 * params["var"].max())))
+                self.assertAlmostEqual(terms[row, k], expected, places=6)
+
+    def test_naive_bayes_is_not_a_demand_candidate(self):
+        from train import candidates
+        self.assertFalse(any(c["family"] == "naive_bayes" for c in candidates("demand")))
+
+
+class SVMTests(unittest.TestCase):
+    def setUp(self):
+        self.features, self.truth = training_table(synthetic_data(days=75))
+
+    def test_svm_predicts_binary_labels_with_all_or_listed_features(self):
+        from model import predict_task
+        from train import fit_model
+        base = {"family": "svm", "kernel": "rbf", "gamma": 1.0, "C": 0.3, "max_rows": 800}
+        for config in (base, dict(base, features=["slot", "price_margin_1", "nsw_demand_lag_1"])):
+            model = fit_model("price", config, self.features, self.truth)
+            if config.get("features"):
+                self.assertEqual(model["features"], config["features"])
+            predictions = predict_task(model, self.features)
+            self.assertEqual(len(predictions), len(self.features))
+            self.assertTrue(set(np.unique(predictions)) <= {0, 1})
+            self.assertGreater(np.mean(predictions == self.truth["price"].to_numpy()), 0.6)
+
+    def test_exact_svm_subsample_is_capped_and_reproducible(self):
+        from train import fit_model
+        config = {"family": "svm", "kernel": "rbf", "gamma": 1.0, "C": 0.3, "max_rows": 500}
+        first = fit_model("price", config, self.features, self.truth)["estimator"][-1]
+        second = fit_model("price", config, self.features, self.truth)["estimator"][-1]
+        self.assertLessEqual(first.n_support_.sum(), 500)
+        np.testing.assert_array_equal(first.support_, second.support_)
+
+    def test_svm_is_not_a_demand_candidate(self):
+        from train import candidates
+        self.assertFalse(any(c["family"] == "svm" for c in candidates("demand")))
+        self.assertTrue(any(c["family"] == "svm" for c in candidates("price")))
+
+
 class StatisticalTests(unittest.TestCase):
     def test_metrics_match_harness_in_single_class_period(self):
         values = metric_values([5000, 6000], [0, 0], [5100, 5900], [0, 1])
@@ -181,11 +271,17 @@ class StatisticalTests(unittest.TestCase):
             return {"task": task, "config": config, "estimator": Estimator(), "features": list(x),
                     "threshold": config.get("threshold", 0.5)}
 
+        # Stub candidates: the stub estimator only supports predict_proba, so the NB/SVM
+        # price candidates (which have their own scoring paths) are excluded here.
+        stub_candidates = lambda task, quick=False: [
+            {"family": "linear", "regularization": 1.0},
+            {"family": "boosted", "leaves": 4, "trees": 3, "learning_rate": 0.1}]
         with patch("train.fit_model", side_effect=fitted), \
+                patch("train.candidates", side_effect=stub_candidates), \
                 patch("train.predict_task", side_effect=lambda m, x: np.full(
                     len(x), 7000 if m["task"] == "demand" else 1)):
             select_models(features, truth, quick=True)
-        # 2 quick candidates x 2 tasks, each fitted on <=2013 and then refitted on <=2014.
+        # 2 stub candidates x 2 tasks, each fitted on <=2013 and then refitted on <=2014.
         self.assertEqual(fits, [2013, 2014] * 4)
 
     def test_simulation_rejects_shuffled_or_skipped_days(self):

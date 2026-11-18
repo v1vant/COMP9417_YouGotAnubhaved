@@ -15,9 +15,11 @@ from sklearn.linear_model import LogisticRegression, Ridge
 from sklearn.metrics import balanced_accuracy_score
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
 
-from model import (holiday_context_features, load_data, market_days, predict_task,
-                   training_span, training_table)
+from model import (NAIVE_BAYES, SVM, fit_naive_bayes, holiday_context_features,
+                   load_data, market_days, predict_task, price_probability, svm_columns,
+                   svm_inputs, training_span, training_table)
 
 SEED = 9417
 DEFAULT_SELECTION = {'demand': {'name': 'demand_boosted_3', 'config': {'family': 'boosted', 'leaves': 63, 'trees': 900, 'learning_rate': 0.025}, 'window_years': None, 'strategy': 'periodic_expanding', 'training_end': None}, 'price': {'name': 'price_boosted_2', 'config': {'family': 'boosted', 'leaves': 31, 'trees': 600, 'learning_rate': 0.04, 'threshold': 0.5700000000000001}, 'window_years': None, 'strategy': 'periodic_expanding', 'training_end': None}, 'strategy_selection_end': '2024-12-31', 'quick': False}
@@ -27,11 +29,41 @@ def candidates(task, quick=False):
     linear = [{"family": "linear", "regularization": 10.0 if task == "demand" else 0.01}]
     boosted = [{"family": "boosted", "leaves": 31, "trees": 120 if quick else 600,
                 "learning_rate": 0.04}]
+    # Naive Bayes and the SVM are classifiers, so they are only candidates for price direction.
+    bayes = [dict(NAIVE_BAYES)] if task == "price" else []
+    # RBF kernel chosen on 2014 over linear, polynomial and sigmoid kernels; gamma is in
+    # units of 1/#features.
+    svm = ([dict(SVM, max_rows=2000 if quick else SVM["max_rows"])]
+           if task == "price" else [])
     if not quick:
         linear.append({"family": "linear", "regularization": 1000.0 if task == "demand" else 0.1})
         boosted.append({"family": "boosted", "leaves": 63, "trees": 900,
                         "learning_rate": 0.025})
-    return linear + boosted
+    return linear + boosted + bayes + svm
+
+
+def fit_svm(config, features, labels):
+    """Exact kernel SVM for price direction on a fixed random subsample of at most max_rows
+    training rows: exact kernel training costs roughly O(n^2) memory/time, so all ~70k
+    half-hours per four years are not practical. gamma and C are hyperparameters chosen on
+    validation data; training itself learns only the support-vector weights and offset."""
+    columns = ([col for col in config["features"] if col in features]
+               if config.get("features") else svm_columns(features))
+    gamma = config["gamma"] / len(columns)              # gamma is relative to 1/#features
+    rows = np.arange(len(features))
+    max_rows = config.get("max_rows")
+    if max_rows and len(rows) > max_rows:
+        rows = np.sort(np.random.default_rng(SEED).choice(len(rows), max_rows, replace=False))
+    y = labels.to_numpy()[rows]
+    if len(np.unique(y)) < 2:
+        raise ValueError("SVM training rows need both classes")
+    estimator = make_pipeline(StandardScaler(), SVC(
+        kernel=config["kernel"], C=config["C"], gamma=gamma,
+        degree=config.get("degree", 3), coef0=config.get("coef0", 0.0),
+        class_weight="balanced", cache_size=1000))
+    estimator.fit(svm_inputs(columns, features.iloc[rows]), y)
+    return {"task": "price", "config": config, "features": columns,
+            "estimator": estimator, "threshold": config.get("threshold", 0.5)}
 
 
 def fit_model(task, config, features, truth):
@@ -60,6 +92,17 @@ def fit_model(task, config, features, truth):
                      LogisticRegression(C=config["regularization"], class_weight="balanced",
                                         max_iter=1200, random_state=SEED))
         estimator = make_pipeline(StandardScaler(), estimator)
+    elif config["family"] == "naive_bayes":
+        if task != "price":
+            raise ValueError("Naive Bayes is only used for price direction")
+        params = fit_naive_bayes(config, features, truth["price"])
+        return {"task": task, "config": config,
+                "features": params["discrete"] + params["continuous"],
+                "estimator": params, "threshold": config.get("threshold", 0.5)}
+    elif config["family"] == "svm":
+        if task != "price":
+            raise ValueError("The SVM is only used for price direction")
+        return fit_svm(config, features, truth["price"])
     else:
         columns = list(features.columns)
         cls = LGBMRegressor if task == "demand" else LGBMClassifier
@@ -98,8 +141,7 @@ def select_models(features, truth, quick=False):
             name = f"{task}_{config['family']}_{number}"
             model = fit_model(task, config, features.loc[train], truth.loc[train])
             if task == "price":
-                probabilities = model["estimator"].predict_proba(
-                    features.loc[valid, model["features"]])[:, 1]
+                probabilities = price_probability(model, features.loc[valid])
                 thresholds = np.linspace(0.2, 0.8, 61)
                 scores = [balanced_accuracy_score(truth.loc[valid, "price"],
                                                   probabilities > threshold)
