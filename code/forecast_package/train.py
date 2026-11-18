@@ -18,6 +18,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
 from model import (NAIVE_BAYES, NEURAL_NET, SVM, fit_naive_bayes, load_data, market_days,
+                   neural_net_columns, neural_net_log_mask, neural_net_transform,
                    predict_task, price_probability, svm_columns, svm_inputs, training_table)
 
 SEED = 9417
@@ -109,16 +110,27 @@ def fit_neural_net(config, features, labels):
     (2) forward pass and loss, (3) backpropagation, (4) one AdamW update, with the learning
     rate decaying to 0 along a cosine curve. The epoch budget is fixed, so nothing here
     depends on a validation year and the fit works for any training window."""
-    columns = svm_columns(features)
-    x = svm_inputs(columns, features)
+    log = config.get("log", "price")
+    columns = neural_net_columns(features, log)
+    params = {"columns": columns, "log_mask": neural_net_log_mask(columns, log),
+              "clip_low": None, "clip_high": None}
+    x = neural_net_transform(params, features)
+    if config.get("winsorise"):
+        # Cull outliers: bounds come from the training rows only and are stored, so
+        # prediction applies exactly the same caps.
+        params["clip_low"], params["clip_high"] = np.percentile(
+            x, [config["winsorise"], 100 - config["winsorise"]], axis=0)
+        x = np.clip(x, params["clip_low"], params["clip_high"])
     mean, std = x.mean(axis=0), x.std(axis=0)
     std[std < 1e-8] = 1.0             # constant column: leave it at 0 after centring
     inputs = ((x - mean) / std).astype(np.float32)
     y = labels.to_numpy().astype(np.float32)
     rows = len(y)
+    # Bagging: rows of each market day, so a member's resample keeps whole days together.
+    day_codes = pd.factorize(market_days(features.index))[0]
+    day_rows = np.split(np.argsort(day_codes, kind="stable"),
+                        np.cumsum(np.bincount(day_codes))[:-1])
     batch = min(config["batch_size"], rows)
-    steps_per_epoch = rows // batch   # the ragged last batch of each epoch is dropped
-    total_steps = config["epochs"] * steps_per_epoch
     # Weight "up" errors by n_down / n_up so both classes count equally in the loss,
     # matching balanced accuracy and keeping 0.5 a sensible default threshold.
     pos_weight = np.float32((y == 0).sum() / (y == 1).sum())
@@ -135,9 +147,16 @@ def fit_neural_net(config, features, labels):
                            rng.uniform(-bound, bound, units_out).astype(np.float32)])
         first = [[np.zeros_like(p) for p in layer] for layer in layers]    # mean of gradients
         second = [[np.zeros_like(p) for p in layer] for layer in layers]   # mean of squares
+        # Training rows for this member: all of them, or (bagging) as many days as the
+        # window has, drawn with replacement, so some days appear twice and ~37% not at all.
+        sample = (np.concatenate([day_rows[d] for d in rng.integers(0, len(day_rows),
+                                                                     len(day_rows))])
+                  if config.get("bootstrap") else np.arange(rows))
+        steps_per_epoch = len(sample) // batch     # the ragged last batch is dropped
+        total_steps = config["epochs"] * steps_per_epoch
         step = 0
         for _ in range(config["epochs"]):
-            order = rng.permutation(rows)
+            order = sample[rng.permutation(len(sample))]
             for start in range(0, steps_per_epoch * batch, batch):
                 chosen = order[start:start + batch]
                 masks = [(rng.random((batch, units), dtype=np.float32) < keep) / keep
@@ -156,7 +175,8 @@ def fit_neural_net(config, features, labels):
                                      / (np.sqrt(squares[k] / (1 - beta2 ** step)) + epsilon)
                                      ).astype(np.float32)
         members.append([(weight, bias) for weight, bias in layers])
-    params = {"columns": columns, "mean": mean, "std": std, "members": members}
+    params.update(mean=mean, std=std, members=members, log=log,
+                  winsorise=config.get("winsorise"))
     return {"task": "price", "config": config, "features": columns,
             "estimator": params, "threshold": config.get("threshold", 0.5)}
 

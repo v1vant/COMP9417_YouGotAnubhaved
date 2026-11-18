@@ -1,3 +1,5 @@
+test_frozen_blend_and_price_passthrough (test_demand_blend.BlendTests.test_frozen_blend_and_price_passthrough) ... ok
+test_numpy_mlp_adds_residual_and_clips (test_demand_blend.BlendTests.test_numpy_mlp_adds_residual_and_clips) ... ok
 test_baselines_use_previous_day_threshold (test_forecasting.FeatureTests.test_baselines_use_previous_day_threshold) ... ok
 test_batch_and_live_features_match (test_forecasting.FeatureTests.test_batch_and_live_features_match) ... ok
 test_future_market_and_later_weather_cannot_leak (test_forecasting.FeatureTests.test_future_market_and_later_weather_cannot_leak) ... ok
@@ -9,6 +11,17 @@ test_naive_bayes_fits_and_predicts_binary_labels (test_forecasting.NaiveBayesTes
 test_naive_bayes_is_not_a_demand_candidate (test_forecasting.NaiveBayesTests.test_naive_bayes_is_not_a_demand_candidate) ... ok
 test_naive_bayes_matches_bayes_rule_by_hand (test_forecasting.NaiveBayesTests.test_naive_bayes_matches_bayes_rule_by_hand) ... ok
 test_zero_inflated_feature_uses_hurdle_likelihood (test_forecasting.NaiveBayesTests.test_zero_inflated_feature_uses_hurdle_likelihood) ... ok
+test_artifact_is_plain_numpy_and_survives_joblib (test_forecasting.NeuralNetTests.test_artifact_is_plain_numpy_and_survives_joblib) ... ok
+test_backpropagation_matches_finite_differences (test_forecasting.NeuralNetTests.test_backpropagation_matches_finite_differences) ... ok
+test_bootstrap_members_train_on_resampled_days_reproducibly (test_forecasting.NeuralNetTests.test_bootstrap_members_train_on_resampled_days_reproducibly) ... ok
+test_default_inputs_are_the_signed_log_svm_inputs (test_forecasting.NeuralNetTests.test_default_inputs_are_the_signed_log_svm_inputs) ... ok
+test_log_option_selects_levels_or_differences (test_forecasting.NeuralNetTests.test_log_option_selects_levels_or_differences) ... ok
+test_neural_net_is_a_price_only_candidate (test_forecasting.NeuralNetTests.test_neural_net_is_a_price_only_candidate) ... ok
+test_prediction_matches_formula_by_hand (test_forecasting.NeuralNetTests.test_prediction_matches_formula_by_hand) ... ok
+test_predicts_binary_labels_better_than_chance (test_forecasting.NeuralNetTests.test_predicts_binary_labels_better_than_chance) ... ok
+test_standardisation_uses_training_rows_only (test_forecasting.NeuralNetTests.test_standardisation_uses_training_rows_only) ... ok
+test_training_is_deterministic_and_seeds_differ (test_forecasting.NeuralNetTests.test_training_is_deterministic_and_seeds_differ) ... ok
+test_winsorising_clips_to_training_percentiles_and_predicts (test_forecasting.NeuralNetTests.test_winsorising_clips_to_training_percentiles_and_predicts) ... ok
 test_exact_svm_subsample_is_capped_and_reproducible (test_forecasting.SVMTests.test_exact_svm_subsample_is_capped_and_reproducible) ... ok
 test_svm_is_not_a_demand_candidate (test_forecasting.SVMTests.test_svm_is_not_a_demand_candidate) ... ok
 test_svm_predicts_binary_labels_with_all_or_listed_features (test_forecasting.SVMTests.test_svm_predicts_binary_labels_with_all_or_listed_features) ... ok
@@ -19,19 +32,28 @@ ok
 test_metrics_match_harness_in_single_class_period (test_forecasting.StatisticalTests.test_metrics_match_harness_in_single_class_period) ... ok
 
 ----------------------------------------------------------------------
-Ran 18 tests in 0.683s
+Ran 31 tests in 3.297s
 
 OK
-2014 validation demand_linear_0: 3.022
-2014 validation demand_linear_1: 2.944
-2014 validation demand_boosted_2: 2.124
-2014 validation demand_boosted_3: 2.114
-2014 validation price_linear_0: -79.250
-2014 validation price_linear_1: -79.211
-2014 validation price_boosted_2: -81.742
-2014 validation price_boosted_3: -81.721
+2014 validation demand_linear_0: 2.723
+2014 validation demand_linear_1: 2.760
+2014 validation demand_boosted_2: 2.015
+2014 validation demand_boosted_3: 1.993
+2014 validation price_linear_0: -80.573
+2014 validation price_linear_1: -79.650
+/Users/thomas/Downloads/COMP9417_YouGotAnubhaved/.venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:599: ConvergenceWarning: lbfgs failed to converge after 0 iteration(s) (status=2):
+ABNORMAL: 
+
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+2014 validation price_boosted_2: -83.131
+2014 validation price_boosted_3: -83.328
 2014 validation price_naive_bayes_4: -78.934
-2014 validation price_svm_5: -81.455
+2014 validation price_svm_5: -82.430
+2014 validation price_neural_net_6: -82.937
 Retrain demand/periodic_expanding effective 2016-01-01 (1/6)
 Retrain demand/periodic_expanding effective 2018-01-01 (2/6)
 Retrain demand/periodic_expanding effective 2020-01-01 (3/6)
@@ -60,24 +82,5 @@ Retrain demand/drift_sliding effective 2015-01-02 (1/6)
 Retrain demand/drift_sliding effective 2015-07-24 (2/6)
 Retrain demand/drift_sliding effective 2016-01-28 (3/6)
 Retrain demand/drift_sliding effective 2016-08-08 (4/6)
-Retrain demand/drift_sliding effective 2017-02-07 (5/6)
+Retrain demand/drift_sliding effective 2017-02-08 (5/6)
 Retrain demand/drift_sliding effective 2017-09-02 (6/6)
-Retrain price/drift_sliding effective 2015-01-02 (1/6)
-Retrain price/drift_sliding effective 2015-07-24 (2/6)
-Retrain price/drift_sliding effective 2016-01-28 (3/6)
-Retrain price/drift_sliding effective 2016-08-08 (4/6)
-Retrain price/drift_sliding effective 2017-02-08 (5/6)
-Retrain price/drift_sliding effective 2017-09-02 (6/6)
-                     model  period      MAPE        MAE  accuracy  balanced_accuracy
-               baseline_1d holdout  7.533000 532.345776 76.958769          76.974656
-               baseline_7d holdout 10.000662 703.824671 73.066143          73.031402
-          frozen_boosted_2 holdout  5.273324 361.767890 78.920653          78.691873
-          frozen_boosted_3 holdout  5.187377 353.635476 79.390882          79.173021
-           frozen_linear_0 holdout  6.435763 429.580567 67.865595          67.398050
-           frozen_linear_1 holdout  6.340197 422.335735 67.787743          67.315188
-            adapted_frozen holdout  5.187377 353.635476 78.920653          78.691873
-adapted_periodic_expanding holdout  3.665529 253.491219 82.607748          82.543786
-  adapted_periodic_sliding holdout  3.875466 271.230822 82.953413          82.901672
-     adapted_drift_sliding holdout  5.302461 353.994003 79.204036          79.039756
-Experiment outputs saved to /Users/thomas/Downloads/COMP9417_YouGotAnubhaved/results in 2022.2s
-Saved artifacts to /Users/thomas/Downloads/COMP9417_YouGotAnubhaved/code/forecast_package/artifacts in 235.1s

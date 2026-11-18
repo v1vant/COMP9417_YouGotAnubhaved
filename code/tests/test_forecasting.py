@@ -266,6 +266,53 @@ class NeuralNetTests(unittest.TestCase):
         np.testing.assert_allclose(z.mean(axis=0), 0, atol=1e-6)
         np.testing.assert_allclose(z.std(axis=0)[varying], 1, atol=1e-6)
 
+    def test_default_inputs_are_the_signed_log_svm_inputs(self):
+        from model import neural_net_inputs, svm_columns, svm_inputs
+        params = self.model["estimator"]
+        self.assertEqual(params["columns"], svm_columns(self.features))
+        x = svm_inputs(params["columns"], self.features)
+        np.testing.assert_allclose(neural_net_inputs(params, self.features),
+                                   (x - params["mean"]) / params["std"])
+
+    def test_log_option_selects_levels_or_differences(self):
+        from model import neural_net_columns, neural_net_log_mask
+        columns = neural_net_columns(self.features, "none")
+        self.assertIn("nsw_price_lag_1", columns)                    # kept when not logged
+        self.assertNotIn("price_threshold", columns)                 # exact duplicate dropped
+        logged = dict(zip(columns, neural_net_log_mask(columns, "levels")))
+        self.assertTrue(logged["nsw_price_previous_mean"])
+        self.assertFalse(logged["price_margin_1"])
+        self.assertFalse(logged["nsw_price_loglag_1"])                # already logged
+        self.assertFalse(logged["nsw_demand_lag_1"])
+        logged = dict(zip(columns, neural_net_log_mask(columns, "differences")))
+        self.assertTrue(logged["price_margin_1"])
+        self.assertTrue(logged["nsw_price_recent_change"])
+        self.assertFalse(logged["nsw_price_previous_mean"])
+
+    def test_winsorising_clips_to_training_percentiles_and_predicts(self):
+        from model import neural_net_transform, predict_task
+        from train import fit_model
+        model = fit_model("price", dict(self.CONFIG, log="none", winsorise=5),
+                          self.features, self.truth)
+        params = model["estimator"]
+        raw = self.features.loc[:, params["columns"]].to_numpy(np.float64)
+        np.testing.assert_allclose(params["clip_low"], np.percentile(raw, 5, axis=0))
+        np.testing.assert_allclose(params["clip_high"], np.percentile(raw, 95, axis=0))
+        extreme = self.features.iloc[[0]].copy()
+        extreme["nsw_price_lag_1"] = 1e6                              # a spike far outside
+        clipped = neural_net_transform(params, extreme)[0, params["columns"].index("nsw_price_lag_1")]
+        self.assertEqual(clipped, params["clip_high"][params["columns"].index("nsw_price_lag_1")])
+        self.assertTrue(set(np.unique(predict_task(model, self.features))) <= {0, 1})
+
+    def test_bootstrap_members_train_on_resampled_days_reproducibly(self):
+        from train import fit_model
+        config = dict(self.CONFIG, bootstrap=True)
+        first = fit_model("price", config, self.features, self.truth)["estimator"]
+        again = fit_model("price", config, self.features, self.truth)["estimator"]
+        np.testing.assert_array_equal(first["members"][0][0][0], again["members"][0][0][0])
+        plain = self.model["estimator"]
+        self.assertFalse(np.array_equal(first["members"][0][0][0], plain["members"][0][0][0]))
+
     def test_neural_net_is_a_price_only_candidate(self):
         from train import candidates
         self.assertFalse(any(c["family"] == "neural_net" for c in candidates("demand")))

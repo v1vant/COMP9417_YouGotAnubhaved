@@ -430,14 +430,52 @@ NEURAL_NET = {
     "batch_size": 1024,
     "epochs": 10,             # passes over the training rows; no early stopping
     "seeds": [0, 1, 2, 3, 4],  # one network per seed; probabilities are averaged
+    "log": "price",           # which raw $/MWh features get sign(v) * log(1 + |v|); see below
+    "winsorise": None,        # p: clip each input to its [p, 100 - p] training percentiles
+    "bootstrap": False,       # True: each member trains on its own resample of whole days
 }
+
+# Raw-price features, split into two kinds for the "log" option:
+#   differences: gaps between two prices (price_margin_*, *_margin_slot_*, *_before_margin_*,
+#                *_ramp_*, *_recent_change, *_change_from_open, nsw_price_weekly_margin);
+#   levels:      prices themselves (lags, previous mean/min/max/std, rolling and weekly means).
+# The *_loglag_* columns are already logged in feature_frame and are never logged again.
+DIFFERENCE_MARKERS = ("margin", "_ramp_", "_recent_change", "_change_from_open")
+
+
+def neural_net_log_mask(columns, log):
+    """True for the columns that get the signed log: log is "price" (every raw-price
+    feature), "levels", "differences" or "none"."""
+    price = np.array(["price" in col and "loglag" not in col for col in columns])
+    difference = np.array([any(m in col for m in DIFFERENCE_MARKERS) for col in columns])
+    return {"price": price, "levels": price & ~difference,
+            "differences": price & difference, "none": np.zeros(len(columns), bool)}[log]
+
+
+def neural_net_columns(features, log):
+    """Every feature except price_threshold (a copy of nsw_price_previous_mean), and except
+    the raw price lags when they are logged, since they then equal the *_loglag_* columns."""
+    raw_lags = {f"{state}_price_lag_{lag}" for state in ("nsw", "vic", "qld") for lag in LAGS}
+    columns = [col for col in features.columns if col != "price_threshold"]
+    logged = set(np.array(columns)[neural_net_log_mask(columns, log)])
+    return [col for col in columns if not (col in raw_lags and col in logged)]
+
+
+def neural_net_transform(params, features):
+    """Inputs before standardising: signed log on the chosen columns, then clipping to the
+    training-set bounds (when winsorising)."""
+    x = features.loc[:, params["columns"]].to_numpy(np.float64, copy=True)
+    logged = params["log_mask"]
+    x[:, logged] = np.sign(x[:, logged]) * np.log1p(np.abs(x[:, logged]))
+    if params.get("clip_low") is not None:
+        x = np.clip(x, params["clip_low"], params["clip_high"])
+    return x
 
 
 def neural_net_inputs(params, features):
-    """Standardised inputs: same signed-log treatment as the SVM, then (x - mean) / std
-    with the mean and std of the training rows the network was fitted on."""
-    x = svm_inputs(params["columns"], features)
-    return (x - params["mean"]) / params["std"]
+    """Standardised inputs, (x - mean) / std, with the mean and std of the training rows the
+    network was fitted on."""
+    return (neural_net_transform(params, features) - params["mean"]) / params["std"]
 
 
 def neural_net_probability(params, features):

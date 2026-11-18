@@ -10,13 +10,13 @@
       }
     },
     "price": {
-      "name": "price_boosted_2",
+      "name": "price_boosted_3",
       "config": {
         "family": "boosted",
-        "leaves": 31,
-        "trees": 600,
-        "learning_rate": 0.04,
-        "threshold": 0.5700000000000001
+        "leaves": 63,
+        "trees": 900,
+        "learning_rate": 0.025,
+        "threshold": 0.55
       }
     }
   },
@@ -28,9 +28,9 @@
         "family": "linear",
         "regularization": 10.0
       },
-      "validation_MAPE_or_negative_BA": 3.022245237076814,
-      "MAPE": 3.022245237076814,
-      "MAE": 234.37789409647905
+      "validation_MAPE_or_negative_BA": 2.722967216437856,
+      "MAPE": 2.722967216437856,
+      "MAE": 212.31291837119184
     },
     {
       "model": "demand_linear_1",
@@ -39,9 +39,9 @@
         "family": "linear",
         "regularization": 1000.0
       },
-      "validation_MAPE_or_negative_BA": 2.944322634115377,
-      "MAPE": 2.944322634115377,
-      "MAE": 228.7752056332941
+      "validation_MAPE_or_negative_BA": 2.760276002975473,
+      "MAPE": 2.760276002975473,
+      "MAE": 214.93322604411924
     },
     {
       "model": "demand_boosted_2",
@@ -52,9 +52,9 @@
         "trees": 600,
         "learning_rate": 0.04
       },
-      "validation_MAPE_or_negative_BA": 2.1238020147683447,
-      "MAPE": 2.1238020147683447,
-      "MAE": 169.33781213269532
+      "validation_MAPE_or_negative_BA": 2.015368893913481,
+      "MAPE": 2.015368893913481,
+      "MAE": 161.04560935854707
     },
     {
       "model": "demand_boosted_3",
@@ -65,9 +65,9 @@
         "trees": 900,
         "learning_rate": 0.025
       },
-      "validation_MAPE_or_negative_BA": 2.114436630225692,
-      "MAPE": 2.114436630225692,
-      "MAE": 168.9698025953498
+      "validation_MAPE_or_negative_BA": 1.9926082822828066,
+      "MAPE": 1.9926082822828066,
+      "MAE": 159.25250983313688
     },
     {
       "model": "price_linear_0",
@@ -77,9 +77,9 @@
         "regularization": 0.01,
         "threshold": 0.5800000000000001
       },
-      "validation_MAPE_or_negative_BA": -79.25044430703849,
-      "balanced_accuracy": 79.25044430703849,
-      "accuracy": 79.24086757990868
+      "validation_MAPE_or_negative_BA": -80.5734409992843,
+      "balanced_accuracy": 80.5734409992843,
+      "accuracy": 80.54794520547945
     },
     {
       "model": "price_linear_1",
@@ -87,11 +87,11 @@
       "config": {
         "family": "linear",
         "regularization": 0.1,
-        "threshold": 0.55
+        "threshold": 0.6200000000000001
       },
-      "validation_MAPE_or_negative_BA": -79.21143584638291,
-      "balanced_accuracy": 79.21143584638291,
-      "accuracy": 79.15525114155251
+      "validation_MAPE_or_negative_BA": -79.64955218354982,
+      "balanced_accuracy": 79.64955218354982,
+      "accuracy": 79.62899543378995
     },
     {
       "model": "price_boosted_2",
@@ -101,11 +101,11 @@
         "leaves": 31,
         "trees": 600,
         "learning_rate": 0.04,
-        "threshold": 0.5700000000000001
+        "threshold": 0.5800000000000001
       },
-      "validation_MAPE_or_negative_BA": -81.74244937556271,
-      "balanced_accuracy": 81.74244937556271,
-      "accuracy": 81.64383561643835
+      "validation_MAPE_or_negative_BA": -83.13056971575422,
+      "balanced_accuracy": 83.13056971575422,
+      "accuracy": 83.10502283105022
     },
     {
       "model": "price_boosted_3",
@@ -115,11 +115,11 @@
         "leaves": 63,
         "trees": 900,
         "learning_rate": 0.025,
-        "threshold": 0.5900000000000001
+        "threshold": 0.55
       },
-      "validation_MAPE_or_negative_BA": -81.72128922717943,
-      "balanced_accuracy": 81.72128922717943,
-      "accuracy": 81.64954337899543
+      "validation_MAPE_or_negative_BA": -83.32833308461416,
+      "balanced_accuracy": 83.32833308461416,
+      "accuracy": 83.27625570776256
     },
     {
       "model": "price_naive_bayes_4",
@@ -165,11 +165,41 @@
         "C": 0.3,
         "max_rows": 20000,
         "features": null,
-        "threshold": 0.54
+        "threshold": 0.51
       },
-      "validation_MAPE_or_negative_BA": -81.4546665322718,
-      "balanced_accuracy": 81.4546665322718,
-      "accuracy": 81.40981735159816
+      "validation_MAPE_or_negative_BA": -82.42988065691961,
+      "balanced_accuracy": 82.42988065691961,
+      "accuracy": 82.30593607305936
+    },
+    {
+      "model": "price_neural_net_6",
+      "task": "price",
+      "config": {
+        "family": "neural_net",
+        "hidden": [
+          256,
+          256
+        ],
+        "dropout": 0.5,
+        "learning_rate": 0.0003,
+        "weight_decay": 0.0001,
+        "batch_size": 1024,
+        "epochs": 10,
+        "seeds": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "log": "price",
+        "winsorise": null,
+        "bootstrap": false,
+        "threshold": 0.6700000000000002
+      },
+      "validation_MAPE_or_negative_BA": -82.9369945578297,
+      "balanced_accuracy": 82.9369945578297,
+      "accuracy": 82.92808219178082
     }
   ]
 }
