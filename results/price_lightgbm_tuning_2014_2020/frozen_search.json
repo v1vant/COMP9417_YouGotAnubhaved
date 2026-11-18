@@ -1,0 +1,38 @@
+{
+  "candidates": {
+    "stronger_regularisation": {
+      "leaves": 31,
+      "min_child_samples": 320,
+      "reg_lambda": 20.0,
+      "colsample_bytree": 0.85
+    },
+    "fewer_leaves": {
+      "leaves": 15,
+      "min_child_samples": 160,
+      "reg_lambda": 8.0,
+      "colsample_bytree": 0.85
+    },
+    "lower_feature_sampling": {
+      "leaves": 31,
+      "min_child_samples": 160,
+      "reg_lambda": 8.0,
+      "colsample_bytree": 0.6
+    }
+  },
+  "base_config": {
+    "family": "boosted",
+    "leaves": 31,
+    "trees": 600,
+    "learning_rate": 0.04,
+    "threshold": 0.5700000000000001
+  },
+  "selection_year": 2014,
+  "historical_check": [
+    2015,
+    2020
+  ],
+  "winner_rule": "Highest 2014 balanced accuracy; historical check only if above current baseline.",
+  "spike_features": false,
+  "recency_weighting": false,
+  "holdout_evaluated": false
+}

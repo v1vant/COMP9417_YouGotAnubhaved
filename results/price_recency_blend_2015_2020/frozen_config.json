@@ -1,0 +1,22 @@
+{
+  "weights": {
+    "current": 0.5,
+    "recency_2years": 0.5
+  },
+  "threshold": 0.5700000000000001,
+  "config": {
+    "family": "boosted",
+    "leaves": 31,
+    "trees": 600,
+    "learning_rate": 0.04,
+    "threshold": 0.5700000000000001
+  },
+  "evaluation_start": "2015-01-01",
+  "evaluation_end": "2020-12-31",
+  "data_sha256": "c13711002906140eaf7cc67c1ce17a49facd359cf3d1a84722aaa3ccd647752c",
+  "recency_predictions_sha256": "8c1f13c5413ff102c494e86841b2f5d14e9c20fd7f38a6286cc5af0eeccea31e",
+  "features_source_sha256": "55e128f14885cb1a47cf77dc20810f20f5a1021d722050218ff8a70b707d551e",
+  "trainer_source_sha256": "d594c930a20f4e89121af3e0a2fc7510dd1fa6de4da6726f85e6e469d2bf2e09",
+  "holdout_evaluated": false,
+  "tuning": false
+}

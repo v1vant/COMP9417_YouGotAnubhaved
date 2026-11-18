@@ -1,0 +1,22 @@
+{
+  "half_life_years": 2,
+  "config": {
+    "family": "boosted",
+    "leaves": 31,
+    "trees": 600,
+    "learning_rate": 0.04,
+    "threshold": 0.5700000000000001
+  },
+  "features": 571,
+  "evaluation_start": "2015-01-01",
+  "evaluation_end": "2020-12-31",
+  "fit_effective_years": [
+    2015,
+    2016,
+    2018,
+    2020
+  ],
+  "class_weighting": "Equal total sample weight per class after recency weighting",
+  "spike_features_enabled": false,
+  "holdout_evaluated": false
+}

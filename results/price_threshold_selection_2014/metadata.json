@@ -1,0 +1,15 @@
+{
+  "selection_years": [
+    2011,
+    2012,
+    2013
+  ],
+  "selection_source": "Chronological out-of-sample classifier predictions",
+  "evaluation_year": 2014,
+  "selected": {
+    "threshold": 0.51,
+    "balanced_accuracy": 81.83111821211222,
+    "accuracy": 81.63207116788321
+  },
+  "note": "No model retraining or 2014 threshold search. Current 0.57 is the previously established reference; original selection used 2014."
+}

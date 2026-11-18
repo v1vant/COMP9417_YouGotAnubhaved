@@ -1,0 +1,104 @@
+"""Frozen forecast-demand price candidate: chronological 2021–2024 confirmation."""
+import json
+import time
+from pathlib import Path
+
+import joblib
+import numpy as np
+import pandas as pd
+from threadpoolctl import threadpool_limits
+from run_experiments import load_data, market_days, training_table, fit_model
+from test_forecast_demand_price import added_features
+from test_price_recency_weights import metrics
+
+ROOT=Path(__file__).resolve().parents[1]
+
+
+def main():
+    started=time.monotonic()
+    output=ROOT/'results/forecast_demand_price_2021_2024'
+    output.mkdir(parents=True,exist_ok=True)
+    if (output/'completion.json').exists():
+        print((output/'metrics.csv').read_text(),flush=True)
+        return
+    config=json.loads((ROOT/'results/final_config.json').read_text())['price']['config']
+    frame=load_data(ROOT/'data/nem_weather_halfhourly_2010_2026.csv').loc[:'2025-01-01 00:00:00']
+    x,y=training_table(frame)
+    days=market_days(x.index)
+    early=pd.concat([pd.read_csv(ROOT/f'results/forecast_demand_price_2014/demand_forecasts_{year}.csv',
+        index_col='timestamp',parse_dates=True).forecast for year in range(2011,2015)])
+    eval_index=x.index[days.year>=2015]
+    source=ROOT/'results/demand_mlp_10epoch_2015_2024'
+    mlp=pd.concat([pd.read_csv(source/f'predictions_{year}.csv',index_col='timestamp',parse_dates=True).predicted
+        for year in range(2015,2025)])
+    assert mlp.index.equals(eval_index)
+    truth=np.load(source/'truth.npz')
+    np.testing.assert_array_equal(truth['timestamps'][:len(eval_index)],eval_index.to_numpy())
+    np.testing.assert_array_equal(truth['demand'][:len(eval_index)],y.loc[eval_index,'demand'])
+    lgbm=np.load(ROOT/'results/feature_comparison_2015_2024/current_demand.npy',mmap_mode='r').reshape(-1)[:len(eval_index)]
+    # Both cached demand streams used expanding training, initially through 2014,
+    # then updates in 2016, 2018 and 2020, matching the frozen demand policy.
+    audit=pd.read_csv(source/'retraining_audit.csv')
+    audit=audit.loc[audit.effective_day<'2025-01-01']
+    assert list(audit.effective_day)==['2015-01-01','2016-01-01','2018-01-01','2020-01-01','2022-01-01','2024-01-01']
+    assert all(pd.Timestamp(row.training_end)<pd.Timestamp(row.effective_day) for row in audit.itertuples())
+    prediction=pd.concat([early,pd.Series(.5*(lgbm+mlp.to_numpy()),index=eval_index)])
+    extra=added_features(x.loc[prediction.index],prediction)
+    features=x.loc[extra.index].join(extra)
+    assert features.shape[1]==576 and np.isfinite(features.to_numpy()).all()
+    feature_days=market_days(features.index)
+    current=np.load(ROOT/'results/feature_comparison_2015_2024/current_price.npy').reshape(-1)
+    assert len(current)==len(eval_index) and set(np.unique(current)).issubset({0,1})
+    later=market_days(eval_index).year>=2021
+    saved=pd.DataFrame({'actual_up':y.loc[eval_index,'price'], 'current_up':current},index=eval_index).loc[later]
+    eval_index=saved.index
+    probability=pd.Series(index=eval_index,dtype=float)
+    baseline=pd.Series(index=eval_index,dtype=float)
+    retrains=[]
+    for start,end in ((2021,2021),(2022,2023),(2024,2024)):
+        training_year=2020 if start==2021 else start
+        train=feature_days<pd.Timestamp(f'{training_year}-01-01')
+        test=(feature_days.year>=start)&(feature_days.year<=end)
+        assert feature_days[train].max()<feature_days[test].min()
+        for name,columns,target in [('matched_reference',list(x),baseline),
+                                     ('forecast_demand_augmented',list(features),probability)]:
+            destination=output/f'{name}_{start}_{end}.csv'
+            if destination.exists():
+                values=pd.read_csv(destination,index_col='timestamp',parse_dates=True).probability
+                assert values.index.equals(features.index[test])
+                target.loc[values.index]=values
+                continue
+            if start==2021:
+                print(f'Reusing frozen 2020 {name} model for 2021',flush=True)
+                model=joblib.load(ROOT/f'results/forecast_demand_price_2015_2020/{name}_2020.joblib')
+                assert model['features']==columns and model['config']==config
+            else:
+                print(f'Fitting {name} for {start}–{end}',flush=True)
+                model=fit_model('price',config,features.loc[train,columns],y.loc[features.index[train]])
+            values=model['estimator'].predict_proba(features.loc[test,model['features']])[:,1]
+            target.loc[features.index[test]]=values
+            pd.Series(values,index=features.index[test],name='probability').to_csv(destination,index_label='timestamp')
+            joblib.dump(model,output/f'{name}_{start}.joblib')
+        retrains.append({'effective_year':start,'training_end':str(feature_days[train].max().date()),'rows':int(train.sum())})
+        pd.DataFrame(retrains).to_csv(output/'chronology_audit.csv',index=False)
+    assert probability.notna().all() and baseline.notna().all()
+    forecasts={'current':saved.current_up,'matched_reference':baseline,'forecast_demand_augmented':probability}
+    rows=[]; yearly=[]
+    for name,values in forecasts.items():
+        pred=values.to_numpy()>config['threshold']
+        rows.append(dict(model=name,**metrics(saved.actual_up,pred)))
+        for year in range(2021,2025):
+            mask=market_days(eval_index).year==year
+            yearly.append(dict(model=name,year=year,**metrics(saved.actual_up.to_numpy()[mask],pred[mask])))
+    pd.DataFrame(rows).to_csv(output/'metrics.csv',index=False)
+    pd.DataFrame(yearly).to_csv(output/'yearly_metrics.csv',index=False)
+    pd.DataFrame({'actual_up':saved.actual_up,**forecasts}).to_csv(output/'predictions.csv',index_label='timestamp')
+    (output/'completion.json').write_text(json.dumps({'seconds':time.monotonic()-started,'holdout_evaluated':False,
+        'features_added':list(extra),'config':config,'evaluation_start':'2021-01-01','evaluation_end':'2024-12-31',
+        'current_column_contains':'hard labels from cached current policy, not probabilities'},indent=2))
+    print(pd.DataFrame(rows).to_string(index=False),flush=True)
+
+
+if __name__=='__main__':
+    with threadpool_limits(limits=2):
+        main()

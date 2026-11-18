@@ -1,0 +1,3 @@
+forecast_year,training_end,training_rows,epochs
+2025,2023-12-31,244076,10
+2026,2025-12-31,279164,10

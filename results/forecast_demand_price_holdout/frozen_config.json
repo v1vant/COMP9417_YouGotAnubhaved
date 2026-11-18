@@ -1,0 +1,22 @@
+{
+  "price_config": {
+    "family": "boosted",
+    "leaves": 31,
+    "trees": 600,
+    "learning_rate": 0.04,
+    "threshold": 0.5700000000000001
+  },
+  "extra_features": [
+    "forecast_demand",
+    "forecast_demand_minus_yesterday_slot",
+    "forecast_demand_minus_lastweek_slot",
+    "forecast_demand_minus_yesterday_mean",
+    "forecast_demand_minus_yesterday_max"
+  ],
+  "initial_training_end": "2023-12-31",
+  "retrain": "2026-01-01",
+  "retrain_training_end": "2025-12-31",
+  "ramp_features": false,
+  "tuning_on_holdout": false,
+  "bootstrap": "paired circular 7-day moving blocks, 5000 replicates, seed 9417"
+}

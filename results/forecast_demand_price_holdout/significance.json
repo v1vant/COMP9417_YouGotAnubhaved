@@ -1,0 +1,19 @@
+{
+  "accuracy": {
+    "improvement_pp": -0.06851021425011083,
+    "paired_7day_bootstrap_CI95_pp": [
+      -0.35189337319381764,
+      0.22740719980070162
+    ]
+  },
+  "balanced_accuracy": {
+    "improvement_pp": -0.05887137068305037,
+    "paired_7day_bootstrap_CI95_pp": [
+      -0.343520017542896,
+      0.2358057858905262
+    ]
+  },
+  "days": 669,
+  "replicates": 5000,
+  "seed": 9417
+}

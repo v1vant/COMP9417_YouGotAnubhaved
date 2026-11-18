@@ -1,0 +1,17 @@
+{
+  "selected": "fewer_leaves",
+  "promising": true,
+  "selected_score": {
+    "candidate": "fewer_leaves",
+    "accuracy": 83.16780821917808,
+    "balanced_accuracy": 83.19953141594432,
+    "recall_0": 82.04643928452394,
+    "recall_1": 84.35262354736471
+  },
+  "reference_score": {
+    "accuracy": 83.13356164383562,
+    "balanced_accuracy": 83.16274453938605,
+    "recall_0": 82.10198866792578,
+    "recall_1": 84.22350041084634
+  }
+}

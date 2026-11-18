@@ -1,0 +1,14 @@
+{
+  "period": "2015\u20132020",
+  "rows": 105216,
+  "both_correct": 82178,
+  "current_only_correct": 2246,
+  "recency_only_correct": 2074,
+  "both_wrong": 18718,
+  "error_correlation": 0.870942625405657,
+  "disagreement_percent": 4.105839416058394,
+  "recency_corrects_current_errors_percent": 9.974990380915736,
+  "recency_wins_disagreements_percent": 48.00925925925926,
+  "current_historical_probability_available": false,
+  "note": "Historical current-model file contains binary labels only; cannot compute a probability blend for 2015\u20132020 without regenerating missing probabilities."
+}

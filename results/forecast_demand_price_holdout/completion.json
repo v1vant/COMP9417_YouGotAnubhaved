@@ -1,0 +1,21 @@
+{
+  "seconds": 350.77660404198105,
+  "holdout_evaluated": true,
+  "features_added": [
+    "forecast_demand",
+    "forecast_demand_minus_yesterday_slot",
+    "forecast_demand_minus_lastweek_slot",
+    "forecast_demand_minus_yesterday_mean",
+    "forecast_demand_minus_yesterday_max"
+  ],
+  "config": {
+    "family": "boosted",
+    "leaves": 31,
+    "trees": 600,
+    "learning_rate": 0.04,
+    "threshold": 0.5700000000000001
+  },
+  "evaluation_start": "2025-01-01",
+  "evaluation_end": "2026-10-31",
+  "current_column_contains": "hard labels from cached current policy, not probabilities"
+}

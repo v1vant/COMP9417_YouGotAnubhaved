@@ -1,0 +1,81 @@
+{
+  "purpose": "Preserve OneDrive conflict files and older local revisions without replacing validated production files.",
+  "files": [
+    {
+      "worktree": "COMP9417_YouGotAnubhaved",
+      "path": "README-Anubhav\u2019s MacBook Air.md"
+    },
+    {
+      "worktree": "COMP9417_YouGotAnubhaved",
+      "path": "README.md.fetch"
+    },
+    {
+      "worktree": "COMP9417_YouGotAnubhaved",
+      "path": "code/forecast_package/model.py.fetch"
+    },
+    {
+      "worktree": "COMP9417_YouGotAnubhaved",
+      "path": "code/forecast_package/train-Anubhav\u2019s MacBook Air.py"
+    },
+    {
+      "worktree": "COMP9417_YouGotAnubhaved",
+      "path": "code/forecast_package/train.py.fetch"
+    },
+    {
+      "worktree": "COMP9417_YouGotAnubhaved",
+      "path": "code/submission_package/artifacts/manifest.json.fetch"
+    },
+    {
+      "worktree": "COMP9417_YouGotAnubhaved",
+      "path": "code/submission_package/train-Anubhav\u2019s MacBook Air.py"
+    },
+    {
+      "worktree": "COMP9417_YouGotAnubhaved",
+      "path": "code/submission_package/train.py.fetch"
+    },
+    {
+      "worktree": "COMP9417_YouGotAnubhaved",
+      "path": "results/current_model.json.fetch"
+    },
+    {
+      "worktree": "COMP9417_YouGotAnubhaved",
+      "path": "results/holdout_original_vs_current/retrains.csv.fetch"
+    },
+    {
+      "worktree": "COMP9417_YouGotAnubhaved",
+      "path": "README.md"
+    },
+    {
+      "worktree": "COMP9417_YouGotAnubhaved",
+      "path": "code/forecast_package/train.py"
+    },
+    {
+      "worktree": "COMP9417_YouGotAnubhaved",
+      "path": "code/submission_package/train.py"
+    },
+    {
+      "worktree": "COMP9417_demand_mlp",
+      "path": "README.md.fetch"
+    },
+    {
+      "worktree": "COMP9417_demand_mlp",
+      "path": "code/forecast_package/model.py.fetch"
+    },
+    {
+      "worktree": "COMP9417_demand_mlp",
+      "path": "code/submission_package/artifacts/manifest.json.fetch"
+    },
+    {
+      "worktree": "COMP9417_demand_mlp",
+      "path": "code/submission_package/train.py.fetch"
+    },
+    {
+      "worktree": "COMP9417_demand_mlp",
+      "path": "results/current_model.json.fetch"
+    },
+    {
+      "worktree": "COMP9417_demand_mlp",
+      "path": "results/frozen_demand_blend_holdout/retraining_audit.csv.fetch"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "offsets_halfhours": [
+    1,
+    2,
+    4
+  ],
+  "boundary_rule": "Clamp to same market-day opening for both forecast and yesterday ramp",
+  "selection": "Proceed only if 2014 balanced accuracy exceeds five-feature candidate",
+  "threshold": 0.5700000000000001,
+  "holdout_evaluated": false,
+  "follow_up_idea": "Feed chronological frozen base price probabilities into a separate demand candidate; avoid circular dependencies."
+}

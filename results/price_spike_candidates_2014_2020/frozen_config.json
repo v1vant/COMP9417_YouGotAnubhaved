@@ -1,0 +1,119 @@
+{
+  "config": {
+    "family": "boosted",
+    "leaves": 31,
+    "trees": 600,
+    "learning_rate": 0.04,
+    "threshold": 0.5700000000000001
+  },
+  "groups": {
+    "trimmed": [
+      "price_spike_trimmed_mean_without_top1",
+      "price_spike_trimmed_mean_without_top3",
+      "price_spike_trimmed_mean_without_spikes",
+      "price_spike_trimmed_no_nonspike_intervals",
+      "price_spike_trimmed_top1_mean_distortion",
+      "price_spike_trimmed_top3_mean_distortion",
+      "price_spike_trimmed_spike_mean_distortion"
+    ],
+    "relative": [
+      "price_spike_relative_previous_30day_q99",
+      "price_spike_relative_mean_minus_q99",
+      "price_spike_relative_count",
+      "price_spike_relative_largest_excess",
+      "price_spike_relative_mean_excess",
+      "price_spike_relative_last_spike_slot",
+      "price_spike_relative_longest_run",
+      "price_spike_relative_spike_days_last7",
+      "price_spike_relative_days_since_spike",
+      "price_spike_relative_no_spike_last30",
+      "price_spike_relative_count_hours_00_06",
+      "price_spike_relative_count_hours_06_12",
+      "price_spike_relative_count_hours_12_18",
+      "price_spike_relative_count_hours_18_24"
+    ],
+    "absolute": [
+      "price_spike_absolute_count_above_300",
+      "price_spike_absolute_count_above_1000"
+    ]
+  },
+  "candidates": {
+    "current_matched": [],
+    "trimmed": [
+      "price_spike_trimmed_mean_without_top1",
+      "price_spike_trimmed_mean_without_top3",
+      "price_spike_trimmed_mean_without_spikes",
+      "price_spike_trimmed_no_nonspike_intervals",
+      "price_spike_trimmed_top1_mean_distortion",
+      "price_spike_trimmed_top3_mean_distortion",
+      "price_spike_trimmed_spike_mean_distortion"
+    ],
+    "relative": [
+      "price_spike_relative_previous_30day_q99",
+      "price_spike_relative_mean_minus_q99",
+      "price_spike_relative_count",
+      "price_spike_relative_largest_excess",
+      "price_spike_relative_mean_excess",
+      "price_spike_relative_last_spike_slot",
+      "price_spike_relative_longest_run",
+      "price_spike_relative_spike_days_last7",
+      "price_spike_relative_days_since_spike",
+      "price_spike_relative_no_spike_last30",
+      "price_spike_relative_count_hours_00_06",
+      "price_spike_relative_count_hours_06_12",
+      "price_spike_relative_count_hours_12_18",
+      "price_spike_relative_count_hours_18_24"
+    ],
+    "combined": [
+      "price_spike_trimmed_mean_without_top1",
+      "price_spike_trimmed_mean_without_top3",
+      "price_spike_trimmed_mean_without_spikes",
+      "price_spike_trimmed_no_nonspike_intervals",
+      "price_spike_trimmed_top1_mean_distortion",
+      "price_spike_trimmed_top3_mean_distortion",
+      "price_spike_trimmed_spike_mean_distortion",
+      "price_spike_relative_previous_30day_q99",
+      "price_spike_relative_mean_minus_q99",
+      "price_spike_relative_count",
+      "price_spike_relative_largest_excess",
+      "price_spike_relative_mean_excess",
+      "price_spike_relative_last_spike_slot",
+      "price_spike_relative_longest_run",
+      "price_spike_relative_spike_days_last7",
+      "price_spike_relative_days_since_spike",
+      "price_spike_relative_no_spike_last30",
+      "price_spike_relative_count_hours_00_06",
+      "price_spike_relative_count_hours_06_12",
+      "price_spike_relative_count_hours_12_18",
+      "price_spike_relative_count_hours_18_24"
+    ],
+    "combined_absolute": [
+      "price_spike_trimmed_mean_without_top1",
+      "price_spike_trimmed_mean_without_top3",
+      "price_spike_trimmed_mean_without_spikes",
+      "price_spike_trimmed_no_nonspike_intervals",
+      "price_spike_trimmed_top1_mean_distortion",
+      "price_spike_trimmed_top3_mean_distortion",
+      "price_spike_trimmed_spike_mean_distortion",
+      "price_spike_relative_previous_30day_q99",
+      "price_spike_relative_mean_minus_q99",
+      "price_spike_relative_count",
+      "price_spike_relative_largest_excess",
+      "price_spike_relative_mean_excess",
+      "price_spike_relative_last_spike_slot",
+      "price_spike_relative_longest_run",
+      "price_spike_relative_spike_days_last7",
+      "price_spike_relative_days_since_spike",
+      "price_spike_relative_no_spike_last30",
+      "price_spike_relative_count_hours_00_06",
+      "price_spike_relative_count_hours_06_12",
+      "price_spike_relative_count_hours_12_18",
+      "price_spike_relative_count_hours_18_24",
+      "price_spike_absolute_count_above_300",
+      "price_spike_absolute_count_above_1000"
+    ]
+  },
+  "training_start": "2010-02-01 00:30:00",
+  "data_end": "2020-12-31 00:00:00",
+  "note": "All candidates use identical rows after the 30-day warmup. Fixed hyperparameters and 0.57 threshold. No post-2020 data."
+}
