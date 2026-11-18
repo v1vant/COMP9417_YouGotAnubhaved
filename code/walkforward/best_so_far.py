@@ -5,8 +5,9 @@ import numpy as np, pandas as pd
 import evaluate as ev
 from sklearn.metrics import balanced_accuracy_score as bas
 
-BEST = {"label": "BEST SO FAR: 70/30 LGBM-63+A5 (his fc) + NN 256x256+D4 (his fc)",
-        "parts": [("lgbm63_A5_blend", 0.7), ("nn256_D4_blend", 0.3)]}
+BEST = {"label": "BEST SO FAR (champion 2026-11-19): 0.7*[LGBM-63+D4+ws x5 + Suhan+A5 x5] + 0.3*[NN+D4 + NN64]",
+        "parts": [('lgbm63_D4ws_s9417', 0.07), ('lgbm63_D4ws_s9418', 0.07), ('lgbm63_D4ws_s9419', 0.07), ('lgbm63_D4ws_s9420', 0.07), ('lgbm63_D4ws_s9421', 0.07), ('suhan_c2ws_A5_s9417', 0.07), ('suhan_c2ws_A5_s9418', 0.07), ('suhan_c2ws_A5_s9419', 0.07), ('suhan_c2ws_A5_s9420', 0.07), ('suhan_c2ws_A5_s9421', 0.07), ('nn256_D4_blend', 0.15), ('nn64', 0.15)]}
+PREVIOUS_BEST = [("lgbm63_A5_blend", 0.7), ("nn256_D4_blend", 0.3)]   # 80.572 BA / 81.112% (pushed in feb079b)
 YRS = list(range(2014, 2025))
 cat = lambda d, yrs: np.concatenate([d[y] for y in yrs])
 

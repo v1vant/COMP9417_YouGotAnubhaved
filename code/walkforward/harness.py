@@ -182,6 +182,10 @@ def fit_job(name, spec, fit_end, predict_years):
         X = X.copy()
         for k, name in enumerate(json.load(open(f"{RUNS}/weather_shape_names.json"))):
             X[name] = np.load(f"{RUNS}/weather_shape.npy", mmap_mode="r")[:, k]
+    if spec.get("neg_features"):                 # explicit negative-price features (day D and earlier; build_negative_features.py)
+        X = X.copy()
+        for k, name in enumerate(json.load(open(f"{RUNS}/negprice_names.json"))):
+            X[name] = np.load(f"{RUNS}/negprice.npy", mmap_mode="r")[:, k]
     for f in spec.get("oof_features", []):        # out-of-sample outputs of earlier models as extra inputs
         X = X.copy(); X[f["name"]] = oof_series(f["run"], f["early"], days, f.get("key", "y")).astype(np.float32)
     lf = spec.get("layered_features")             # out-of-sample layered outputs as extra classifier inputs
@@ -258,10 +262,21 @@ def fit_job(name, spec, fit_end, predict_years):
         if spec.get("weights") == "oof_uncertainty":
             g = lgbm_logit_series("lgbm63", "lgbm63_early", days); oofp = 1 / (1 + np.exp(-g))
         target = None
-        if spec.get("target") == "given":          # within-day percentile rank of tomorrow's price
-            target = pd.Series(tg["price"]).groupby(np.asarray(days)).rank(pct=True).to_numpy()[train]
-        prob, raw = lgbx.fit_predict(spec, X[train], X[pred], truth["price"].to_numpy()[train],
-                                     tg["margin"][train], tg["thr"][train], None if oofp is None else oofp[train], target)
+        if spec.get("target") == "given":
+            if spec.get("given_target", "rank") == "rank":   # within-day percentile rank of tomorrow's price
+                target = pd.Series(tg["price"]).groupby(np.asarray(days)).rank(pct=True).to_numpy()[train]
+            elif spec["given_target"] == "intra_rel":       # deviation from tomorrow's own mean, relative to today's mean
+                target = np.clip((tg["price"] - tg["mean_next"]) / np.maximum(np.abs(tg["thr"]), 10.0), -3, 3)[train]
+        if spec.get("task") == "lambdarank":                # rank slots within each day (query = market day)
+            pct = pd.Series(tg["price"]).groupby(np.asarray(days)).rank(pct=True).to_numpy()
+            lab = np.minimum((pct * 10).astype(int), 9)[train]
+            dtr = np.asarray(days)[train]
+            groups = pd.Series(dtr).groupby(dtr, sort=False).size().to_numpy()
+            assert (np.diff(pd.factorize(dtr)[0]) >= 0).all(), "training rows must be grouped by day"
+            prob, raw = lgbx.rank_fit_predict(spec, X[train], X[pred], lab, groups)
+        else:
+            prob, raw = lgbx.fit_predict(spec, X[train], X[pred], truth["price"].to_numpy()[train],
+                                         tg["margin"][train], tg["thr"][train], None if oofp is None else oofp[train], target)
         if raw is not None:
             extras["r"] = raw
     elif spec["kind"] == "day":
@@ -273,15 +288,20 @@ def fit_job(name, spec, fit_end, predict_years):
         lvl = pd.Series(tg["mean_next"] - tg["thr"], index=d).groupby(level=0).first()
         tdays = T.index[(T.index.year >= start) & (T.index.year <= fit_end)]
         pdays = T.index[T.index.year.isin(predict_years)]
-        Dp = layered.fit_predict_day(T, n_day, lvl, tdays, pdays)
+        lrel = None
+        if spec.get("level_rel"):                  # relative level target: (mean(D+1) - mean(D)) / max(|mean(D)|, 10)
+            thr_day = pd.Series(tg["thr"], index=d).groupby(level=0).first()
+            lrel = (lvl / np.maximum(np.abs(thr_day), 10.0)).clip(-3, 3)
+        Dp = layered.fit_predict_day(T, n_day, lvl, tdays, pdays, tuple(spec.get("quantiles", (0.1, 0.5, 0.9))), lrel)
         rows = d[pred]
         prob = np.clip(Dp["n"].reindex(rows).to_numpy() / 48, 0, 1)
-        extras = {k: Dp[k].reindex(rows).to_numpy() for k in ("n", "q10", "q50", "q90", "l")}
+        extras = {k: Dp[k].reindex(rows).to_numpy() for k in Dp.columns}
     elif spec["kind"] == "nnx":
         import nn_ext
         sl = lambda v, m: None if v is None else v[m]
         params = nn_ext.fit(spec["config"], X[train], truth["price"][train], sl(late, train), sl(offset, train),
-                            spec.get("lgbm", {}).get("learn", True), spec.get("lgbm", {}).get("a_lr_mult", 1.0))
+                            spec.get("lgbm", {}).get("learn", True), spec.get("lgbm", {}).get("a_lr_mult", 1.0),
+                            spec.get("z_clip"))
         prob = np.concatenate([nn_ext.predict(params, X[pred].iloc[i:i + 20000],
                                               sl(late, pred)[i:i + 20000] if late is not None else None,
                                               sl(offset, pred)[i:i + 20000] if offset is not None else None)

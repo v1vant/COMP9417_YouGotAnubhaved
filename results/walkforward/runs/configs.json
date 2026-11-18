@@ -117,5 +117,179 @@
    "trees": 600,
    "learning_rate": 0.04
   }
+ },
+ "nn64": {
+  "kind": "sk",
+  "config": {
+   "family": "neural_net",
+   "hidden": [
+    64
+   ],
+   "dropout": 0.5,
+   "learning_rate": 0.0003,
+   "weight_decay": 0.0001,
+   "batch_size": 1024,
+   "epochs": 10,
+   "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+   ],
+   "log": "price",
+   "winsorise": null,
+   "bootstrap": false
+  }
+ },
+ "lgbm63_D4ws_s9417": {
+  "kind": "lgbx",
+  "config": {
+   "leaves": 63,
+   "trees": 900,
+   "learning_rate": 0.025
+  },
+  "seed": 9417,
+  "weather_shape": true,
+  "start_year": 2011,
+  "demand": "D4",
+  "demand_source": "anubhav_blend"
+ },
+ "suhan_c2ws_A5_s9417": {
+  "kind": "lgbx",
+  "config": {
+   "leaves": 63,
+   "trees": 1200,
+   "learning_rate": 0.02
+  },
+  "lgb_params": {
+   "colsample_bytree": 0.5,
+   "min_child_samples": 300
+  },
+  "seed": 9417,
+  "weather_shape": true,
+  "start_year": 2011,
+  "demand": "A5",
+  "demand_source": "anubhav_blend"
+ },
+ "lgbm63_D4ws_s9418": {
+  "kind": "lgbx",
+  "config": {
+   "leaves": 63,
+   "trees": 900,
+   "learning_rate": 0.025
+  },
+  "seed": 9418,
+  "weather_shape": true,
+  "start_year": 2011,
+  "demand": "D4",
+  "demand_source": "anubhav_blend"
+ },
+ "suhan_c2ws_A5_s9418": {
+  "kind": "lgbx",
+  "config": {
+   "leaves": 63,
+   "trees": 1200,
+   "learning_rate": 0.02
+  },
+  "lgb_params": {
+   "colsample_bytree": 0.5,
+   "min_child_samples": 300
+  },
+  "seed": 9418,
+  "weather_shape": true,
+  "start_year": 2011,
+  "demand": "A5",
+  "demand_source": "anubhav_blend"
+ },
+ "lgbm63_D4ws_s9419": {
+  "kind": "lgbx",
+  "config": {
+   "leaves": 63,
+   "trees": 900,
+   "learning_rate": 0.025
+  },
+  "seed": 9419,
+  "weather_shape": true,
+  "start_year": 2011,
+  "demand": "D4",
+  "demand_source": "anubhav_blend"
+ },
+ "suhan_c2ws_A5_s9419": {
+  "kind": "lgbx",
+  "config": {
+   "leaves": 63,
+   "trees": 1200,
+   "learning_rate": 0.02
+  },
+  "lgb_params": {
+   "colsample_bytree": 0.5,
+   "min_child_samples": 300
+  },
+  "seed": 9419,
+  "weather_shape": true,
+  "start_year": 2011,
+  "demand": "A5",
+  "demand_source": "anubhav_blend"
+ },
+ "lgbm63_D4ws_s9420": {
+  "kind": "lgbx",
+  "config": {
+   "leaves": 63,
+   "trees": 900,
+   "learning_rate": 0.025
+  },
+  "seed": 9420,
+  "weather_shape": true,
+  "start_year": 2011,
+  "demand": "D4",
+  "demand_source": "anubhav_blend"
+ },
+ "suhan_c2ws_A5_s9420": {
+  "kind": "lgbx",
+  "config": {
+   "leaves": 63,
+   "trees": 1200,
+   "learning_rate": 0.02
+  },
+  "lgb_params": {
+   "colsample_bytree": 0.5,
+   "min_child_samples": 300
+  },
+  "seed": 9420,
+  "weather_shape": true,
+  "start_year": 2011,
+  "demand": "A5",
+  "demand_source": "anubhav_blend"
+ },
+ "lgbm63_D4ws_s9421": {
+  "kind": "lgbx",
+  "config": {
+   "leaves": 63,
+   "trees": 900,
+   "learning_rate": 0.025
+  },
+  "seed": 9421,
+  "weather_shape": true,
+  "start_year": 2011,
+  "demand": "D4",
+  "demand_source": "anubhav_blend"
+ },
+ "suhan_c2ws_A5_s9421": {
+  "kind": "lgbx",
+  "config": {
+   "leaves": 63,
+   "trees": 1200,
+   "learning_rate": 0.02
+  },
+  "lgb_params": {
+   "colsample_bytree": 0.5,
+   "min_child_samples": 300
+  },
+  "seed": 9421,
+  "weather_shape": true,
+  "start_year": 2011,
+  "demand": "A5",
+  "demand_source": "anubhav_blend"
  }
 }

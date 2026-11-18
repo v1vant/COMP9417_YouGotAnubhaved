@@ -1,0 +1,1 @@
+{"seconds": 440.13507771492004, "train_rows": 157776, "fit_end": 2019, "code_sha": "5da2349c402f", "spec": {"kind": "lgbx", "config": {"leaves": 63, "trees": 900, "learning_rate": 0.025}, "seed": 9419, "weather_shape": true, "start_year": 2011, "demand": "D4", "demand_source": "anubhav_blend"}}
