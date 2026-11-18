@@ -1,0 +1,6 @@
+{
+  "feature_set": "full",
+  "neighbors": 150,
+  "accuracy": 78.43036529680364,
+  "balanced_accuracy": 78.31348974770435
+}

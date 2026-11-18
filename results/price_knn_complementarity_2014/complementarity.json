@@ -1,0 +1,17 @@
+{
+  "rows": 17520,
+  "individual_thresholds": {
+    "LightGBM": 0.57,
+    "KNN": 0.5
+  },
+  "both_correct": 13136,
+  "LightGBM_only_correct": 1429,
+  "KNN_only_correct": 715,
+  "both_wrong": 2240,
+  "disagreement_percent": 12.237442922374429,
+  "KNN_corrects_LightGBM_errors_percent": 24.196277495769884,
+  "KNN_wins_disagreements_percent": 33.348880597014926,
+  "error_indicator_correlation": 0.6073154835108276,
+  "probability_correlation": 0.8806826019467603,
+  "note": "Descriptive 2014 analysis. Fixed equal-weight blends; no selection or threshold optimisation."
+}

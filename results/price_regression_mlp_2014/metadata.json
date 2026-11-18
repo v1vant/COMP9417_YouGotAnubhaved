@@ -1,0 +1,251 @@
+{
+  "architecture": [
+    571,
+    128,
+    64,
+    1
+  ],
+  "epochs": [
+    5,
+    10
+  ],
+  "target": "Actual NSW price divided by 100",
+  "loss": "L1, equal observation weights; no price clipping",
+  "seed": 9417,
+  "calibration": "Balanced logistic regression on signed-log predicted margins, fitted on chronological 2011\u20132013 predictions",
+  "probability_blend_weights": "Fixed 50/50 or equal thirds; thresholds fixed at 0.5 and 0.57",
+  "folds": [
+    {
+      "forecast_year": 2011,
+      "training_end": "2010-12-31",
+      "training_rows": 16172,
+      "history": [
+        {
+          "epoch": 1,
+          "training_L1_dollars_per_MWh": 13.396002298426929,
+          "seconds": 0.1392645000014454
+        },
+        {
+          "epoch": 2,
+          "training_L1_dollars_per_MWh": 7.637282886162065,
+          "seconds": 0.08133108296897262
+        },
+        {
+          "epoch": 3,
+          "training_L1_dollars_per_MWh": 6.7109564350120445,
+          "seconds": 0.13482350000413135
+        },
+        {
+          "epoch": 4,
+          "training_L1_dollars_per_MWh": 6.347014539951798,
+          "seconds": 0.08831087499856949
+        },
+        {
+          "epoch": 5,
+          "training_L1_dollars_per_MWh": 6.083714439654126,
+          "seconds": 0.07608087500557303
+        },
+        {
+          "epoch": 6,
+          "training_L1_dollars_per_MWh": 5.95910722712774,
+          "seconds": 0.08445162500720471
+        },
+        {
+          "epoch": 7,
+          "training_L1_dollars_per_MWh": 5.824795222329586,
+          "seconds": 0.08075445803115144
+        },
+        {
+          "epoch": 8,
+          "training_L1_dollars_per_MWh": 5.732078173211858,
+          "seconds": 0.1122235829825513
+        },
+        {
+          "epoch": 9,
+          "training_L1_dollars_per_MWh": 5.705126423057931,
+          "seconds": 0.08115379197988659
+        },
+        {
+          "epoch": 10,
+          "training_L1_dollars_per_MWh": 5.695384885307706,
+          "seconds": 0.13687108299927786
+        }
+      ]
+    },
+    {
+      "forecast_year": 2012,
+      "training_end": "2011-12-31",
+      "training_rows": 33692,
+      "history": [
+        {
+          "epoch": 1,
+          "training_L1_dollars_per_MWh": 13.778660496294137,
+          "seconds": 0.18189416697714478
+        },
+        {
+          "epoch": 2,
+          "training_L1_dollars_per_MWh": 9.482051011351384,
+          "seconds": 0.17337195802247152
+        },
+        {
+          "epoch": 3,
+          "training_L1_dollars_per_MWh": 8.919810476565495,
+          "seconds": 0.1868082499713637
+        },
+        {
+          "epoch": 4,
+          "training_L1_dollars_per_MWh": 8.879668260185364,
+          "seconds": 0.22707379201892763
+        },
+        {
+          "epoch": 5,
+          "training_L1_dollars_per_MWh": 8.600326997810555,
+          "seconds": 0.1750299580162391
+        },
+        {
+          "epoch": 6,
+          "training_L1_dollars_per_MWh": 8.53903586997791,
+          "seconds": 0.18663816596381366
+        },
+        {
+          "epoch": 7,
+          "training_L1_dollars_per_MWh": 8.30878625870119,
+          "seconds": 0.20852345804451033
+        },
+        {
+          "epoch": 8,
+          "training_L1_dollars_per_MWh": 8.24143723583053,
+          "seconds": 0.18500766600482166
+        },
+        {
+          "epoch": 9,
+          "training_L1_dollars_per_MWh": 8.05559631215483,
+          "seconds": 0.16112329199677333
+        },
+        {
+          "epoch": 10,
+          "training_L1_dollars_per_MWh": 7.916161225128808,
+          "seconds": 0.21246325003448874
+        }
+      ]
+    },
+    {
+      "forecast_year": 2013,
+      "training_end": "2012-12-31",
+      "training_rows": 51260,
+      "history": [
+        {
+          "epoch": 1,
+          "training_L1_dollars_per_MWh": 11.298670529580841,
+          "seconds": 0.24897991702891886
+        },
+        {
+          "epoch": 2,
+          "training_L1_dollars_per_MWh": 7.563463499390935,
+          "seconds": 0.24605312501080334
+        },
+        {
+          "epoch": 3,
+          "training_L1_dollars_per_MWh": 7.249460662124657,
+          "seconds": 0.30547070800093934
+        },
+        {
+          "epoch": 4,
+          "training_L1_dollars_per_MWh": 6.914529460356936,
+          "seconds": 0.3239414999843575
+        },
+        {
+          "epoch": 5,
+          "training_L1_dollars_per_MWh": 7.128154412042778,
+          "seconds": 0.30715583299752325
+        },
+        {
+          "epoch": 6,
+          "training_L1_dollars_per_MWh": 6.683560571910532,
+          "seconds": 0.2810111659928225
+        },
+        {
+          "epoch": 7,
+          "training_L1_dollars_per_MWh": 6.514985699219672,
+          "seconds": 0.3128857499687001
+        },
+        {
+          "epoch": 8,
+          "training_L1_dollars_per_MWh": 6.396824085893828,
+          "seconds": 0.25382045801961794
+        },
+        {
+          "epoch": 9,
+          "training_L1_dollars_per_MWh": 6.336213359423927,
+          "seconds": 0.3183088750229217
+        },
+        {
+          "epoch": 10,
+          "training_L1_dollars_per_MWh": 6.258896489075696,
+          "seconds": 0.28878233302384615
+        }
+      ]
+    },
+    {
+      "forecast_year": 2014,
+      "training_end": "2013-12-31",
+      "training_rows": 68780,
+      "history": [
+        {
+          "epoch": 1,
+          "training_L1_dollars_per_MWh": 10.216875072849216,
+          "seconds": 0.39989299996523187
+        },
+        {
+          "epoch": 2,
+          "training_L1_dollars_per_MWh": 6.498388600066915,
+          "seconds": 0.3527928750263527
+        },
+        {
+          "epoch": 3,
+          "training_L1_dollars_per_MWh": 6.220835385457933,
+          "seconds": 0.4041810000198893
+        },
+        {
+          "epoch": 4,
+          "training_L1_dollars_per_MWh": 5.964951530471552,
+          "seconds": 0.5794881669571623
+        },
+        {
+          "epoch": 5,
+          "training_L1_dollars_per_MWh": 5.813217585953508,
+          "seconds": 0.406903124996461
+        },
+        {
+          "epoch": 6,
+          "training_L1_dollars_per_MWh": 5.674640883121008,
+          "seconds": 0.409603625012096
+        },
+        {
+          "epoch": 7,
+          "training_L1_dollars_per_MWh": 5.641127597777848,
+          "seconds": 0.3835140420123935
+        },
+        {
+          "epoch": 8,
+          "training_L1_dollars_per_MWh": 5.539119912462548,
+          "seconds": 0.3911985000013374
+        },
+        {
+          "epoch": 9,
+          "training_L1_dollars_per_MWh": 5.430144559311447,
+          "seconds": 0.3851199579657987
+        },
+        {
+          "epoch": 10,
+          "training_L1_dollars_per_MWh": 5.507047743593132,
+          "seconds": 0.3679064590251073
+        }
+      ]
+    }
+  ],
+  "evaluation_year": 2014,
+  "holdout_evaluated": false,
+  "torch": "2.15.0",
+  "seconds_total": 12.595630249998067
+}

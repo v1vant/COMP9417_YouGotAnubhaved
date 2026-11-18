@@ -1,0 +1,4 @@
+definition,episodes,median_intervals,p90_intervals,max_intervals
+above_300,78,1.0,3.299999999999997,10
+above_1000,36,1.0,4.5,10
+above_previous_30day_q99,815,1.0,4.0,19

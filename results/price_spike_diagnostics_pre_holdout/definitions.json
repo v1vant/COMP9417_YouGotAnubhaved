@@ -1,0 +1,14 @@
+{
+  "evaluation_start": "2015-01-01",
+  "evaluation_end": "2024-12-31",
+  "model": "Current 571-feature LightGBM, fixed threshold 0.57, historical expanding-window predictions",
+  "spike_definitions": "Actual half-hour NSW price strictly above 300 or 1000 AUD/MWh",
+  "spike_day": "Any of 48 intervals exceeds threshold",
+  "after_spike_day": "Previous market day contained a spike; may also be a spike day itself",
+  "mutually_exclusive_day_groups": [
+    "spike_days_all_intervals",
+    "after_spike_but_no_new_spike_day",
+    "ordinary_days_no_spike_or_previous_spike"
+  ],
+  "note": "Retrospective diagnostics, not forecast-time spike labels; no holdout market days included. Spikes differ from the price-up target."
+}

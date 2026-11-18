@@ -1,0 +1,4 @@
+definition,next_day_spike_percent_after_spike,next_day_spike_percent_after_nonspike,spike_source_days
+above_300,28.57142857142857,2.1146616541353382,63
+above_1000,21.875,1.1579434923575729,32
+above_previous_30day_q99,48.818897637795274,15.38918597742127,508

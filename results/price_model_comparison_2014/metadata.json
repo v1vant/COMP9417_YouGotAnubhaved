@@ -1,0 +1,5 @@
+{
+  "evaluation_year": 2014,
+  "rows_in_table": 72,
+  "note": "Historical experiment inventory, not a controlled leaderboard. Includes differing training windows, feature sets, and threshold-selection methods; some duplicate reference rows are retained for provenance. Do not compare against 2015\u20132024 or holdout scores."
+}

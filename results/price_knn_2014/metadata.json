@@ -1,0 +1,21 @@
+{
+  "selection_training_years": [
+    2011,
+    2012
+  ],
+  "selection_year": 2013,
+  "final_training_years": [
+    2012,
+    2013
+  ],
+  "evaluation_year": 2014,
+  "selected": {
+    "feature_set": "full",
+    "neighbors": 150,
+    "accuracy": 78.43036529680364,
+    "balanced_accuracy": 78.31348974770435
+  },
+  "threshold": 0.5,
+  "seconds": 6.705734624993056,
+  "holdout_evaluated": false
+}

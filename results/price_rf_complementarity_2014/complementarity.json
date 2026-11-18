@@ -1,0 +1,16 @@
+{
+  "rows": 17520,
+  "training_rows": 68784,
+  "features": 240,
+  "both_correct": 13643,
+  "LightGBM_only_correct": 922,
+  "RF_only_correct": 549,
+  "both_wrong": 2406,
+  "RF_corrects_LightGBM_errors_percent": 18.578680203045685,
+  "RF_wins_disagreements_percent": 37.32154996600951,
+  "disagreement_percent": 8.396118721461187,
+  "error_correlation": 0.7168179216653058,
+  "seconds": 286.8412269160035,
+  "holdout_evaluated": false,
+  "note": "Original RF feature pipeline; fixed selected parameters and threshold. LightGBM uses current 571 features. No blend tuning."
+}

@@ -1,0 +1,73 @@
+experiment,model,accuracy,balanced_accuracy,threshold,source
+"KNN; refit 2012–2013, selected on 2013",KNN,79.05821917808218,79.11417323835848,,results/price_knn_2014/metrics.csv
+Actual-price MLPs and fixed ensembles,current_classifier_0.5,82.99657534246575,83.10077101553024,0.5,results/price_regression_mlp_2014/metrics.csv
+Actual-price MLPs and fixed ensembles,current_classifier_0.57,83.13356164383562,83.16274453938605,0.57,results/price_regression_mlp_2014/metrics.csv
+Actual-price MLPs and fixed ensembles,LightGBM_regression,80.53082191780821,80.54357578847097,,results/price_regression_mlp_2014/metrics.csv
+Actual-price MLPs and fixed ensembles,MLP_5_regression,71.89497716894977,71.95949155601772,,results/price_regression_mlp_2014/metrics.csv
+Actual-price MLPs and fixed ensembles,50_50_LGBM_MLP_5_price,77.76826484018264,77.7968410313059,,results/price_regression_mlp_2014/metrics.csv
+Actual-price MLPs and fixed ensembles,50_50_classifier_MLP_5_probability_0.5,82.53424657534246,82.69419373900872,0.5,results/price_regression_mlp_2014/metrics.csv
+Actual-price MLPs and fixed ensembles,50_50_classifier_MLP_5_probability_0.57,82.58561643835617,82.59678376438433,0.57,results/price_regression_mlp_2014/metrics.csv
+Actual-price MLPs and fixed ensembles,MLP_10_regression,70.51369863013699,70.95432093151236,,results/price_regression_mlp_2014/metrics.csv
+Actual-price MLPs and fixed ensembles,50_50_LGBM_MLP_10_price,76.17579908675799,76.47362002883717,,results/price_regression_mlp_2014/metrics.csv
+Actual-price MLPs and fixed ensembles,50_50_classifier_MLP_10_probability_0.5,81.62100456621005,81.85506223637108,0.5,results/price_regression_mlp_2014/metrics.csv
+Actual-price MLPs and fixed ensembles,50_50_classifier_MLP_10_probability_0.57,82.49429223744292,82.58113551807752,0.57,results/price_regression_mlp_2014/metrics.csv
+Actual-price MLPs and fixed ensembles,equal_thirds_classifier_LGBMreg_MLP10_0.5,81.21575342465754,81.47763355166586,0.5,results/price_regression_mlp_2014/metrics.csv
+Actual-price MLPs and fixed ensembles,equal_thirds_classifier_LGBMreg_MLP10_0.57,82.26598173515983,82.38125293926271,0.57,results/price_regression_mlp_2014/metrics.csv
+price_regression_2014,regressor,80.53082191780821,80.54357578847097,,../COMP9417_price_regression/results/price_regression_2014/metrics.csv
+price_regression_2014,classifier,83.13356164383562,83.16274453938605,,../COMP9417_price_regression/results/price_regression_2014/metrics.csv
+price_regression_2014,baseline_1d,73.9041095890411,73.98617484807123,,../COMP9417_price_regression/results/price_regression_2014/metrics.csv
+price_regression_2014,baseline_7d,74.25228310502283,74.28731067027168,,../COMP9417_price_regression/results/price_regression_2014/metrics.csv
+price_stacking_2014,classifier,83.13356164383562,83.16274453938605,,../COMP9417_price_regression/results/price_stacking_2014/metrics.csv
+price_stacking_2014,regressor,80.53082191780821,80.54357578847097,,../COMP9417_price_regression/results/price_stacking_2014/metrics.csv
+price_stacking_2014,stacker,83.07648401826484,83.15528231208648,,../COMP9417_price_regression/results/price_stacking_2014/metrics.csv
+augmented_price_2014,matched_reference,82.9851598173516,83.02774499667898,,../COMP9417_price_regression/results/augmented_price_2014/metrics.csv
+augmented_price_2014,augmented,83.28196347031962,83.35274573122975,,../COMP9417_price_regression/results/augmented_price_2014/metrics.csv
+augmented_price_2014,existing_classifier_2010_2013,83.13356164383562,83.16274453938605,,../COMP9417_price_regression/results/augmented_price_2014/metrics.csv
+augmented_price_margin_only_2014,matched_reference,82.9851598173516,83.02774499667898,,../COMP9417_price_regression/results/augmented_price_margin_only_2014/metrics.csv
+augmented_price_margin_only_2014,augmented,83.28196347031962,83.35274573122975,,../COMP9417_price_regression/results/augmented_price_margin_only_2014/metrics.csv
+augmented_price_margin_only_2014,existing_classifier_2010_2013,83.13356164383562,83.16274453938605,,../COMP9417_price_regression/results/augmented_price_margin_only_2014/metrics.csv
+augmented_price_margin_only_2014,augmented_margin_only,83.12214611872146,83.18997866953235,,../COMP9417_price_regression/results/augmented_price_margin_only_2014/metrics.csv
+quantile_price_2014,matched_reference,82.9851598173516,83.02774499667898,,../COMP9417_price_regression/results/quantile_price_2014/metrics.csv
+quantile_price_2014,augmented,83.28196347031962,83.35274573122975,,../COMP9417_price_regression/results/quantile_price_2014/metrics.csv
+quantile_price_2014,existing_classifier_2010_2013,83.13356164383562,83.16274453938605,,../COMP9417_price_regression/results/quantile_price_2014/metrics.csv
+quantile_price_2014,quantile_augmented,83.02511415525115,83.0902017004045,,../COMP9417_price_regression/results/quantile_price_2014/metrics.csv
+quantile_probability_2014,classifier,83.13356164383562,83.16274453938605,0.57,../COMP9417_price_regression/results/quantile_probability_2014/metrics.csv
+quantile_probability_2014,quantile_probability_default,80.40525114155251,80.41916707902146,0.5,../COMP9417_price_regression/results/quantile_probability_2014/metrics.csv
+quantile_probability_2014,quantile_probability_oof_selected,79.62328767123287,79.85866082441127,0.42,../COMP9417_price_regression/results/quantile_probability_2014/metrics.csv
+price_probability_blend_2014,classifier_threshold_0.57,83.13356164383562,83.16274453938605,,../COMP9417_price_regression/results/price_probability_blend_2014/metrics.csv
+price_probability_blend_2014,classifier_threshold_0.5,82.99657534246575,83.10077101553024,,../COMP9417_price_regression/results/price_probability_blend_2014/metrics.csv
+price_probability_blend_2014,calibrated_regressor_threshold_0.5,70.2568493150685,70.92969832009508,,../COMP9417_price_regression/results/price_probability_blend_2014/metrics.csv
+price_probability_blend_2014,blend_50_50_threshold_0.5,82.6027397260274,82.76556742615978,,../COMP9417_price_regression/results/price_probability_blend_2014/metrics.csv
+price_probability_blend_selected_2014,classifier_threshold_0.57,83.13356164383562,83.16274453938605,,../COMP9417_price_regression/results/price_probability_blend_selected_2014/metrics_2014.csv
+price_probability_blend_selected_2014,classifier_threshold_0.5,82.99657534246575,83.10077101553024,,../COMP9417_price_regression/results/price_probability_blend_selected_2014/metrics_2014.csv
+price_probability_blend_selected_2014,selected_blend_threshold_0.5,82.99657534246575,83.10077101553024,,../COMP9417_price_regression/results/price_probability_blend_selected_2014/metrics_2014.csv
+price_mlp_5epoch_2014,MLP_threshold_0.5,78.81849315068493,78.9990407999299,,../COMP9417_price_mlp/results/price_mlp_5epoch_2014/metrics.csv
+price_mlp_5epoch_2014,MLP_threshold_0.57,79.26940639269407,79.37596478663357,,../COMP9417_price_mlp/results/price_mlp_5epoch_2014/metrics.csv
+price_mlp_5epoch_2014,current_LightGBM_0.57,83.13356164383562,83.16274453938605,,../COMP9417_price_mlp/results/price_mlp_5epoch_2014/metrics.csv
+price_mlp_5epoch_2014,baseline_1d,73.9041095890411,73.98617484807123,,../COMP9417_price_mlp/results/price_mlp_5epoch_2014/metrics.csv
+price_mlp_5epoch_2014,baseline_7d,74.25228310502283,74.28731067027168,,../COMP9417_price_mlp/results/price_mlp_5epoch_2014/metrics.csv
+price_mlp_early_stopping_2014,MLP_threshold_0.5,78.81849315068493,78.9990407999299,,../COMP9417_price_mlp/results/price_mlp_early_stopping_2014/metrics.csv
+price_mlp_early_stopping_2014,MLP_threshold_0.57,79.26940639269407,79.37596478663357,,../COMP9417_price_mlp/results/price_mlp_early_stopping_2014/metrics.csv
+price_mlp_early_stopping_2014,current_LightGBM_0.57,83.13356164383562,83.16274453938605,,../COMP9417_price_mlp/results/price_mlp_early_stopping_2014/metrics.csv
+price_mlp_early_stopping_2014,baseline_1d,73.9041095890411,73.98617484807123,,../COMP9417_price_mlp/results/price_mlp_early_stopping_2014/metrics.csv
+price_mlp_early_stopping_2014,baseline_7d,74.25228310502283,74.28731067027168,,../COMP9417_price_mlp/results/price_mlp_early_stopping_2014/metrics.csv
+price_mlp_early_stopping_2014,selected_1_epoch_MLP_threshold_0.5,79.50342465753425,79.75395033450849,,../COMP9417_price_mlp/results/price_mlp_early_stopping_2014/metrics.csv
+price_mlp_early_stopping_2014,selected_1_epoch_MLP_threshold_0.57,79.98858447488585,80.11360243404762,,../COMP9417_price_mlp/results/price_mlp_early_stopping_2014/metrics.csv
+price_mlp_complementarity_2014,LightGBM,82.99657534246575,83.10077101553024,0.5,../COMP9417_price_mlp/results/price_mlp_complementarity_2014/metrics.csv
+price_mlp_complementarity_2014,LightGBM,83.13356164383562,83.16274453938605,0.57,../COMP9417_price_mlp/results/price_mlp_complementarity_2014/metrics.csv
+price_mlp_complementarity_2014,MLP_1_epoch,79.50342465753425,79.75395033450849,0.5,../COMP9417_price_mlp/results/price_mlp_complementarity_2014/metrics.csv
+price_mlp_complementarity_2014,MLP_1_epoch,79.98858447488585,80.11360243404762,0.57,../COMP9417_price_mlp/results/price_mlp_complementarity_2014/metrics.csv
+price_mlp_complementarity_2014,50_50_LightGBM_MLP_1,82.46004566210046,82.63140839472402,0.5,../COMP9417_price_mlp/results/price_mlp_complementarity_2014/metrics.csv
+price_mlp_complementarity_2014,50_50_LightGBM_MLP_1,82.8310502283105,82.90039091142447,0.57,../COMP9417_price_mlp/results/price_mlp_complementarity_2014/metrics.csv
+price_mlp_complementarity_2014,50_50_LightGBM_MLP_5,82.13470319634703,82.28020444416194,0.5,../COMP9417_price_mlp/results/price_mlp_complementarity_2014/metrics.csv
+price_mlp_complementarity_2014,50_50_LightGBM_MLP_5,82.0662100456621,82.12114241353027,0.57,../COMP9417_price_mlp/results/price_mlp_complementarity_2014/metrics.csv
+Six regime features,current,83.13356164383562,83.16274453938605,,../COMP9417_price_regime/results/price_regime_2014/metrics.csv
+Six regime features,price_regime,82.89383561643837,82.9303800145121,,../COMP9417_price_regime/results/price_regime_2014/metrics.csv
+Original feature pipeline; 2014-tuned thresholds,price_linear_0,79.26369863013699,79.27392124095091,0.5800000000000001,results/selection.json
+Original feature pipeline; 2014-tuned thresholds,price_linear_1,79.15525114155251,79.21017866583122,0.55,results/selection.json
+Original feature pipeline; 2014-tuned thresholds,price_boosted_2,81.64383561643835,81.74244937556271,0.5700000000000001,results/selection.json
+Original feature pipeline; 2014-tuned thresholds,price_boosted_3,81.64954337899543,81.72128922717943,0.5900000000000001,results/selection.json
+"origin/Thomas; different feature pipeline, 2014-tuned threshold",price_naive_bayes_4,78.87557077625571,78.93358655523126,0.55,origin/Thomas:results/selection.json
+"origin/Thomas; different feature pipeline, 2014-tuned threshold",price_svm_5,81.40981735159816,81.4546665322718,0.54,origin/Thomas:results/selection.json
+"origin/random_forest; different feature pipeline, 2014-tuned threshold",price_random_forest_0,81.0730593607306,81.16181193051042,0.51,origin/random_forest:results/random_forest/selection.json
+"origin/random_forest; different feature pipeline, 2014-tuned threshold",price_random_forest_1,81.06735159817352,81.12231311727452,0.53,origin/random_forest:results/random_forest/selection.json

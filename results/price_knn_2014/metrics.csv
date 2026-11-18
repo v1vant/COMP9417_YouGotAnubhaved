@@ -1,0 +1,2 @@
+model,accuracy,balanced_accuracy
+KNN,79.05821917808218,79.11417323835848

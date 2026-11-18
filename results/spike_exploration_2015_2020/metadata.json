@@ -1,0 +1,15 @@
+{
+  "analysis_start": "2015-01-01",
+  "analysis_end": "2020-12-31",
+  "rows": 105216,
+  "reference_predictions": "results/feature_comparison_2015_2024/current_price.npy; prefix only",
+  "no_later_data_used": true,
+  "definitions": {
+    "isolated": "one spike interval in the day",
+    "short": "two or three spike intervals",
+    "sustained": "four or more spike intervals, not necessarily consecutive",
+    "relative": "exceeds the 99th percentile of the previous 30 complete market days",
+    "counterfactual": "Remove D largest interval only for diagnostic threshold calculation; never modify the actual target"
+  },
+  "limitations": "Descriptive exploration; group sizes may be small, groups overlap, no causal inference or new forecasting rule. Oracle gains are unattainable upper bounds."
+}

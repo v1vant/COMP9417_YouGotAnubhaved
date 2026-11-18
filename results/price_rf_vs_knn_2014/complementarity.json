@@ -1,0 +1,11 @@
+{
+  "error_correlation": 0.6615938444586684,
+  "disagreement_percent": 10.86187214611872,
+  "KNN_corrects_RF_errors_percent": 23.467548076923077,
+  "RF_corrects_KNN_errors_percent": 30.58053965658217,
+  "RF_wins_disagreements_percent": 58.95953757225434,
+  "RF_only_correct": 1122,
+  "KNN_only_correct": 781,
+  "both_wrong": 2547,
+  "note": "2014 diagnostic; selected individual thresholds, fixed equal-weight blends; different feature sets and training windows."
+}
