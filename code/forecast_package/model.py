@@ -140,6 +140,18 @@ def feature_frame(frame, weather_shape=False):
         f[f"price_margin_{lag}"] = f[f"nsw_price_lag_{lag}"] - f["price_threshold"]
     # Historical price profiles relative to the forecast's previous-day mean.
     price = frame["nsw_price"]
+    price_days = price.groupby(days)
+    quantiles = price_days.quantile([0.1, 0.25, 0.5, 0.75, 0.9]).unstack()
+    regime = pd.DataFrame({
+        "median": quantiles[0.5],
+        "q10": quantiles[0.1],
+        "q90": quantiles[0.9],
+        "negative_share": price.lt(0).groupby(days).mean(),
+        "mean_median_gap": price_days.mean() - quantiles[0.5],
+        "iqr": quantiles[0.75] - quantiles[0.25],
+    })
+    for name in regime:
+        f[f"nsw_price_regime_{name}"] = lookup.map(regime[name].shift(1))
     threshold = f["price_threshold"]
     price_profiles = pd.DataFrame({
         "day": days, "slot": slot, "price": price.to_numpy(),

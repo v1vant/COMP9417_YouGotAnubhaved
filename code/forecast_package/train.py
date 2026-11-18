@@ -36,7 +36,7 @@ def fit_model(task, config, features, truth):
     if task == "demand":
         features = features.drop(columns=[
             col for col in features if col.startswith("nsw_price_") and (
-                any(part in col for part in ("_profile_", "_before_margin_",
+                any(part in col for part in ("_regime_", "_profile_", "_before_margin_",
                                              "_ramp_", "_change_from_open"))
                 or col == "nsw_price_weekly_margin")
         ])
