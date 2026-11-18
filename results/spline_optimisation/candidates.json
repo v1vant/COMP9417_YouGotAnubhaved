@@ -1,0 +1,112 @@
+[
+  {
+    "name": "structure_0",
+    "config": {
+      "window": 0,
+      "schedule": "biennial",
+      "features": "original",
+      "alpha": 10.0,
+      "n_knots": 6
+    },
+    "MAPE": 3.2862946324093136
+  },
+  {
+    "name": "structure_1",
+    "config": {
+      "window": 2,
+      "schedule": "biennial",
+      "features": "original",
+      "alpha": 10.0,
+      "n_knots": 6
+    },
+    "MAPE": 3.143137431886099
+  },
+  {
+    "name": "structure_2",
+    "config": {
+      "window": 4,
+      "schedule": "biennial",
+      "features": "original",
+      "alpha": 10.0,
+      "n_knots": 6
+    },
+    "MAPE": 3.142654276363809
+  },
+  {
+    "name": "structure_3",
+    "config": {
+      "window": 2,
+      "schedule": "annual",
+      "features": "original",
+      "alpha": 10.0,
+      "n_knots": 6
+    },
+    "MAPE": 2.9813726566112524
+  },
+  {
+    "name": "structure_4",
+    "config": {
+      "window": 4,
+      "schedule": "annual",
+      "features": "original",
+      "alpha": 10.0,
+      "n_knots": 6
+    },
+    "MAPE": 3.0437845602421643
+  },
+  {
+    "name": "structure_5",
+    "config": {
+      "window": 2,
+      "schedule": "annual",
+      "features": "trend",
+      "alpha": 10.0,
+      "n_knots": 6
+    },
+    "MAPE": 2.9724846961160316
+  },
+  {
+    "name": "structure_6",
+    "config": {
+      "window": 2,
+      "schedule": "annual",
+      "features": "rich",
+      "alpha": 10.0,
+      "n_knots": 6
+    },
+    "MAPE": 2.849766862174042
+  },
+  {
+    "name": "structure_7",
+    "config": {
+      "window": 4,
+      "schedule": "annual",
+      "features": "rich",
+      "alpha": 10.0,
+      "n_knots": 6
+    },
+    "MAPE": 2.8461151340107853
+  },
+  {
+    "name": "tune_100.0_6",
+    "config": {
+      "window": 4,
+      "schedule": "annual",
+      "features": "rich",
+      "alpha": 100.0,
+      "n_knots": 6
+    },
+    "MAPE": 2.83728664754729
+  },
+  {
+    "name": "tune_10.0_4",
+    "config": {
+      "window": 4,
+      "schedule": "annual",
+      "features": "rich",
+      "alpha": 10.0,
+      "n_knots": 4
+    },
+    "MAPE": 2.839407739299732
+  }
+]

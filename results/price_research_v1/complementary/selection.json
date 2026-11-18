@@ -1,0 +1,21 @@
+{
+  "stage1_candidate": "xgb_6_0.06",
+  "development_candidate": "xgb_6_0.06",
+  "configuration": {
+    "config": {
+      "family": "xgboost",
+      "leaves": 31,
+      "trees": 600,
+      "learning_rate": 0.06,
+      "threshold": 0.57,
+      "seed": 9417,
+      "max_depth": 6,
+      "min_child_weight": 50,
+      "reg_lambda": 20,
+      "price_feature_set": "both"
+    },
+    "window_years": 0,
+    "refresh_threshold": false
+  },
+  "status": "Exploratory; promotion requires paired and confirmation review"
+}

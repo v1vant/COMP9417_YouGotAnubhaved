@@ -1,0 +1,20 @@
+{
+  "sources": {
+    "code/run_price_experiments.py": "048ffe1a2e5221a43feffa6c90acab57bbc8c4cc064686ac12b041eb920ccfe1",
+    "code/forecast_package/model.py": "edbc39223db8ba09b836ae4b21ae1d127e9d633405cf14db0dcc593f27f737c5",
+    "code/forecast_package/optimise_spline_ridge.py": "3b8823809b4438824ff2d841f35ffdfac453af7db866ce2688229a43c45ed71c",
+    "code/forecast_package/price_context.py": "282040531ab57b6ea7d9338f0fa11ed098888fff431fb806537177c0ec092b6c",
+    "code/forecast_package/random_forest.py": "694020a20a7518791f4eecbadd8992147281f0cea4c6b20f535baadf6432d2f3",
+    "code/forecast_package/spline_ridge.py": "3a7ed7c5eb410da974ec45c0ab32ef425dfc703c913ef01f6bc37614c4498682",
+    "code/forecast_package/train.py": "878725cfeced25c1fbb91f336d082a6237e475dc76351c9c362ce9b64995081d"
+  },
+  "arguments": {
+    "data": "/home/suhan/uni/comp9417/COMP9417_YouGotAnubhaved/data/nem_weather_halfhourly_2010_2026.csv",
+    "output": "results/price_research_v1/complementary",
+    "phase": "complementary",
+    "feature_set": "both",
+    "quick": false,
+    "seed": 9417,
+    "hours": 4.0
+  }
+}

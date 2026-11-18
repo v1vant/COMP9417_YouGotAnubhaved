@@ -1,0 +1,11 @@
+{
+  "name": "tune_100.0_6",
+  "config": {
+    "window": 4,
+    "schedule": "annual",
+    "features": "rich",
+    "alpha": 100.0,
+    "n_knots": 6
+  },
+  "MAPE": 2.83728664754729
+}

@@ -176,7 +176,7 @@ def solar_trend_features(features):
     return pd.concat([features, extra], axis=1)
 
 
-def predict_task(bundle, features):
+def task_inputs(bundle, features):
     if (bundle.get("training_end") is not None
             and (market_days(features.index) <= pd.Timestamp(bundle["training_end"])).any()):
         raise ValueError("Forecast days must be after the model's training_end; use chronological backtests")
@@ -185,6 +185,15 @@ def predict_task(bundle, features):
     if bundle.get("solar_trend"):
         features = solar_trend_features(features)
     x = features.loc[:, bundle["features"]]
+    return x
+
+
+def predict_price_probability(bundle, features):
+    return bundle["estimator"].predict_proba(task_inputs(bundle, features))[:, 1]
+
+
+def predict_task(bundle, features):
+    x = task_inputs(bundle, features)
     if bundle["task"] == "demand":
         residual = bundle["estimator"].predict(x)
         return np.clip(features["demand_anchor"].to_numpy() + residual, 0, 20000)
@@ -217,7 +226,10 @@ class Forecaster:
 
     def predict(self, history: pd.DataFrame, weather_next: pd.DataFrame) -> pd.DataFrame:
         features = forecast_features(history, weather_next)
+        from price_context import forecast_price_features
+        price_features = forecast_price_features(history, weather_next, features,
+                            self.models["price"].get("config", {}).get("price_feature_set", "base"))
         return pd.DataFrame({
             "nsw_demand_mw": predict_task(self.models["demand"], features),
-            "nsw_price_up": predict_task(self.models["price"], features),
+            "nsw_price_up": predict_task(self.models["price"], price_features),
         }, index=weather_next.index)

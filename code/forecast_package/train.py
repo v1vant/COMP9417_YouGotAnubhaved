@@ -15,12 +15,12 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
 from model import (holiday_context_features, load_data, market_days, predict_task,
-                   solar_trend_features, training_table, training_span)
+                   solar_trend_features, training_table, training_span, predict_price_probability)
 import random_forest
 
 SEED = 9417
 DEFAULT_SELECTION = None
-FAMILIES = ("linear", "boosted", "random_forest")
+FAMILIES = ("linear", "boosted", "random_forest", "xgboost")
 DEFAULT_FAMILIES = ("linear", "boosted")
 
 
@@ -35,7 +35,9 @@ def candidates(task, quick=False, families=DEFAULT_FAMILIES):
     unknown = set(families) - set(FAMILIES)
     if unknown or not families:
         raise ValueError(f"Expected model families from {FAMILIES}, got {families}")
-    configs = linear + boosted + random_forest.candidates(quick)
+    xgb = [{"family": "xgboost", "trees": 120 if quick else 600, "max_depth": 6,
+            "learning_rate": .04, "min_child_weight": 50, "reg_lambda": 20}]
+    configs = linear + boosted + random_forest.candidates(quick) + xgb
     return [config for config in configs if config["family"] in families]
 
 
@@ -57,23 +59,34 @@ def fit_model(task, config, features, truth):
             or ("price_" in col and any(word in col for word in ("min", "max", "std")))
         )]
         estimator = (Ridge(alpha=config["regularization"]) if task == "demand" else
-                     LogisticRegression(C=config["regularization"], class_weight="balanced",
-                                        max_iter=1200, random_state=SEED))
+                     LogisticRegression(C=config["regularization"], class_weight=config.get("class_weight", "balanced"),
+                                        max_iter=1200, random_state=config.get("seed", SEED)))
         estimator = make_pipeline(StandardScaler(), estimator)
     elif config["family"] == "random_forest":
         columns = list(features.columns)
-        estimator = random_forest.make_estimator(task, config, SEED)
+        estimator = random_forest.make_estimator(task, config, config.get("seed", SEED))
+    elif config["family"] == "xgboost":
+        from xgboost import XGBClassifier, XGBRegressor
+        columns = list(features.columns)
+        cls = XGBRegressor if task == "demand" else XGBClassifier
+        estimator = cls(n_estimators=config["trees"], max_depth=config.get("max_depth", 6),
+                        learning_rate=config["learning_rate"], tree_method="hist", device="cpu",
+                        min_child_weight=config.get("min_child_weight", 50),
+                        reg_lambda=config.get("reg_lambda", 20), subsample=.8,
+                        colsample_bytree=.8, n_jobs=2, random_state=config.get("seed", SEED),
+                        objective="reg:absoluteerror" if task == "demand" else "binary:logistic")
     elif config["family"] == "boosted":
         columns = list(features.columns)
         cls = LGBMRegressor if task == "demand" else LGBMClassifier
         estimator = cls(
             objective="regression_l1" if task == "demand" else "binary",
             n_estimators=config["trees"], learning_rate=config["learning_rate"],
-            num_leaves=config["leaves"], min_child_samples=160,
-            colsample_bytree=0.85, subsample=0.85, subsample_freq=1,
-            reg_lambda=8.0, max_bin=127, n_jobs=2, verbosity=-1,
-            deterministic=True, force_col_wise=True, random_state=SEED,
-            **({"class_weight": "balanced"} if task == "price" else {}),
+            num_leaves=config["leaves"], min_child_samples=config.get("min_child_samples", 160),
+            max_depth=config.get("max_depth", -1), reg_alpha=config.get("reg_alpha", 0.),
+            colsample_bytree=config.get("colsample_bytree", .85), subsample=config.get("subsample", .85), subsample_freq=1,
+            reg_lambda=config.get("reg_lambda", 8.), max_bin=config.get("max_bin", 127), n_jobs=2, verbosity=-1,
+            deterministic=True, force_col_wise=True, random_state=config.get("seed", SEED),
+            **({"class_weight": config.get("class_weight", "balanced")} if task == "price" else {}),
         )
     else:
         raise ValueError(f"Unknown model family: {config['family']}")
@@ -84,6 +97,35 @@ def fit_model(task, config, features, truth):
         weights = 1 / truth["demand"].to_numpy()
         weights /= weights.mean()
         kwargs["ridge__sample_weight" if config["family"] == "linear" else "sample_weight"] = weights
+    if config.get("half_life_years") is not None and (
+            not np.isfinite(config["half_life_years"]) or config["half_life_years"] <= 0):
+        raise ValueError("half_life_years must be finite and positive")
+    if task == "price" and (config.get("half_life_years") or config["family"] == "xgboost"):
+
+        age = (market_days(features.index).max() - market_days(features.index)).days / 365.25
+        weights = np.power(2., -np.asarray(age) / config.get("half_life_years", np.inf))
+        if config.get("class_weight", "balanced") == "balanced":
+            total_weight = weights.sum()
+            for label in (0, 1):
+                weights[target == label] *= total_weight / (2 * weights[target == label].sum())
+            # Balance once, after recency weighting.
+            if config["family"] != "xgboost":
+                estimator.set_params(**({"logisticregression__class_weight": None}
+                                     if config["family"] == "linear" else {"class_weight": None}))
+        weights /= weights.mean()
+        kwargs["logisticregression__sample_weight" if config["family"] == "linear" else "sample_weight"] = weights
+    if task == "price" and config.get("early_stopping") and config["family"] == "boosted":
+        from lightgbm import early_stopping
+        split = market_days(features.index).max() - pd.Timedelta(days=89)
+        older = market_days(features.index) < split
+        if older.sum() == 0 or truth.loc[older, "price"].nunique() < 2:
+            raise ValueError("Insufficient chronological early-stopping history")
+        sample = kwargs.get("sample_weight")
+        estimator.fit(features.loc[older, columns], target[older],
+                      sample_weight=None if sample is None else sample[older],
+                      eval_set=[(features.loc[~older, columns], target[~older])],
+                      callbacks=[early_stopping(100, verbose=False)])
+        estimator.set_params(n_estimators=max(1, estimator.best_iteration_))
     estimator.fit(features[columns], target, **kwargs)
     return {**span, "task": task, "config": config, "features": columns,
             "holiday_context": bool(config.get("holiday_context", False)),
@@ -104,8 +146,7 @@ def select_models(features, truth, quick=False, families=DEFAULT_FAMILIES):
             name = f"{task}_{config['family']}_{number}"
             model = fit_model(task, config, features.loc[train], truth.loc[train])
             if task == "price":
-                probabilities = model["estimator"].predict_proba(
-                    features.loc[valid, model["features"]])[:, 1]
+                probabilities = predict_price_probability(model, features.loc[valid])
                 thresholds = np.linspace(0.2, 0.8, 61)
                 scores = [balanced_accuracy_score(truth.loc[valid, "price"],
                                                   probabilities > threshold)
@@ -178,7 +219,12 @@ def main():
         if args.quick and config["family"] in ("boosted", "random_forest"):
             limit = 20 if config["family"] == "random_forest" else 120
             config["trees"] = min(config["trees"], limit)
-        models[task] = fit_model(task, config, features.loc[mask], truth.loc[mask])
+        task_features = features
+        if task == "price":
+            from price_context import extend_price_features
+            task_features = extend_price_features(load_data(args.csv), features,
+                                config.get("price_feature_set", "base"))
+        models[task] = fit_model(task, config, task_features.loc[mask], truth.loc[mask])
     output = args.output
     os.makedirs(output, exist_ok=True)
     joblib.dump(models, os.path.join(output, "models.joblib"), compress=3)

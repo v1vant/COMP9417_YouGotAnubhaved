@@ -1,0 +1,19 @@
+{
+  "state": "completed",
+  "features": "results/price_features_v1",
+  "stages": [
+    {
+      "phase": "policies",
+      "returncode": 0
+    },
+    {
+      "phase": "tuning",
+      "returncode": 0
+    },
+    {
+      "phase": "complementary",
+      "returncode": 0
+    }
+  ],
+  "stage1_feature_set": "both"
+}
