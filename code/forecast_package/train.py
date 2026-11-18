@@ -22,9 +22,11 @@ from model import (NAIVE_BAYES, NEURAL_NET, SVM, fit_naive_bayes, load_data, mar
                    predict_task, svm_columns, svm_inputs, training_table)
 
 SEED = 9417
-# Price decision threshold, fixed at 0.5. A threshold tuned on 2014 did not carry over: on the
-# 2015-2024 team walk-forward, LightGBM-31 scores 79.89 balanced accuracy at 0.5 vs 79.45 at the
-# 2014-tuned 0.57, and 0.5 also beat 2014-tuned thresholds for every other model tested.
+# Price decision threshold: fixed at 0.5, never tuned. The deployed LightGBM price classifier
+# trains with balanced class weights, so 0.5 is its natural cut. A post-hoc check on the 2015-2024 team walk-forward
+# (not used to choose it) found that 2014-tuned thresholds did not carry over: LightGBM-31 scores
+# 79.89 balanced accuracy at 0.5 vs 79.45 at the 2014-tuned 0.57, and 0.5 scored higher for 35 of
+# 46 configurations (8 lower, by at most 0.10; 3 tied).
 PRICE_THRESHOLD = 0.5
 DEFAULT_SELECTION = {'demand': {'name': 'demand_boosted_3', 'config': {'family': 'boosted', 'leaves': 63, 'trees': 900, 'learning_rate': 0.025}, 'window_years': None, 'strategy': 'periodic_expanding', 'training_end': None}, 'price': {'name': 'price_boosted_2', 'config': {'family': 'boosted', 'leaves': 31, 'trees': 600, 'learning_rate': 0.04, 'threshold': 0.5}, 'window_years': None, 'strategy': 'periodic_expanding', 'training_end': None}, 'strategy_selection_end': '2024-12-31', 'quick': False}
 
@@ -69,7 +71,7 @@ def fit_svm(config, features, labels):
         class_weight="balanced", cache_size=1000))
     estimator.fit(svm_inputs(columns, features.iloc[rows]), y)
     return {"task": "price", "config": config, "features": columns,
-            "estimator": estimator, "threshold": config.get("threshold", PRICE_THRESHOLD)}
+            "estimator": estimator, "threshold": PRICE_THRESHOLD}
 
 
 def neural_net_loss_gradients(layers, x, y, pos_weight, masks=None):
@@ -182,10 +184,12 @@ def fit_neural_net(config, features, labels):
     params.update(mean=mean, std=std, members=members, log=log,
                   winsorise=config.get("winsorise"))
     return {"task": "price", "config": config, "features": columns,
-            "estimator": params, "threshold": config.get("threshold", PRICE_THRESHOLD)}
+            "estimator": params, "threshold": PRICE_THRESHOLD}
 
 
 def fit_model(task, config, features, truth):
+    if task == "price":                      # the decision threshold is fixed, never configured
+        config = dict(config, threshold=PRICE_THRESHOLD)
     # Keep the price-profile additions exclusive to classification.
     if task == "demand":
         features = features.drop(columns=[
@@ -214,7 +218,7 @@ def fit_model(task, config, features, truth):
         params = fit_naive_bayes(config, features, truth["price"])
         return {"task": task, "config": config,
                 "features": params["discrete"] + params["continuous"],
-                "estimator": params, "threshold": config.get("threshold", PRICE_THRESHOLD)}
+                "estimator": params, "threshold": PRICE_THRESHOLD}
     elif config["family"] == "svm":
         if task != "price":
             raise ValueError("The SVM is only used for price direction")
@@ -244,7 +248,7 @@ def fit_model(task, config, features, truth):
         kwargs["ridge__sample_weight" if config["family"] == "linear" else "sample_weight"] = weights
     estimator.fit(features[columns], target, **kwargs)
     return {"task": task, "config": config, "features": columns,
-            "estimator": estimator, "threshold": config.get("threshold", PRICE_THRESHOLD)}
+            "estimator": estimator, "threshold": PRICE_THRESHOLD}
 
 
 def select_models(features, truth, quick=False):
@@ -311,6 +315,12 @@ def main():
         selection["validation"] = scores
         print("No simulation selection supplied: using an UNVALIDATED four-year final window.",
               flush=True)
+    given = selection["price"]["config"].get("threshold", PRICE_THRESHOLD)
+    if given != PRICE_THRESHOLD:
+        print(f"Ignoring price threshold {given} from the selection; using the fixed "
+              f"{PRICE_THRESHOLD}.", flush=True)
+    selection = dict(selection, price=dict(
+        selection["price"], config=dict(selection["price"]["config"], threshold=PRICE_THRESHOLD)))
     days = market_days(features.index)
     models = {}
     for task in ("demand", "price"):

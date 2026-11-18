@@ -334,6 +334,38 @@ class PriceThresholdTests(unittest.TestCase):
         self.assertEqual(frozen[selected["price"]["name"]]["threshold"], 0.5)
         self.assertTrue(all(r["config"]["threshold"] == 0.5 for r in results if r["task"] == "price"))
 
+    def test_config_threshold_cannot_override_one_half(self):
+        # e.g. an old final_config.json passed via --selection still says 0.57
+        from train import fit_model
+        features, truth = training_table(synthetic_data(days=75))
+        config = {"family": "boosted", "leaves": 7, "trees": 20, "learning_rate": 0.1, "threshold": 0.57}
+        model = fit_model("price", config, features, truth)
+        self.assertEqual(model["threshold"], 0.5)
+        self.assertEqual(model["config"]["threshold"], 0.5)
+
+    def test_submission_package_selection_and_fit_use_one_half(self):
+        # Separate process so `train`/`model` resolve to submission_package, not forecast_package.
+        import inspect
+        import subprocess
+        script = "\n".join([
+            "import sys; sys.path.insert(0, %r)" % os.path.join(HERE, "submission_package"),
+            "from unittest.mock import patch",
+            "import numpy as np, pandas as pd",
+            "import train",
+            "from model import MARKET, WEATHER, training_table",
+            inspect.getsource(synthetic_data),
+            "features, truth = training_table(synthetic_data(days=75, start='2013-11-01'))",
+            "tiny = {'family': 'boosted', 'leaves': 7, 'trees': 20, 'learning_rate': 0.1}",
+            "with patch.object(train, 'candidates', lambda task, quick=False: [tiny]):",
+            "    selected, _, frozen, _ = train.select_models(features, truth)",
+            "override = train.fit_model('price', dict(tiny, threshold=0.57), features, truth)",
+            "print('THRESHOLDS', selected['price']['config']['threshold'],",
+            "      frozen[selected['price']['name']]['threshold'], override['threshold'])",
+        ])
+        result = subprocess.run([sys.executable, "-c", script], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr[-2000:])
+        self.assertIn("THRESHOLDS 0.5 0.5 0.5", result.stdout)
+
     def test_default_selection_and_artifacts_use_one_half(self):
         import ast
         import json

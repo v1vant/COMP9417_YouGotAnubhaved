@@ -48,5 +48,6 @@
   "context_gate_enabled": false,
   "price_model": "Unchanged 571-feature LightGBM classifier",
   "price_holdout_results": "results/holdout_original_vs_current/aggregate_metrics.csv",
+  "threshold_note": "holdout_results, pre_holdout_results and price_holdout_results report price decisions at the earlier 2014-tuned threshold 0.57; the shipped model uses a fixed 0.5 with the same trees and has not been re-measured.",
   "source_branch": "feature/demand-mlp"
 }

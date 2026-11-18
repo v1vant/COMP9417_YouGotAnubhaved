@@ -499,8 +499,8 @@ def price_probability(bundle, features):
         return neural_net_probability(bundle["estimator"], features)
     if bundle["config"]["family"] == "svm":
         # SVMs output a signed distance to the boundary, not a probability. A sigmoid maps
-        # it to (0, 1) monotonically so the shared threshold search works unchanged; the
-        # result is a score, not a calibrated probability.
+        # it to (0, 1) monotonically, so score > 0.5 is the same as being on the positive side
+        # of the SVM's own boundary; the result is a score, not a calibrated probability.
         score = bundle["estimator"].decision_function(svm_inputs(bundle["features"], features))
         return 1 / (1 + np.exp(-score))
     return bundle["estimator"].predict_proba(features.loc[:, bundle["features"]])[:, 1]

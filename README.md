@@ -20,6 +20,10 @@ PyTorch/LightGBM model-loading conflicts in the same process.
 | Price balanced accuracy | 85.03% | 85.03% | 82.57% | 76.97% |
 | Demand MAPE | 3.18% | 3.61% | 3.67% | 7.53% |
 
+The price rows above were measured with the earlier 2014-tuned price threshold of
+0.57. The shipped price model now uses a fixed 0.5 with the same trees; its
+holdout price figures have not been re-measured.
+
 The current-model record is in `results/current_model.json`. Full holdout results
 for the blend are in `results/frozen_demand_blend_holdout/`; prior holdout results
 are in `results/holdout_original_vs_current/`. The cross-model holdout table is
