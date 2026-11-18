@@ -10,3 +10,5 @@ results/cache/
 *.pem
 *.key
 unimportant.txt
+results/walkforward/cache/
+results/walkforward/refit/

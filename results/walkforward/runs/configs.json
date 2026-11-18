@@ -1,0 +1,121 @@
+{
+ "lgbm63_A5_blend": {
+  "kind": "sk",
+  "config": {
+   "family": "boosted",
+   "leaves": 63,
+   "trees": 900,
+   "learning_rate": 0.025
+  },
+  "start_year": 2011,
+  "demand": "A5",
+  "demand_source": "anubhav_blend"
+ },
+ "nn256_D4_blend": {
+  "kind": "sk",
+  "config": {
+   "family": "neural_net",
+   "hidden": [
+    256,
+    256
+   ],
+   "dropout": 0.5,
+   "learning_rate": 0.0003,
+   "weight_decay": 0.0001,
+   "batch_size": 1024,
+   "epochs": 10,
+   "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+   ],
+   "log": "price",
+   "winsorise": null,
+   "bootstrap": false
+  },
+  "start_year": 2011,
+  "demand": "D4",
+  "demand_source": "anubhav_blend"
+ },
+ "lgbm63": {
+  "kind": "sk",
+  "config": {
+   "family": "boosted",
+   "leaves": 63,
+   "trees": 900,
+   "learning_rate": 0.025
+  }
+ },
+ "nn256x256": {
+  "kind": "sk",
+  "config": {
+   "family": "neural_net",
+   "hidden": [
+    256,
+    256
+   ],
+   "dropout": 0.5,
+   "learning_rate": 0.0003,
+   "weight_decay": 0.0001,
+   "batch_size": 1024,
+   "epochs": 10,
+   "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+   ],
+   "log": "price",
+   "winsorise": null,
+   "bootstrap": false
+  }
+ },
+ "lgbm63_from2011": {
+  "kind": "sk",
+  "config": {
+   "family": "boosted",
+   "leaves": 63,
+   "trees": 900,
+   "learning_rate": 0.025
+  },
+  "start_year": 2011
+ },
+ "nn256_from2011": {
+  "kind": "sk",
+  "config": {
+   "family": "neural_net",
+   "hidden": [
+    256,
+    256
+   ],
+   "dropout": 0.5,
+   "learning_rate": 0.0003,
+   "weight_decay": 0.0001,
+   "batch_size": 1024,
+   "epochs": 10,
+   "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+   ],
+   "log": "price",
+   "winsorise": null,
+   "bootstrap": false
+  },
+  "start_year": 2011
+ },
+ "lgbm31": {
+  "kind": "sk",
+  "config": {
+   "family": "boosted",
+   "leaves": 31,
+   "trees": 600,
+   "learning_rate": 0.04
+  }
+ }
+}
