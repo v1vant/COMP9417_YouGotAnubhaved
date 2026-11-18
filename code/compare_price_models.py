@@ -15,7 +15,11 @@ Model names
   compact  models that share exactly the same 45 hand-picked inputs, so differences are due to
            the model alone
              compact_logistic, compact_boosted, mlp
-Groups: all, native, compact.  A family name (e.g. `linear`) selects every model of that family.
+  blend    0.5 * strongest native LightGBM + 0.5 * mlp (probabilities averaged, then the usual
+           threshold search), the price counterpart of the demand blend.  Runs the models it
+           needs automatically.  Mixes inputs (571 + 45), so it is not a like-for-like row.
+Groups: all, native, compact, blend.  A family name (e.g. `linear`) selects every model of that
+family.
 
 Every model is scored on the same 2014 half-hours with accuracy and balanced accuracy, at the
 decision threshold that maximises 2014 balanced accuracy (as select_models does) and at 0.5.
@@ -23,7 +27,8 @@ Both baselines are always included.  Because the threshold and the MLP epoch are
 all scores are validation numbers and slightly optimistic; they are not test scores.
 
 PyTorch and LightGBM must not share a process on macOS (their OpenMP runtimes deadlock), so models
-that need PyTorch run in a child process of this script.
+that need PyTorch run in a child process that hands its probabilities back; the blend is
+computed in the main process.
 
 To add a model: write a `run_<name>(data, config)` returning (probabilities, n_inputs, note)
 and add an Entry in `torch_entries()` or `native_entries()` / `compact_entries()`.
@@ -58,10 +63,10 @@ DEFAULT_DATA = os.path.join(ROOT, "data", "nem_weather_halfhourly_2010_2026.csv"
 class Entry:
     name: str
     family: str
-    group: str                 # "native" or "compact"
+    group: str                 # "native", "compact" or "blend"
     needs_torch: bool
     description: str
-    run: Callable              # run(data, config) -> (probabilities, n_inputs, note)
+    run: Callable = None       # run(data, config) -> (probabilities, n_inputs, note)
     config: dict = None
 
 
@@ -166,8 +171,13 @@ def torch_entries():
                   {"epochs": 40, "patience": 6, "decay": 1e-4})]
 
 
+BLEND_WEIGHTS = (0.5, 0.5)       # LightGBM, MLP
+
+
 def registry(quick):
-    return native_entries(quick) + compact_entries()
+    blend = Entry("blend", "blend", "blend", False,
+                  "50/50 average of the strongest native LightGBM and the MLP")
+    return native_entries(quick) + compact_entries() + [blend]
 
 
 def select(entries, tokens):
@@ -176,13 +186,13 @@ def select(entries, tokens):
     for token in tokens:
         if token == "all":
             matched = entries
-        elif token in ("native", "compact"):
+        elif token in ("native", "compact", "blend"):
             matched = [e for e in entries if e.group == token]
         else:
             matched = [e for e in entries if token in (e.name, e.family)]
         if not matched:
             raise SystemExit(f"Unknown model {token!r}. Available: {sorted(names)} "
-                             "or groups all/native/compact (see --list)")
+                             "or groups all/native/compact/blend (see --list)")
         chosen += [e for e in matched if e not in chosen]
     return chosen
 
@@ -211,26 +221,74 @@ def baseline_rows(data):
     return rows
 
 
+def failed(seconds, note):
+    return {"prob": None, "inputs": np.nan, "seconds": seconds, "note": note}
+
+
 def run_entries(entries, data):
-    rows, y = [], None
+    """Returns {name: dict(prob, inputs, note, seconds)}; failures have prob=None."""
+    outputs = {}
     for i, entry in enumerate(entries, 1):
         print(f"[{i}/{len(entries)}] {entry.name}: {entry.description}", flush=True)
         started = time.time()
         try:
             probabilities, inputs, note = entry.run(data, entry.config)
-            y = data.y_valid() if y is None else y
-            row = score(entry.name, entry.family, inputs, probabilities, y,
-                        time.time() - started, note)
-            print(f"    done in {row['fit_seconds']:.0f}s   balanced accuracy "
-                  f"{row['balanced_accuracy']:.2f}%", flush=True)
+            outputs[entry.name] = {"prob": np.asarray(probabilities, float), "inputs": inputs,
+                                   "note": note, "seconds": time.time() - started}
+            print(f"    done in {time.time() - started:.0f}s", flush=True)
         except Exception as error:   # keep going: one failing model should not lose the rest
-            row = {"model": entry.name, "family": entry.family, "inputs": np.nan,
-                   "threshold": np.nan, "accuracy": np.nan, "balanced_accuracy": np.nan,
-                   "balanced_accuracy_at_0.5": np.nan, "fit_seconds": time.time() - started,
-                   "note": f"FAILED: {type(error).__name__}: {error}"}
-            print(f"    {row['note']}", flush=True)
-        rows.append(row)
-    return rows
+            outputs[entry.name] = failed(time.time() - started,
+                                         f"FAILED: {type(error).__name__}: {error}")
+            print(f"    {outputs[entry.name]['note']}", flush=True)
+    return outputs
+
+
+def run_torch_worker(names, args):
+    """Run PyTorch models in a child process and load the probabilities it saved."""
+    with tempfile.TemporaryDirectory() as directory:
+        command = [sys.executable, os.path.abspath(__file__), "--worker", "--out-dir", directory,
+                   "--data", args.data] + (["--quick"] if args.quick else []) + \
+                  ["--models"] + names
+        result = subprocess.run(command)
+        meta_path, preds_path = (os.path.join(directory, "meta.json"),
+                                 os.path.join(directory, "preds.npz"))
+        if result.returncode != 0 or not os.path.exists(meta_path):
+            return {n: failed(0.0, f"FAILED: worker exit code {result.returncode}")
+                    for n in names}
+        with open(meta_path, encoding="utf-8") as handle:
+            meta = json.load(handle)
+        saved = np.load(preds_path)
+        return {n: dict(m, prob=saved[n] if n in saved.files else None)
+                for n, m in meta.items()}
+
+
+def add_blend(outputs):
+    """50/50 average of the strongest native LightGBM and the MLP (probabilities)."""
+    boosted = [n for n in outputs if n.startswith("boosted_")]
+    best = boosted[-1] if boosted else None          # the last candidate is the largest one
+    a, b = outputs.get(best), outputs.get("mlp")
+    if a is None or b is None or a["prob"] is None or b["prob"] is None:
+        outputs["blend"] = failed(0.0, "FAILED: needs a native LightGBM model and the MLP")
+        return
+    outputs["blend"] = {
+        "prob": BLEND_WEIGHTS[0] * a["prob"] + BLEND_WEIGHTS[1] * b["prob"],
+        "inputs": np.nan, "seconds": a["seconds"] + b["seconds"],
+        "note": f"{BLEND_WEIGHTS[0]:.1f} {best} + {BLEND_WEIGHTS[1]:.1f} mlp"}
+
+
+def build_rows(outputs, families, data):
+    y = data.y_valid()
+    rows = []
+    for name, out in outputs.items():
+        if out["prob"] is None:
+            rows.append({"model": name, "family": families[name], "inputs": np.nan,
+                         "threshold": np.nan, "accuracy": np.nan, "balanced_accuracy": np.nan,
+                         "balanced_accuracy_at_0.5": np.nan, "fit_seconds": out["seconds"],
+                         "note": out["note"]})
+        else:
+            rows.append(score(name, families[name], out["inputs"], out["prob"], y,
+                              out["seconds"], out["note"]))
+    return rows + baseline_rows(data)
 
 
 def print_table(rows):
@@ -263,14 +321,18 @@ def main():
     parser.add_argument("--data", default=DEFAULT_DATA)
     parser.add_argument("--output", help="directory to save comparison.csv")
     parser.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
-    parser.add_argument("--json-out", help=argparse.SUPPRESS)
+    parser.add_argument("--out-dir", help=argparse.SUPPRESS)
     args = parser.parse_args()
 
     if args.worker:   # child process: only the PyTorch models, no LightGBM import
         entries = [e for e in torch_entries() if e.name in args.models]
-        rows = run_entries(entries, Data(args.data, args.quick))
-        with open(args.json_out, "w", encoding="utf-8") as handle:
-            json.dump(rows, handle)
+        outputs = run_entries(entries, Data(args.data, args.quick))
+        meta = {n: {k: (None if (isinstance(v, float) and np.isnan(v)) else v)
+                    for k, v in o.items() if k != "prob"} for n, o in outputs.items()}
+        np.savez(os.path.join(args.out_dir, "preds.npz"),
+                 **{n: o["prob"] for n, o in outputs.items() if o["prob"] is not None})
+        with open(os.path.join(args.out_dir, "meta.json"), "w", encoding="utf-8") as handle:
+            json.dump(meta, handle)
         return
 
     entries = registry(args.quick)
@@ -279,36 +341,31 @@ def main():
         for e in entries:
             print(f"{e.name:18s} {e.group:8s} {'torch' if e.needs_torch else 'main':8s} "
                   f"{e.description}")
-        print("\nGroups: all, native, compact. A family name selects every model of that family."
-              "\nNative = team models with their own inputs; compact = shared 45 inputs.")
+        print("\nGroups: all, native, compact, blend. A family name selects every model of that "
+              "family.\nNative = team models with their own inputs; compact = shared 45 inputs; "
+              "blend = LightGBM + MLP.")
         return
 
     chosen = select(entries, args.models)
+    names = {e.name for e in chosen}
+    if "blend" in names:     # the blend needs its two components, so run (and show) them too
+        needed = {[e for e in entries if e.family == "boosted"][-1].name, "mlp"}
+        if needed - names:
+            print(f"'blend' also runs {', '.join(sorted(needed - names))} (its components).")
+        chosen = [e for e in entries if e.name in names | needed]
     print(f"Running {len(chosen)} model(s): {', '.join(e.name for e in chosen)}"
           f"{'  [quick]' if args.quick else ''}\n", flush=True)
-    data = Data(args.data, args.quick)
-    rows = run_entries([e for e in chosen if not e.needs_torch], data)
 
+    data = Data(args.data, args.quick)
+    outputs = run_entries([e for e in chosen if not e.needs_torch and e.name != "blend"], data)
     torch_names = [e.name for e in chosen if e.needs_torch]
     if torch_names:
         print("\nStarting a separate process for PyTorch models ...", flush=True)
-        with tempfile.TemporaryDirectory() as directory:
-            out = os.path.join(directory, "rows.json")
-            command = [sys.executable, os.path.abspath(__file__), "--worker", "--json-out", out,
-                       "--data", args.data] + (["--quick"] if args.quick else []) \
-                + ["--models"] + torch_names
-            result = subprocess.run(command)
-            if result.returncode == 0 and os.path.exists(out):
-                with open(out, encoding="utf-8") as handle:
-                    rows += json.load(handle)
-            else:
-                rows += [{"model": n, "family": "mlp", "inputs": np.nan, "threshold": np.nan,
-                          "accuracy": np.nan, "balanced_accuracy": np.nan,
-                          "balanced_accuracy_at_0.5": np.nan, "fit_seconds": 0.0,
-                          "note": f"FAILED: worker exit code {result.returncode}"}
-                         for n in torch_names]
+        outputs.update(run_torch_worker(torch_names, args))
+    if "blend" in names:
+        add_blend(outputs)
 
-    rows += baseline_rows(data)
+    rows = build_rows(outputs, {e.name: e.family for e in chosen}, data)
     print_table(rows)
     if args.output:
         os.makedirs(args.output, exist_ok=True)
