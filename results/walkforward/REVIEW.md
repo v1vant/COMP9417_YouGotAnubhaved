@@ -1,6 +1,6 @@
 # Best price-direction configuration so far: review notes
 
-**Status:** the champion as of 2026-11-19 (provisional; the remaining overnight tests are still being assessed).
+**Status:** final champion (2026-11-19). All remaining tests ran overnight. None met the champion rule, so the champion did not change; see "Final assessment" below.
 This is a research result. It is **not** wired into `forecast_package` or `submission_package`.
 
 ## The champion
@@ -102,6 +102,34 @@ All figures are on 2015-2024. Each gain is measured against the same model witho
    - finer LightGBM bins.
 
    Negative-price features help the NN on the days after six or more negative slots (+1.2 BA with inputs capped at ±3 sd). The gain is neutral overall and in the blend.
+
+## Final assessment of the remaining tests (overnight, 2026-11-19)
+
+Each line is the paired BA gain on 2015-2024 [95% CI] against the matched reference. An idea counts as promising only if its CI is above 0 and it is not worse in either half. None qualified.
+
+| Idea | Result vs reference | Promising? |
+|---|---|---|
+| Regression on the price margin, stacked into the classifier | −0.23 [−0.40, −0.06] | no |
+| Focal loss γ=1 / γ=2 (vs the same custom path at γ=0) | +0.01 / −0.01 | no |
+| Up-weighting rows past models were unsure about / near-threshold rows | −0.04 / −0.16 | no |
+| NN with LightGBM as an output neuron, weight properly fitted | −0.49 vs the plain NN | no |
+| Yamac's MLP (fixed 6 epochs / in-window early stopping) | −0.54 / +0.04 vs NN 256x256 | no |
+| Anubhav's MLP | −2.8 vs NN 256x256 | no |
+| Deeper NNs with the same 512 neurons (8x64 / 4x128 / 3x171) | +0.08 [−0.02, +0.18] / +0.04 / +0.02 | no |
+| Wider NNs with other settings (512 or 1024 wide; lower lr, more decay, dropout 0.6, larger batch) | −0.09 to −0.30 | no |
+| In-window (rolling) choice of NN size | +0.01 | no |
+| Negative-price features in LightGBM-63+D4 (with or without weather shape) | −0.05 / −0.03 | no |
+| Negative-price features in the NN, inputs capped at ±3 sd | +0.03 overall; +1.2 BA on the days after ≥6 negative slots | no (overall), subgroup fix |
+
+Final assembly: the near-promising NNs (deep 8x64, deep 4x128, Yamac's early-stopped MLP) were also offered as extra ensemble members. No candidate met the champion rule. The closest were:
+- 70/30 [LightGBM A] + [Yamac early-stopped MLP]: 80.755, but −0.02 on 2020-24.
+- All 17 components: 80.717, but −0.01 on 2020-24.
+
+Both are within noise of the champion (+0.04 [−0.03, +0.11] and +0.002).
+
+**Notes for future work:**
+- Price spikes are already captured. Spike days are the easiest days. The NN's signed log is what protects them, and finer LightGBM bins or spikiness features do not help.
+- The NN's weakness after negative-price days comes from extreme out-of-range inputs in a regime that was absent before 2020. Capping standardised inputs fixes the blow-up.
 
 ## Reproduce
 
