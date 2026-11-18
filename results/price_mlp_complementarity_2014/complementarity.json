@@ -1,0 +1,14 @@
+{
+  "rows": 17520,
+  "threshold_for_error_comparison": 0.57,
+  "both_correct": 13139,
+  "LightGBM_only_correct": 1426,
+  "MLP_only_correct": 875,
+  "both_wrong": 2080,
+  "error_indicator_correlation": 0.5671649715240054,
+  "probability_correlation": 0.8765850891422597,
+  "MLP_corrects_LightGBM_errors_percent": 29.610829103214893,
+  "MLP_wins_disagreements_percent": 38.026944806605826,
+  "disagreement_percent": 13.133561643835618,
+  "note": "One epoch selected on 2013. Fixed blend weights and evaluation thresholds; no tuning on 2014."
+}

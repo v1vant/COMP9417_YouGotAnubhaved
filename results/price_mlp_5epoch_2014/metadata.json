@@ -1,0 +1,60 @@
+{
+  "training_years": [
+    2010,
+    2011,
+    2012,
+    2013
+  ],
+  "validation_year": 2014,
+  "architecture": [
+    571,
+    128,
+    64,
+    1
+  ],
+  "epochs": 5,
+  "batch_size": 1024,
+  "loss": "Class-balanced binary cross-entropy with logits",
+  "class_weights": [
+    0.9253578732106339,
+    1.0877403846153846
+  ],
+  "history": [
+    {
+      "epoch": 1,
+      "weighted_BCE": 0.46369719620567657,
+      "seconds": 0.5533022080198862
+    },
+    {
+      "epoch": 2,
+      "weighted_BCE": 0.3846205375887135,
+      "seconds": 0.4517218339606188
+    },
+    {
+      "epoch": 3,
+      "weighted_BCE": 0.34833505176014246,
+      "seconds": 0.48383775004185736
+    },
+    {
+      "epoch": 4,
+      "weighted_BCE": 0.32619618185906607,
+      "seconds": 0.4525774589856155
+    },
+    {
+      "epoch": 5,
+      "weighted_BCE": 0.30456003257097564,
+      "seconds": 0.4350498329731636
+    }
+  ],
+  "device": "cpu",
+  "threads": 2,
+  "torch": "2.15.0",
+  "python": "3.12.12",
+  "seconds_total": 4.052633416955359,
+  "thresholds_fixed": [
+    0.5,
+    0.57
+  ],
+  "state_dict_reload_passed": true,
+  "holdout_evaluated": false
+}
