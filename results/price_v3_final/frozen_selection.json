@@ -1,0 +1,14 @@
+{
+  "frozen": "2026-11-18",
+  "decision": "P0 (571 features, expanding history, fixed 0.57 cutoff) averaged over seeds 9417/9418/9419",
+  "candidate": {"name": "P0_bag3", "seeds": [9417, 9418, 9419], "half_life_years": null, "threshold": 0.57,
+                "source": "results/price_v3_live_horizon (bag3)"},
+  "rule_applied": "No candidate passed the pre-registered gate; fallback keeps P0 and adds the seed bag because its paired delta is >= 0 (+0.108 pp [-0.004, 0.215], 13/18 windows, both sub-periods positive). Variance reduction only, not a claimed improvement.",
+  "evidence": {
+    "live_horizon_vs_V0_pp": {"V0b_seed": 0.065, "V0c_seed": 0.154, "V1_hl2": 0.161, "V2_hl4": 0.166, "bag3": 0.108, "L1_level_vs_L0": 0.019},
+    "biennial_development_2015_2022_pp": {"V1_hl2": -0.192, "V2_hl4": -0.198, "L1_level_vs_L0": 0.088},
+    "level_decoder_screen": "alpha=0 selected on 2014 (identical to P0)",
+    "biennial_V0_reproduces_P0": [78.6284, 83.0147, 85.0365]
+  },
+  "interpretation": "2023-2026 is a reused historical period; the live week is the only unseen evaluation. Demand recipe unchanged."
+}

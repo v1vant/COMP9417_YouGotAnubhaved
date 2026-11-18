@@ -1,0 +1,16 @@
+{
+  "state": "fits_completed",
+  "schedule": "live",
+  "pending": 54,
+  "done": 54,
+  "started": "2026-11-18 15:57:56",
+  "last": {
+    "variant": "C3_s9419",
+    "cutoff": "2026-09-01",
+    "training_start": "2010-01-30 00:00:00",
+    "training_end": "2026-08-31 00:00:00",
+    "train_rows": 290784,
+    "score_rows": 2928,
+    "seconds": 249.5044516429989
+  }
+}

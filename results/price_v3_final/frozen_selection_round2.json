@@ -1,0 +1,124 @@
+{
+  "round": 2,
+  "frozen": "2026-11-18 17:39:01",
+  "chosen": "C2_bag3",
+  "cutoff": 0.5,
+  "cutoff_rule": "0.50 unless 0.57 better in both live sub-periods",
+  "cutoff_057_better_by_subperiod": [
+    false,
+    false
+  ],
+  "control": {
+    "name": "C0_bag3",
+    "live_pooled_BA": 84.73933188477368,
+    "biennial_development_BA": 79.17259631644242
+  },
+  "candidates": [
+    {
+      "candidate": "C1_bag3",
+      "evaluated": true,
+      "live_pooled_BA": 84.89669747346369,
+      "live_delta_pp": 0.15736558869001271,
+      "live_ci": [
+        0.012217640927271844,
+        0.3096290825750618
+      ],
+      "windows_improved": 14,
+      "live_subperiod_BA_delta_pp": [
+        0.36177033534401914,
+        0.03224565376122257
+      ],
+      "live_subperiod_AUC_delta_pp": [
+        0.19410457664162095,
+        0.07275025896785792
+      ],
+      "development_delta_pp": 0.07270569836580876,
+      "development_ci": [
+        -0.03556117688661402,
+        0.17999565807689624
+      ],
+      "development_AUC_delta_pp": 0.059990691677811014,
+      "confirmation_delta_pp": 0.11856852854133137,
+      "reused_2025_2026_delta_pp": 0.11401765582270684,
+      "eligible": true
+    },
+    {
+      "candidate": "C2_bag3",
+      "evaluated": true,
+      "live_pooled_BA": 85.03964294822643,
+      "live_delta_pp": 0.30031106345275305,
+      "live_ci": [
+        0.12231414902123419,
+        0.4895285656339389
+      ],
+      "windows_improved": 13,
+      "live_subperiod_BA_delta_pp": [
+        0.42842830048040526,
+        0.2185156485901132
+      ],
+      "live_subperiod_AUC_delta_pp": [
+        0.3707004963408025,
+        0.2153862817850154
+      ],
+      "development_delta_pp": 0.1640968226356705,
+      "development_ci": [
+        0.04634579095655127,
+        0.27524150865442853
+      ],
+      "development_AUC_delta_pp": 0.1754414024618569,
+      "confirmation_delta_pp": 0.2042083216153685,
+      "reused_2025_2026_delta_pp": 0.13085476305366228,
+      "eligible": true
+    },
+    {
+      "candidate": "C3_bag3",
+      "evaluated": true,
+      "live_pooled_BA": 84.92176896622901,
+      "live_delta_pp": 0.18243708145533333,
+      "live_ci": [
+        -0.005906097264433896,
+        0.3652662254213489
+      ],
+      "windows_improved": 11,
+      "live_subperiod_BA_delta_pp": [
+        0.2501893396605084,
+        0.13468463300047517
+      ],
+      "live_subperiod_AUC_delta_pp": [
+        0.3554306766801716,
+        0.22446022303515178
+      ],
+      "development_delta_pp": 0.13340779917633938,
+      "development_ci": [
+        0.0038538529602064396,
+        0.2580746262045728
+      ],
+      "development_AUC_delta_pp": 0.21074926582998899,
+      "confirmation_delta_pp": 0.18443865495527234,
+      "reused_2025_2026_delta_pp": 0.08810447284452039,
+      "eligible": true
+    }
+  ],
+  "package_candidate": {
+    "name": "C2_bag3_cutoff0.50",
+    "threshold": 0.5,
+    "half_life_years": null,
+    "seeds": [
+      9417,
+      9418,
+      9419,
+      9420,
+      9421
+    ],
+    "weather_shape": true,
+    "params": {
+      "num_leaves": 63,
+      "learning_rate": 0.02,
+      "n_estimators": 1200,
+      "colsample_bytree": 0.5,
+      "min_child_samples": 300
+    },
+    "source": "code/price_v3/choose_candidate.py (round 2)"
+  },
+  "note": "Bag size 5 if the measured rebuild is <= 75 min on 4 cores, else seeds[:3]. 2023-2026 is a reused period; 2015-2022 was unseen by the round-2 screens; the live week is the only unseen test. Demand recipe unchanged."
+}
