@@ -11,7 +11,9 @@ sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, "forecast_package"))
 sys.path.insert(0, os.path.join(os.path.dirname(HERE), "harness"))
 import dayahead as da
-from model import MARKET, WEATHER, feature_frame, forecast_features, market_days, training_table
+from model import (MARKET, WEATHER, feature_frame, forecast_features, market_days,
+                   training_table, validate_day_index)
+from train import fit_model, select_models
 from analysis_tools import OnlineDetector, confidence_intervals, metric_values
 from run_experiments import baseline_predictions, simulate_policy
 
@@ -78,6 +80,21 @@ class FeatureTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             forecast_features(history, weather)
 
+    def test_incomplete_unordered_or_duplicate_days_are_rejected(self):
+        for frame in (self.frame.iloc[1:], self.frame.drop(self.frame.index[100]),
+                      self.frame.iloc[::-1], pd.concat([self.frame, self.frame.iloc[-1:]])):
+            with self.subTest(rows=len(frame)), self.assertRaises(ValueError):
+                feature_frame(frame)
+
+    def test_training_prefix_unchanged_when_future_observations_change(self):
+        original_x, original_y = training_table(self.frame)
+        changed = self.frame.copy()
+        changed.loc[market_days(changed.index) >= self.day, MARKET + WEATHER] = 999999
+        altered_x, altered_y = training_table(changed)
+        past = market_days(original_x.index) < self.day
+        pd.testing.assert_frame_equal(original_x.loc[past], altered_x.loc[past])
+        pd.testing.assert_frame_equal(original_y.loc[past], altered_y.loc[past])
+
     def test_strict_price_target_preserves_float64_precision(self):
         yesterday = market_days(self.frame.index) == self.day - pd.Timedelta(days=1)
         today = market_days(self.frame.index) == self.day
@@ -129,6 +146,72 @@ class StatisticalTests(unittest.TestCase):
         self.assertEqual(retrains[0]["effective_day"], "2015-01-02")
         self.assertEqual(fits[0], pd.Timestamp("2015-01-01"))
         self.assertLessEqual(len(retrains), 6)
+
+    def test_future_observations_do_not_change_earlier_adaptive_forecasts(self):
+        frame = synthetic_data()
+        cutoff = pd.Timestamp("2015-01-08")
+        changed = frame.copy()
+        changed.loc[market_days(changed.index) >= cutoff, MARKET + WEATHER] *= 10
+        config = {"family": "boosted", "leaves": 4, "trees": 3, "learning_rate": 0.1}
+        results = []
+        for data in (frame, changed):
+            features, truth = training_table(data)
+            feature_days = market_days(features.index)
+            past = feature_days.year <= 2014
+            initial = fit_model("demand", config, features.loc[past], truth.loc[past])
+            days = feature_days[feature_days.year >= 2015].unique()
+            result, retrains, signals = simulate_policy(
+                "demand", "drift_sliding", initial, config, features, truth, days,
+                pd.Series(100.0, index=days), np.zeros(365), np.zeros(365))
+            results.append((result[days < cutoff], retrains,
+                            [s for s in signals if pd.Timestamp(s["day"]) < cutoff]))
+        np.testing.assert_array_equal(results[0][0], results[1][0])
+        self.assertEqual(results[0][1:], results[1][1:])
+
+    def test_initial_selection_never_fits_post_2014_data(self):
+        features, truth = training_table(synthetic_data(days=760, start="2013-01-01"))
+        fits = []
+
+        class Estimator:
+            def predict_proba(self, x):
+                return np.tile([0.4, 0.6], (len(x), 1))
+
+        def fitted(task, config, x, y):
+            fits.append(market_days(x.index).max().year)
+            return {"task": task, "config": config, "estimator": Estimator(), "features": list(x),
+                    "threshold": config.get("threshold", 0.5)}
+
+        with patch("train.fit_model", side_effect=fitted), \
+                patch("train.predict_task", side_effect=lambda m, x: np.full(
+                    len(x), 7000 if m["task"] == "demand" else 1)):
+            select_models(features, truth, quick=True)
+        # 2 quick candidates x 2 tasks, each fitted on <=2013 and then refitted on <=2014.
+        self.assertEqual(fits, [2013, 2014] * 4)
+
+    def test_simulation_rejects_shuffled_or_skipped_days(self):
+        features, truth = training_table(synthetic_data())
+        days = market_days(features.index).unique()
+        for invalid in (days[::-1], days.delete(2)):
+            with self.assertRaisesRegex(ValueError, "ordered and consecutive"):
+                simulate_policy("demand", "frozen", {}, {}, features, truth, invalid,
+                                pd.Series(0.0, index=days), np.zeros(365), np.zeros(365))
+
+
+class DayIndexGuardTests(unittest.TestCase):
+    """Copied from Suhan Karaca's feature_engineering branch (46aadb7); see INTEGRATION_NOTES.md."""
+
+    def test_misaligned_training_labels_are_rejected(self):
+        features, truth = training_table(synthetic_data())
+        with self.assertRaisesRegex(ValueError, "identical training indices"):
+            fit_model("demand", {"family": "linear", "regularization": 10},
+                      features, truth.iloc[::-1])
+
+    def test_gapped_history_is_rejected(self):
+        frame = synthetic_data()
+        gapped = frame.drop(frame.index[100:148])
+        with self.assertRaises(ValueError):
+            validate_day_index(gapped.index)
+        validate_day_index(frame.index)
 
 
 if __name__ == "__main__":

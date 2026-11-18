@@ -18,6 +18,26 @@ def market_days(index):
     return (index - pd.Timedelta(minutes=30)).normalize()
 
 
+def validate_day_index(index):
+    """Row lags are day lags only on consecutive, complete market days."""
+    if (not isinstance(index, pd.DatetimeIndex) or index.empty or index.hasnans
+            or not index.is_unique or not index.is_monotonic_increasing):
+        raise ValueError("Expected nonempty, ordered, unique timestamps")
+    expected = pd.date_range(index[0], index[-1], freq="30min")
+    if (not index.equals(expected)
+            or index[0] != market_days(index[:1])[0] + pd.Timedelta(minutes=30)
+            or index[-1] != market_days(index[-1:])[0] + pd.Timedelta(days=1)):
+        raise ValueError("Expected consecutive complete market days")
+
+
+def training_span(features, truth):
+    if not features.index.equals(truth.index):
+        raise ValueError("Features and targets must have identical training indices")
+    validate_day_index(features.index)
+    days = market_days(features.index)
+    return {"training_start": str(days.min()), "training_end": str(days.max())}
+
+
 def load_data(path):
     frame = pd.read_csv(path, index_col="timestamp", parse_dates=["timestamp"]).sort_index()
     if frame.empty or not frame.index.is_unique:
@@ -33,6 +53,7 @@ def load_data(path):
 
 def feature_frame(frame, weather_shape=False):
     """Current-day weather is allowed; all market features use completed days."""
+    validate_day_index(frame.index)
     days = market_days(frame.index)
     start = frame.index - pd.Timedelta(minutes=30)
     slot = np.asarray(start.hour * 2 + start.minute // 30)
@@ -180,6 +201,12 @@ def feature_frame(frame, weather_shape=False):
 def training_table(frame, weather_shape=False):
     features = feature_frame(frame, weather_shape=weather_shape)
     keep = features.notna().all(axis=1)
+    if keep.any():
+        # Sub-day lags (aligned features) can leave a partial first day; keep whole market days.
+        first = features.index[keep.to_numpy().argmax()]
+        day_start = market_days(pd.DatetimeIndex([first]))[0] + pd.Timedelta(minutes=30)
+        if first != day_start:
+            keep &= features.index >= day_start + pd.Timedelta(days=1)
     features = features.loc[keep]
     # Targets retain the original precision for the strict price comparison.
     means = frame["nsw_price"].groupby(market_days(frame.index)).mean().shift(1)
@@ -196,6 +223,7 @@ def forecast_features(history, weather_next, weather_shape=False):
         raise ValueError("Expected 48 rows and the 12 weather columns")
     if history.empty or not history.index.is_monotonic_increasing or not history.index.is_unique:
         raise ValueError("History must be nonempty, ordered and unique")
+    validate_day_index(history.index)
     expected = pd.date_range(history.index[-1] + pd.Timedelta(minutes=30),
                              periods=48, freq="30min")
     if not weather_next.index.equals(expected) or len(market_days(weather_next.index).unique()) != 1:
