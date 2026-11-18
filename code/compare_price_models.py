@@ -3,7 +3,7 @@
     python code/compare_price_models.py --list                      # show what can be run
     python code/compare_price_models.py --quick                     # everything, with small models
     python code/compare_price_models.py --models mlp svm            # chosen model types or exact names
-    python code/compare_price_models.py --models compact            # same-45-input comparison, ~15 s
+    python code/compare_price_models.py --models compact            # the 45-input reference models
     python code/compare_price_models.py --models all --output results/model_comparison
     python code/compare_price_models.py --holdout --confirm-holdout --models mlp boosted_0
 
@@ -13,12 +13,13 @@ Model names
              boosted_0, boosted_1    LightGBM classifier
              naive_bayes_0           mixed Naive Bayes
              svm_0                   RBF-kernel SVM on a fixed subsample
-  compact  models that share exactly the same 45 hand-picked inputs, so differences are due to
-           the model alone
-             compact_logistic, compact_boosted, mlp
+  compact  reference models on the same 45 hand-picked inputs (a small, interpretable set)
+             compact_logistic, compact_boosted
+  mlp      the price MLP: a small neural network on all ~535 non-duplicate inputs, like the
+           demand MLP that sees all its 405 features (code and settings live in price_mlp.py)
   blend    0.5 * strongest native LightGBM + 0.5 * mlp (probabilities averaged, then the usual
            threshold search), the price counterpart of the demand blend.  Runs the models it
-           needs automatically.  Mixes inputs (571 + 45), so it is not a like-for-like row.
+           needs automatically.
 Groups: all, native, compact, blend.  A family name (e.g. `linear`) selects every model of that
 family.
 
@@ -30,7 +31,7 @@ all scores are validation numbers and slightly optimistic; they are not test sco
 HOLDOUT MODE (--holdout --confirm-holdout): one-off check on 2025-26.  Models are fitted on every
 year up to 2024 and scored on 2025-26, the closest analogue of the live week.  Nothing may be
 tuned on the holdout, so the threshold is fixed at 0.5 (all models use balanced class weights),
-the MLP trains a fixed 3 epochs (its best epoch on 2014) and each score comes with a 95%
+the MLP trains a fixed 6 epochs (its best epoch on 2014) and each score comes with a 95%
 day-block bootstrap interval.  Do not choose or tune models by this result (that would turn the
 holdout into a selection set), and say in the report that the holdout was used as a final
 check.  The saved package artifacts cannot be used for this: they were trained through Oct 2026.
@@ -42,7 +43,7 @@ that need PyTorch run in a child process that hands its probabilities back; the 
 computed in the main process.
 
 To add a model: write a `run_<name>(data, config)` returning (probabilities, n_inputs, note)
-and add an Entry in `torch_entries()` or `native_entries()` / `compact_entries()`.
+and add an Entry in `torch_entries()`, `native_entries()` or `compact_entries()`.
 """
 import argparse
 import json
@@ -74,7 +75,7 @@ DEFAULT_DATA = os.path.join(ROOT, "data", "nem_weather_halfhourly_2010_2026.csv"
 class Entry:
     name: str
     family: str
-    group: str                 # "native", "compact" or "blend"
+    group: str                 # "native", "compact", "neural" or "blend"
     needs_torch: bool
     description: str
     run: Callable = None       # run(data, config) -> (probabilities, n_inputs, note)
@@ -142,15 +143,19 @@ def run_compact_boosted(data, config):
 
 
 def run_mlp(data, config):
-    _, x_train, y_train, x_valid, y_valid, _ = data.compact()
+    """The price MLP: every non-duplicate input, signed-log scaled and standardised."""
+    x_train, t_train, x_valid, t_valid = data.full()
+    columns, a, b = pm.full_inputs(x_train, x_valid)
+    y_train, y_valid = t_train["price"].to_numpy(), t_valid["price"].to_numpy()
     if data.holdout:     # never select an epoch on the holdout: use the epoch count found on 2014
-        probabilities, _, _ = pm.fit_mlp(x_train, y_train, x_valid, y_valid,
+        probabilities, _, _ = pm.fit_mlp(a, y_train, b, y_valid, dropout=config["dropout"],
+                                         decay=config["decay"],
                                          fixed_epochs=config["holdout_epochs"])
-        return probabilities, x_train.shape[1], f"{config['holdout_epochs']} epochs, fixed"
-    probabilities, epoch, _ = pm.fit_mlp(x_train, y_train, x_valid, y_valid,
+        return probabilities, a.shape[1], f"{config['holdout_epochs']} epochs, fixed"
+    probabilities, epoch, _ = pm.fit_mlp(a, y_train, b, y_valid, dropout=config["dropout"],
                                          epochs=10 if data.quick else config["epochs"],
                                          patience=config["patience"], decay=config["decay"])
-    return probabilities, x_train.shape[1], f"best epoch {epoch}"
+    return probabilities, a.shape[1], f"best epoch {epoch}"
 
 
 # ---- registry ----------------------------------------------------------------------------
@@ -179,26 +184,27 @@ def native_entries(quick):
 def compact_entries():
     return [
         Entry("compact_logistic", "compact_logistic", "compact", False,
-              "logistic regression, C=0.1, 45 shared inputs", run_compact_logistic, {"C": 0.1}),
+              "logistic regression, C=0.1, 45 hand-picked inputs", run_compact_logistic, {"C": 0.1}),
         Entry("compact_boosted", "compact_boosted", "compact", False,
-              "LightGBM, 31 leaves, 300 trees, 45 shared inputs", run_compact_boosted,
+              "LightGBM, 31 leaves, 300 trees, 45 hand-picked inputs", run_compact_boosted,
               {"trees": 300}),
-    ] + torch_entries()
+    ]
 
 
 def torch_entries():
-    return [Entry("mlp", "mlp", "compact", True,
-                  "MLP 45-64-32-1, dropout 0.1, early stopping, 45 shared inputs", run_mlp,
-                  {"epochs": 40, "patience": 6, "decay": 1e-4, "holdout_epochs": 3})]
+    return [Entry("mlp", "mlp", "neural", True,
+                  "MLP ~535-64-32-1, dropout 0.3, early stopping, all non-duplicate inputs",
+                  run_mlp, dict(pm.MLP_SETTINGS))]
 
 
 BLEND_WEIGHTS = (0.5, 0.5)       # LightGBM, MLP
+BLENDS = {"blend": "mlp"}        # blend name -> the MLP it averages with
 
 
 def registry(quick):
     blend = Entry("blend", "blend", "blend", False,
                   "50/50 average of the strongest native LightGBM and the MLP")
-    return native_entries(quick) + compact_entries() + [blend]
+    return native_entries(quick) + compact_entries() + torch_entries() + [blend]
 
 
 def select(entries, tokens):
@@ -299,18 +305,18 @@ def run_torch_worker(names, args):
                 for n, m in meta.items()}
 
 
-def add_blend(outputs):
-    """50/50 average of the strongest native LightGBM and the MLP (probabilities)."""
+def add_blend(outputs, name="blend", mlp="mlp"):
+    """50/50 average of the strongest native LightGBM and an MLP (probabilities)."""
     boosted = [n for n in outputs if n.startswith("boosted_")]
     best = boosted[-1] if boosted else None          # the last candidate is the largest one
-    a, b = outputs.get(best), outputs.get("mlp")
+    a, b = outputs.get(best), outputs.get(mlp)
     if a is None or b is None or a["prob"] is None or b["prob"] is None:
-        outputs["blend"] = failed(0.0, "FAILED: needs a native LightGBM model and the MLP")
+        outputs[name] = failed(0.0, f"FAILED: needs a native LightGBM model and {mlp}")
         return
-    outputs["blend"] = {
+    outputs[name] = {
         "prob": BLEND_WEIGHTS[0] * a["prob"] + BLEND_WEIGHTS[1] * b["prob"],
         "inputs": np.nan, "seconds": a["seconds"] + b["seconds"],
-        "note": f"{BLEND_WEIGHTS[0]:.1f} {best} + {BLEND_WEIGHTS[1]:.1f} mlp"}
+        "note": f"{BLEND_WEIGHTS[0]:.1f} {best} + {BLEND_WEIGHTS[1]:.1f} {mlp}"}
 
 
 def build_rows(outputs, families, data):
@@ -399,16 +405,17 @@ def main():
             print(f"{e.name:18s} {e.group:8s} {'torch' if e.needs_torch else 'main':8s} "
                   f"{e.description}")
         print("\nGroups: all, native, compact, blend. A family name selects every model of that "
-              "family.\nNative = team models with their own inputs; compact = shared 45 inputs; "
-              "blend = LightGBM + MLP.")
+              "family.\nNative = team models with their own inputs; compact = reference models on "
+              "45 hand-picked inputs;\nmlp = the price MLP (all inputs); blend = LightGBM + mlp.")
         return
 
     chosen = select(entries, args.models)
     names = {e.name for e in chosen}
-    if "blend" in names:     # the blend needs its two components, so run (and show) them too
-        needed = {[e for e in entries if e.family == "boosted"][-1].name, "mlp"}
+    blends = {n: m for n, m in BLENDS.items() if n in names}
+    if blends:               # a blend needs its two components, so run (and show) them too
+        needed = {[e for e in entries if e.family == "boosted"][-1].name} | set(blends.values())
         if needed - names:
-            print(f"'blend' also runs {', '.join(sorted(needed - names))} (its components).")
+            print(f"Blends also run {', '.join(sorted(needed - names))} (their components).")
         chosen = [e for e in entries if e.name in names | needed]
     if args.holdout:
         print("*** HOLDOUT MODE: fit on 2010-2024, scoring 2025-26. Threshold fixed at 0.5, MLP "
@@ -417,13 +424,13 @@ def main():
           f"{'  [quick]' if args.quick else ''}\n", flush=True)
 
     data = Data(args.data, args.quick, args.holdout)
-    outputs = run_entries([e for e in chosen if not e.needs_torch and e.name != "blend"], data)
+    outputs = run_entries([e for e in chosen if not e.needs_torch and e.name not in BLENDS], data)
     torch_names = [e.name for e in chosen if e.needs_torch]
     if torch_names:
         print("\nStarting a separate process for PyTorch models ...", flush=True)
         outputs.update(run_torch_worker(torch_names, args))
-    if "blend" in names:
-        add_blend(outputs)
+    for blend_name, mlp_name in blends.items():
+        add_blend(outputs, blend_name, mlp_name)
 
     rows = build_rows(outputs, {e.name: e.family for e in chosen}, data)
     print_table(rows, args.holdout)

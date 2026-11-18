@@ -1,38 +1,45 @@
-"""Simple price-direction MLP (standalone experiment; does not touch the shared package).
+"""Price-direction MLP (standalone experiment; does not touch the shared package).
 
 Task: for each half-hour of day D+1, predict 1 if the NSW price is above the mean NSW price of
 day D, else 0.  Protocol (same as Stage 1): fit on 2010-2013, select on 2014.
 
-    python code/price_mlp.py                              # trains, prints a comparison table
+    python code/price_mlp.py                              # trains, prints validation scores
     python code/price_mlp.py --output results/price_mlp   # also saves metrics.json
 
-The network is a small feed-forward classifier on ~50 hand-picked features.  It is compared with
-the "same half-hour yesterday" baseline, a logistic regression and a LightGBM classifier that use
-exactly the same inputs, so any difference comes from the model and not the features.
+The network is a small feed-forward classifier (inputs -> 64 -> 32 -> 1, ReLU, dropout 0.3) on
+all ~535 non-duplicate inputs of the team's feature pipeline (the same input set the RBF-SVM
+uses; the demand MLP likewise sees all of its 405 features).  Price-valued columns are
+signed-log scaled and then standardised.  It trains with class-balanced binary cross-entropy and
+keeps the epoch with the best 2014 balanced accuracy.
 
-PyTorch and LightGBM must not be loaded in the same process on macOS (their OpenMP runtimes
-deadlock), so the reference models run in a child process of this script.
+To compare it with LightGBM, logistic regression, the SVM and the blend, use
+code/compare_price_models.py, which imports the training code and settings from this file.
+Inputs of the compact reference models there (FEATURES below) are also defined here.
 """
 import argparse
 import json
 import os
-import subprocess
 import sys
 import time
 
 import numpy as np
-from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, balanced_accuracy_score
 from sklearn.preprocessing import StandardScaler
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(HERE, "forecast_package"))
-from model import load_data, market_days, training_table  # noqa: E402
+from model import (load_data, market_days, svm_columns, svm_inputs,  # noqa: E402
+                   training_table)
 
 SEED = 9417
 
-# A deliberately small, interpretable input set (names come from model.feature_frame).
+# The canonical settings, used by this script and by compare_price_models.py.
+# holdout_epochs is the best epoch found on 2014; it is used when no epoch may be selected.
+MLP_SETTINGS = {"epochs": 40, "patience": 6, "decay": 1e-4, "dropout": 0.3, "holdout_epochs": 6}
+
+# A small, interpretable input set (names come from model.feature_frame), used only by the
+# "compact" reference models in compare_price_models.py.
 FEATURES = (
     # where yesterday's / last week's price sat relative to the threshold (the target's reference)
     [f"price_margin_{lag}" for lag in (1, 2, 3, 7, 14, 21, 28)]
@@ -52,8 +59,8 @@ FEATURES = (
 )
 
 
-def build_mlp(inputs, dropout=0.1):
-    """inputs -> 64 -> 32 -> 1 logit; ReLU, light dropout."""
+def build_mlp(inputs, dropout=MLP_SETTINGS["dropout"]):
+    """inputs -> 64 -> 32 -> 1 logit; ReLU, dropout."""
     from torch import nn
     return nn.Sequential(
         nn.Linear(inputs, 64), nn.ReLU(), nn.Dropout(dropout),
@@ -86,8 +93,19 @@ def report(name, truth, probabilities=None, predictions=None, threshold=0.5):
             "balanced_accuracy": balanced_accuracy_score(truth, predictions) * 100}
 
 
+def full_inputs(train_features, valid_features):
+    """Scaled inputs of the canonical MLP: every non-duplicate column (raw price lags and
+    price_threshold are dropped because they duplicate their log versions), price-valued columns
+    signed-log transformed, then standardised with training statistics only."""
+    columns = svm_columns(train_features)
+    scaler = StandardScaler().fit(svm_inputs(columns, train_features))
+    x_train = scaler.transform(svm_inputs(columns, train_features)).astype(np.float32)
+    x_valid = scaler.transform(svm_inputs(columns, valid_features)).astype(np.float32)
+    return columns, x_train, x_valid
+
+
 def prepare(data_path, train_until=2013, valid_from=2014, valid_to=2014):
-    """Chronological split and scaled inputs. Default: train 2010-2013, validate 2014."""
+    """Compact-input split for the reference models. Default: train 2010-2013, validate 2014."""
     features, truth = training_table(load_data(data_path))
     years = market_days(features.index).year
     train, valid = years <= train_until, (years >= valid_from) & (years <= valid_to)
@@ -104,8 +122,9 @@ def prepare(data_path, train_until=2013, valid_from=2014, valid_to=2014):
     return columns, x_train, y_train, x_valid, y_valid, baseline
 
 
-def fit_mlp(x_train, y_train, x_valid, y_valid, epochs=40, patience=6, lr=1e-3, decay=1e-4,
-            fixed_epochs=None):
+def fit_mlp(x_train, y_train, x_valid, y_valid, epochs=MLP_SETTINGS["epochs"],
+            patience=MLP_SETTINGS["patience"], lr=1e-3, decay=MLP_SETTINGS["decay"],
+            fixed_epochs=None, dropout=MLP_SETTINGS["dropout"]):
     """Adam on class-balanced binary cross-entropy; keep the epoch with the best validation
     balanced accuracy (at threshold 0.5), stop after `patience` epochs without improvement.
 
@@ -115,7 +134,7 @@ def fit_mlp(x_train, y_train, x_valid, y_valid, epochs=40, patience=6, lr=1e-3, 
     from torch import nn
     torch.manual_seed(SEED)
     torch.set_num_threads(2)
-    model = build_mlp(x_train.shape[1])
+    model = build_mlp(x_train.shape[1], dropout)
     positive = y_train.mean()
     loss_fn = nn.BCEWithLogitsLoss(pos_weight=torch.tensor((1 - positive) / positive,
                                                            dtype=torch.float32))
@@ -164,70 +183,46 @@ def fit_mlp(x_train, y_train, x_valid, y_valid, epochs=40, patience=6, lr=1e-3, 
     return probabilities, best_epoch, history
 
 
-def reference_models(data_path):
-    """Logistic regression and LightGBM on the same scaled inputs (child process, no torch)."""
-    from lightgbm import LGBMClassifier
-    _, x_train, y_train, x_valid, y_valid, _ = prepare(data_path)
-    logistic = LogisticRegression(C=0.1, class_weight="balanced", max_iter=1000,
-                                  random_state=SEED)
-    p_log = logistic.fit(x_train, y_train).predict_proba(x_valid)[:, 1]
-    boosted = LGBMClassifier(n_estimators=300, learning_rate=0.05, num_leaves=31,
-                             min_child_samples=160, class_weight="balanced", n_jobs=2,
-                             verbosity=-1, random_state=SEED, deterministic=True)
-    p_gbm = boosted.fit(x_train, y_train).predict_proba(x_valid)[:, 1]
-    return [report("logistic regression (tuned threshold)", y_valid, p_log,
-                   threshold=best_threshold(y_valid, p_log)),
-            report("LightGBM (tuned threshold)", y_valid, p_gbm,
-                   threshold=best_threshold(y_valid, p_gbm))]
-
-
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--data", default=os.path.join(
         ROOT, "data", "nem_weather_halfhourly_2010_2026.csv"))
     parser.add_argument("--output", help="directory for metrics.json (not written if omitted)")
-    parser.add_argument("--reference-only", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
 
-    if args.reference_only:   # child process: print JSON for the parent and exit
-        print("JSON:" + json.dumps(reference_models(args.data)))
-        return
-
     started = time.time()
-    columns, x_train, y_train, x_valid, y_valid, baseline = prepare(args.data)
-    print(f"{len(columns)} features; train {len(y_train):,} rows (2010-13), "
+    features, truth = training_table(load_data(args.data))
+    years = market_days(features.index).year
+    train, valid = years <= 2013, years == 2014
+    columns, x_train, x_valid = full_inputs(features.loc[train], features.loc[valid])
+    y_train, y_valid = truth.loc[train, "price"].to_numpy(), truth.loc[valid, "price"].to_numpy()
+    baseline = features.loc[valid, "price_margin_1"].to_numpy() > 0
+    print(f"{len(columns)} inputs; train {len(y_train):,} rows (2010-13), "
           f"validation {len(y_valid):,} rows (2014)")
     print(f"share of 'price up': train {y_train.mean():.3f}, validation {y_valid.mean():.3f}")
 
-    rows = [report("baseline: same half-hour yesterday", y_valid, predictions=baseline)]
     print("\nTraining MLP")
-    p_mlp, epoch, history = fit_mlp(x_train, y_train, x_valid, y_valid)
-    rows.append(report("MLP (threshold 0.5)", y_valid, p_mlp))
-    rows.append(report("MLP (tuned threshold)", y_valid, p_mlp,
-                       threshold=best_threshold(y_valid, p_mlp)))
-
-    print("\nRunning logistic regression and LightGBM in a separate process ...", flush=True)
-    child = subprocess.run([sys.executable, os.path.abspath(__file__), "--reference-only",
-                            "--data", args.data], capture_output=True, text=True, timeout=1800)
-    lines = [line for line in child.stdout.splitlines() if line.startswith("JSON:")]
-    if child.returncode != 0 or not lines:
-        print("reference models failed:\n", child.stderr[-1500:])
-    else:
-        rows += json.loads(lines[-1][5:])
+    probabilities, epoch, history = fit_mlp(x_train, y_train, x_valid, y_valid)
+    rows = [report("baseline: same half-hour yesterday", y_valid, predictions=baseline),
+            report("MLP (threshold 0.5)", y_valid, probabilities),
+            report("MLP (tuned threshold)", y_valid, probabilities,
+                   threshold=best_threshold(y_valid, probabilities))]
 
     print(f"\nBest MLP epoch: {epoch}   (total {time.time() - started:.0f}s)")
     print(f"\n{'model':44s} {'thr':>5s} {'acc %':>7s} {'bal.acc %':>10s}")
     for row in rows:
         print(f"{row['model']:44s} {row['threshold']:5.2f} {row['accuracy']:7.2f} "
               f"{row['balanced_accuracy']:10.2f}")
-    print("\nNote: epoch and threshold are both chosen on 2014, so the tuned numbers are slightly "
-          "optimistic for every model; this is a validation comparison, not a test score.")
+    print("\nNote: the epoch and the tuned threshold are chosen on 2014, so these are validation "
+          "scores, slightly\noptimistic, not test scores. For comparisons with other models use "
+          "code/compare_price_models.py.")
 
     if args.output:
         os.makedirs(args.output, exist_ok=True)
         with open(os.path.join(args.output, "metrics.json"), "w", encoding="utf-8") as handle:
-            json.dump({"features": columns, "best_epoch": epoch, "results": rows,
-                       "mlp_history": history}, handle, indent=2)
+            json.dump({"n_inputs": len(columns), "best_epoch": epoch, "settings": MLP_SETTINGS,
+                       "results": rows, "mlp_history": history}, handle, indent=2)
         print("saved", os.path.join(args.output, "metrics.json"))
 
 
