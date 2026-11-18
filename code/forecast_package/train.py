@@ -28,6 +28,7 @@ SEED = 9417
 # 79.89 balanced accuracy at 0.5 vs 79.45 at the 2014-tuned 0.57, and 0.5 scored higher for 35 of
 # 46 configurations (8 lower, by at most 0.10; 3 tied).
 PRICE_THRESHOLD = 0.5
+# The walk-forward champion price model is opt-in: train.py CSV --selection champion_selection.json
 DEFAULT_SELECTION = {'demand': {'name': 'demand_boosted_3', 'config': {'family': 'boosted', 'leaves': 63, 'trees': 900, 'learning_rate': 0.025}, 'window_years': None, 'strategy': 'periodic_expanding', 'training_end': None}, 'price': {'name': 'price_boosted_2', 'config': {'family': 'boosted', 'leaves': 31, 'trees': 600, 'learning_rate': 0.04, 'threshold': 0.5}, 'window_years': None, 'strategy': 'periodic_expanding', 'training_end': None}, 'strategy_selection_end': '2024-12-31', 'quick': False}
 
 
@@ -233,10 +234,10 @@ def fit_model(task, config, features, truth):
         estimator = cls(
             objective="regression_l1" if task == "demand" else "binary",
             n_estimators=config["trees"], learning_rate=config["learning_rate"],
-            num_leaves=config["leaves"], min_child_samples=160,
-            colsample_bytree=0.85, subsample=0.85, subsample_freq=1,
-            reg_lambda=8.0, max_bin=127, n_jobs=2, verbosity=-1,
-            deterministic=True, force_col_wise=True, random_state=SEED,
+            num_leaves=config["leaves"], min_child_samples=config.get("min_child_samples", 160),
+            colsample_bytree=config.get("colsample_bytree", 0.85), subsample=0.85, subsample_freq=1,
+            reg_lambda=8.0, max_bin=127, n_jobs=config.get("n_jobs", 2), verbosity=-1,
+            deterministic=True, force_col_wise=True, random_state=config.get("seed", SEED),
             **({"class_weight": "balanced"} if task == "price" else {}),
         )
     target = (truth["demand"].to_numpy() - features["demand_anchor"].to_numpy()
@@ -292,6 +293,69 @@ def select_models(features, truth, quick=False):
     return selected, results, frozen, calibration
 
 
+# Threads per LightGBM fit in the champion (results are deterministic: deterministic=True, force_col_wise=True).
+N_JOBS = max(2, min(8, os.cpu_count() or 2))
+HERE = os.path.dirname(os.path.abspath(__file__))
+
+
+def champion_oof_demand(features, truth, days, quick=False):
+    """Out-of-sample day-ahead demand forecasts for every price training row from 2011: for each fold of
+    champion.oof_folds, the package demand recipe (LightGBM + ten-epoch MLP, 50/50) is trained only on market days up to
+    the fold's training end and forecasts the fold's year(s)."""
+    import tempfile
+    import champion
+    base = features[champion.base_columns(features)]
+    with open(os.path.join(HERE, "demand_feature_columns.json"), encoding="utf-8") as handle:
+        columns = json.load(handle)
+    forecast, audit = np.full(len(features), np.nan), []
+    for end, years in champion.oof_folds(days):
+        train, test = np.asarray(days.year <= end), np.asarray(days.year.isin(years))
+        if not train.any() or not test.any():
+            continue
+        if not days[train].max() < days[test].min():
+            raise ValueError("Out-of-sample fold would see its forecast period")
+        started = time.monotonic()
+        config = dict(champion.DEMAND_CONFIG, n_jobs=N_JOBS, **({"trees": 60} if quick else {}))
+        model = fit_model("demand", config, base.loc[train], truth.loc[train])
+        lightgbm_part = predict_task(model, base.loc[test])
+        with tempfile.TemporaryDirectory() as tmp:
+            pd.to_pickle((base.loc[train, columns], truth.loc[train, "demand"], base.loc[test, columns]),
+                         os.path.join(tmp, "fold.pkl"))
+            subprocess.run([sys.executable, os.path.join(HERE, "mlp_train.py"), "--fold", os.path.join(tmp, "fold.pkl"),
+                            os.path.join(tmp, "fold.npy")], check=True, stdout=subprocess.DEVNULL)
+            mlp_part = np.load(os.path.join(tmp, "fold.npy"))
+        forecast[test] = 0.5 * (lightgbm_part + mlp_part)
+        audit.append({"forecast_years": years, "training_end": str(days[train].max().date()),
+                      "training_rows": int(train.sum()), "seconds": round(time.monotonic() - started, 1)})
+        print(f"champion demand fold: trained through {end}, forecasts {years}", flush=True)
+    return forecast, audit
+
+
+def fit_champion(features, truth, forecast, days, quick=False):
+    """Fit the 12 champion members (see champion.py) on all supplied rows from their start year."""
+    import champion
+    fitted = []
+    for name, kind, config, weight in champion.members():
+        started = time.monotonic()
+        rows = np.asarray(days.year >= (2010 if kind == "NN_64" else champion.FIRST_DEMAND_YEAR))
+        if not np.isfinite(forecast[rows]).all() and kind != "NN_64":
+            raise ValueError("Missing out-of-sample demand forecasts for champion training rows")
+        inputs = champion.member_inputs(kind, features[rows], forecast[rows], days[rows])
+        config = dict(config)
+        if config["family"] == "boosted":
+            config["n_jobs"] = N_JOBS
+            if quick:
+                config["trees"] = 60
+        elif quick:
+            config.update(epochs=1, seeds=[0])
+        model = fit_model("price", config, inputs, truth[rows])
+        fitted.append({"name": name, "kind": kind, "weight": weight, "model": model,
+                       "seconds": round(time.monotonic() - started, 1)})
+        print(f"champion member {name} fitted in {fitted[-1]['seconds']}s", flush=True)
+    return {"task": "price", "config": {"family": "champion", "threshold": PRICE_THRESHOLD}, "estimator": None,
+            "features": list(features.columns), "members": fitted, "threshold": PRICE_THRESHOLD}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("csv")
@@ -299,7 +363,9 @@ def main():
     parser.add_argument("--quick", action="store_true", help="Smoke-test models, not final accuracy")
     args = parser.parse_args()
     started = time.monotonic()
-    features, truth = training_table(load_data(args.csv))
+    import champion
+    features_all, truth = training_table(load_data(args.csv), weather_shape=True)
+    features = features_all[champion.base_columns(features_all)]
     if args.selection:
         with open(args.selection, encoding="utf-8") as handle:
             selection = json.load(handle)
@@ -322,7 +388,7 @@ def main():
     selection = dict(selection, price=dict(
         selection["price"], config=dict(selection["price"]["config"], threshold=PRICE_THRESHOLD)))
     days = market_days(features.index)
-    models = {}
+    models, champion_audit = {}, None
     for task in ("demand", "price"):
         policy = selection[task]
         end = days.max() if not policy.get("training_end") else pd.Timestamp(policy["training_end"])
@@ -330,6 +396,10 @@ def main():
         if policy.get("window_years"):
             mask &= days > end - pd.DateOffset(years=policy["window_years"])
         config = dict(policy["config"])
+        if task == "price" and config["family"] == "champion":
+            forecast, champion_audit = champion_oof_demand(features_all.loc[mask], truth.loc[mask], days[mask], args.quick)
+            models[task] = fit_champion(features_all.loc[mask], truth.loc[mask], forecast, days[mask], args.quick)
+            continue
         if args.quick and config["family"] == "boosted":
             config["trees"] = min(config["trees"], 120)
         models[task] = fit_model(task, config, features.loc[mask], truth.loc[mask])
@@ -343,6 +413,10 @@ def main():
         "quick": args.quick, "seconds": time.monotonic() - started,
         "task_feature_counts": {task: len(bundle["features"])
                                 for task, bundle in models.items()},
+        "champion": ({"members": [{k: m[k] for k in ("name", "kind", "weight", "seconds")}
+                                  for m in models["price"]["members"]],
+                      "demand_oof_folds": champion_audit}
+                     if models["price"]["config"]["family"] == "champion" else None),
         "versions": {"python": platform.python_version(), "numpy": np.__version__,
                      "pandas": pd.__version__, "sklearn": sklearn.__version__,
                      "lightgbm": lightgbm.__version__, "joblib": joblib.__version__},

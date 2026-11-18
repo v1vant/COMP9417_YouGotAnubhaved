@@ -37,6 +37,14 @@ in their original directories. The optional weather candidate did not improve
 Current artifacts were trained locally with Python 3.12.12; the prescribed
 Python 3.11 marking environment remains a separate compatibility/rebuild check.
 
+The walk-forward champion price model is an **opt-in** alternative, not the
+shipped model. It is 10 LightGBM members plus 2 neural nets on demand-forecast
+and weather-shape inputs, and it is trained with
+`python code/forecast_package/train.py CSV --selection code/forecast_package/champion_selection.json`.
+It is best on 2015-2024 (80.72 BA at 0.5). On the 2025-26 holdout it scores
+85.38 against 85.62 for Suhan's price-c2 recipe, a gap that is not significant.
+Its artifacts have not been built. See `results/walkforward/REVIEW.md`.
+
 Everything you need for the project, apart from the specification on Moodle.
 
 | Item | What it is |

@@ -128,6 +128,14 @@ if __name__ == "__main__":
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from model import load_data, market_days, training_table
     from threadpoolctl import threadpool_limits
+    if len(sys.argv) == 4 and sys.argv[1] == "--fold":
+        # Champion training: one out-of-sample fold. Input pickle = (train features, train demand, forecast features).
+        import pandas as pd
+        with threadpool_limits(limits=2):
+            train_x, train_y, test_x = pd.read_pickle(sys.argv[2])
+            fold = fit_demand_mlp(train_x, train_y, epochs=10)
+            np.save(sys.argv[3], predict_demand_mlp(fold, test_x).astype(np.float64))
+        sys.exit(0)
     parser = argparse.ArgumentParser(description="Train and export the frozen ten-epoch demand MLP")
     parser.add_argument("csv")
     parser.add_argument("--output", required=True)

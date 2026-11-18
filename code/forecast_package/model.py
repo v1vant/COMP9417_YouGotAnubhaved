@@ -6,6 +6,10 @@ import holidays
 import joblib
 import numpy as np
 import pandas as pd
+try:                                           # package-local module (imported the same way as model.py)
+    from champion import WEATHER_SHAPE, probability as champion_probability
+except ImportError:                            # pragma: no cover - when imported as a package
+    from .champion import WEATHER_SHAPE, probability as champion_probability
 
 MARKET = [f"{state}_{kind}" for state in ("nsw", "vic", "qld")
           for kind in ("demand", "price")]
@@ -530,7 +534,8 @@ def predict_numpy_mlp(bundle, features):
 class Forecaster:
     def __init__(self, artifact_dir: str):
         self.models = joblib.load(os.path.join(artifact_dir, "models.joblib"))
-        for bundle in self.models.values():
+        bundles = list(self.models.values()) + [m["model"] for m in self.models["price"].get("members", [])]
+        for bundle in bundles:
             estimator = bundle["estimator"]
             if hasattr(estimator, "get_params") and "n_jobs" in estimator.get_params():
                 estimator.set_params(n_jobs=2)
@@ -546,11 +551,18 @@ class Forecaster:
                     self.demand_mlp = {key: saved[key] for key in saved.files}
 
     def predict(self, history: pd.DataFrame, weather_next: pd.DataFrame) -> pd.DataFrame:
-        features = forecast_features(history, weather_next)
+        price = self.models["price"]
+        is_champion = price.get("config", {}).get("family") == "champion"
+        features_all = forecast_features(history, weather_next, weather_shape=is_champion)
+        features = features_all[[c for c in features_all.columns if c not in WEATHER_SHAPE]] if is_champion else features_all
         demand = predict_task(self.models["demand"], features)
         if self.demand_mlp is not None:
             demand = 0.5*demand + 0.5*predict_numpy_mlp(self.demand_mlp, features)
-        return pd.DataFrame({
-            "nsw_demand_mw": demand,
-            "nsw_price_up": predict_task(self.models["price"], features),
-        }, index=weather_next.index)
+        if is_champion:
+            # Champion: 10 LightGBM + 2 NN members on the day's demand forecast (see champion.py), cut at 0.5.
+            probability = champion_probability(price, features_all, demand, market_days(features_all.index),
+                                               price_probability)
+            price_up = (probability > price["threshold"]).astype(np.int64)
+        else:
+            price_up = predict_task(price, features)
+        return pd.DataFrame({"nsw_demand_mw": demand, "nsw_price_up": price_up}, index=weather_next.index)

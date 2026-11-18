@@ -385,6 +385,77 @@ class PriceThresholdTests(unittest.TestCase):
                              0.5, package)
 
 
+class ChampionTests(unittest.TestCase):
+    """The champion price model: fold schedule, leakage guard, quick end-to-end training and live prediction."""
+
+    def test_out_of_sample_demand_folds_follow_the_evaluated_schedule(self):
+        import champion
+        days = pd.date_range("2010-01-29", "2026-10-31", freq="D")
+        folds = dict(champion.oof_folds(days))
+        self.assertEqual(folds, {2010: [2011], 2011: [2012], 2012: [2013], 2013: [2014], 2014: [2015],
+                                 2015: [2016, 2017], 2017: [2018, 2019], 2019: [2020, 2021], 2021: [2022, 2023],
+                                 2023: [2024, 2025], 2025: [2026]})
+        self.assertTrue(all(end < min(years) for end, years in folds.items()))
+
+    def test_champion_is_opt_in_through_its_selection_file(self):
+        import json as _json
+        from train import DEFAULT_SELECTION
+        self.assertEqual(DEFAULT_SELECTION["price"]["config"]["family"], "boosted")
+        with open(os.path.join(HERE, "forecast_package", "champion_selection.json"), encoding="utf-8") as handle:
+            selection = _json.load(handle)
+        self.assertEqual(selection["price"]["config"], {"family": "champion", "threshold": 0.5})
+        self.assertEqual(selection["demand"], DEFAULT_SELECTION["demand"])
+
+    def test_member_weights_and_inputs(self):
+        import champion
+        members = champion.members()
+        self.assertEqual(len(members), 12)
+        self.assertAlmostEqual(sum(m[3] for m in members), 1.0)
+        self.assertAlmostEqual(sum(m[3] for m in members if m[1] in ("A", "B")), 0.7)
+        frame = synthetic_data(days=75)
+        features, _ = training_table(frame, weather_shape=True)
+        days = market_days(features.index)
+        f = features["demand_anchor"].to_numpy() * 1.01
+        a = champion.member_inputs("A", features, f, days)
+        b = champion.member_inputs("B", features, f, days)
+        base = champion.base_columns(features)
+        self.assertEqual(list(a.columns[:len(base)]), base)
+        self.assertEqual(list(a.columns[-26:]), champion.WEATHER_SHAPE)
+        self.assertEqual(list(b.columns[len(base):len(base) + 5]),
+                         ["dfc", "dfc_minus_lag1", "dfc_minus_lag7", "dfc_minus_prev_mean", "dfc_minus_prev_max"])
+        self.assertEqual(sum(c.startswith("dfc_profile_slot_") for c in a.columns), 48)
+        np.testing.assert_allclose(b["dfc_minus_prev_max"], f - features["nsw_demand_previous_max"], rtol=1e-5)
+
+    def test_quick_training_and_live_forecast(self):
+        import tempfile, joblib, json as _json
+        import champion
+        from train import champion_oof_demand, fit_champion, fit_model, DEFAULT_SELECTION
+        from model import Forecaster
+        frame = synthetic_data(days=800, start="2010-03-01")
+        features, truth = training_table(frame, weather_shape=True)
+        days = market_days(features.index)
+        forecast, audit = champion_oof_demand(features, truth, days, quick=True)
+        later = np.asarray(days.year >= 2011)
+        self.assertTrue(np.isfinite(forecast[later]).all() and np.isnan(forecast[~later]).all())
+        self.assertTrue(all(pd.Timestamp(a["training_end"]).year < min(a["forecast_years"]) for a in audit))
+        bundle = fit_champion(features, truth, forecast, days, quick=True)
+        self.assertEqual(len(bundle["members"]), 12)
+        base = features[champion.base_columns(features)]
+        demand = fit_model("demand", dict(DEFAULT_SELECTION["demand"]["config"], trees=60), base, truth)
+        with tempfile.TemporaryDirectory() as tmp:
+            joblib.dump({"demand": demand, "price": bundle}, os.path.join(tmp, "models.joblib"))
+            with open(os.path.join(tmp, "manifest.json"), "w") as handle:
+                _json.dump({}, handle)
+            forecaster = Forecaster(tmp)
+            day = market_days(frame.index).unique()[-2]
+            history, weather = da.make_inputs(frame, day)
+            out = forecaster.predict(history, weather)
+        self.assertEqual(list(out.columns), ["nsw_demand_mw", "nsw_price_up"])
+        self.assertEqual(len(out), 48)
+        self.assertTrue(set(np.unique(out["nsw_price_up"])) <= {0, 1})
+        self.assertTrue(np.isfinite(out["nsw_demand_mw"]).all())
+
+
 class StatisticalTests(unittest.TestCase):
     def test_metrics_match_harness_in_single_class_period(self):
         values = metric_values([5000, 6000], [0, 0], [5100, 5900], [0, 1])

@@ -1,0 +1,26 @@
+{
+  "demand": {
+    "name": "demand_boosted_3",
+    "config": {
+      "family": "boosted",
+      "leaves": 63,
+      "trees": 900,
+      "learning_rate": 0.025
+    },
+    "window_years": null,
+    "strategy": "periodic_expanding",
+    "training_end": null
+  },
+  "price": {
+    "name": "champion_2026_11_19",
+    "config": {
+      "family": "champion",
+      "threshold": 0.5
+    },
+    "window_years": null,
+    "strategy": "periodic_expanding",
+    "training_end": null
+  },
+  "strategy_selection_end": "2024-12-31",
+  "quick": false
+}
