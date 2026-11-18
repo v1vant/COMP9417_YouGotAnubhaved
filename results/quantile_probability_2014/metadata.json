@@ -1,0 +1,17 @@
+{
+  "method": "Piecewise-linear CDF between sorted q10/q50/q90; P(price > D_mean)=1-CDF(D_mean). CDF capped at .1 and .9 outside predicted quantiles.",
+  "selection_years": [
+    2011,
+    2012,
+    2013
+  ],
+  "evaluation_year": 2014,
+  "selected": {
+    "threshold": 0.42000000000000004,
+    "balanced_accuracy_oof": 74.7982792572996,
+    "accuracy_oof": 74.89545316301704
+  },
+  "brier_score_2014": 0.1383806355319336,
+  "log_loss_2014": 0.436180846744785,
+  "note": "Approximate probability from three quantiles; no probability calibration or 2014 threshold tuning."
+}

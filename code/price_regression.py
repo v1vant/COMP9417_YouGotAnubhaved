@@ -4,22 +4,27 @@ import pandas as pd
 from lightgbm import LGBMRegressor
 
 
-def fit_price_regressor(features, prices, config):
+def fit_price_regressor(features, prices, config, quantile=None):
+    if quantile is not None and not 0 < quantile < 1:
+        raise ValueError("Quantile must be strictly between zero and one")
     if features.empty or not features.index.equals(prices.index):
         raise ValueError("Expected nonempty features aligned with actual prices")
     if not np.isfinite(prices.to_numpy()).all():
         raise ValueError("Actual prices must be finite")
     estimator = LGBMRegressor(
-        objective="regression_l1", n_estimators=config["trees"],
+        objective="regression_l1" if quantile is None else "quantile",
+        n_estimators=config["trees"],
         learning_rate=config["learning_rate"], num_leaves=config["leaves"],
         min_child_samples=160, colsample_bytree=0.85, subsample=0.85,
         subsample_freq=1, reg_lambda=8.0, max_bin=127, n_jobs=2,
         verbosity=-1, deterministic=True, force_col_wise=True, random_state=9417,
+        **({"alpha": quantile} if quantile is not None else {}),
     )
     # Fit actual $/MWh values, including negatives, rather than class labels.
     estimator.fit(features, prices)
     return {"estimator": estimator, "features": list(features.columns),
-            "config": dict(config), "target": "actual_nsw_price", "loss": "L1"}
+            "config": dict(config), "target": "actual_nsw_price",
+            "loss": "L1" if quantile is None else "quantile", "quantile": quantile}
 
 
 def predict_price_regressor(bundle, features, previous_day_mean):

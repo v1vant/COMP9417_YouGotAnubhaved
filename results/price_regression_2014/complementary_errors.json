@@ -1,0 +1,81 @@
+{
+  "rows": 17520,
+  "counts": {
+    "both_correct": 13361,
+    "classifier_only_correct": 1204,
+    "regressor_only_correct": 748,
+    "both_wrong": 2207
+  },
+  "percent_of_all": {
+    "both_correct": 76.26141552511415,
+    "classifier_only_correct": 6.872146118721462,
+    "regressor_only_correct": 4.269406392694064,
+    "both_wrong": 12.59703196347032
+  },
+  "disagreement_percent": 11.141552511415526,
+  "regressor_corrects_classifier_error_percent": 25.313028764805413,
+  "classifier_corrects_regressor_error_percent": 35.29756669598358,
+  "regressor_wins_when_disagree_percent": 38.31967213114754,
+  "binary_error_correlation": 0.6281272995795641,
+  "classifier_balanced_accuracy": 83.16274453938605,
+  "regressor_balanced_accuracy": 80.54357578847097,
+  "oracle_accuracy_upper_bound": 87.40296803652969,
+  "oracle_balanced_accuracy_upper_bound": 87.42438446960003,
+  "oracle_note": "Hindsight selector using true labels; not an achievable forecast or a measured ensemble score.",
+  "by_actual_class": [
+    {
+      "actual_class": 0,
+      "rows": 9001,
+      "classifier_recall": 82.10198866792578,
+      "regressor_recall": 80.07999111209865,
+      "regressor_only_correct": 409,
+      "classifier_only_correct": 591
+    },
+    {
+      "actual_class": 1,
+      "rows": 8519,
+      "classifier_recall": 84.22350041084634,
+      "regressor_recall": 81.00716046484328,
+      "regressor_only_correct": 339,
+      "classifier_only_correct": 613
+    }
+  ],
+  "by_distance_from_threshold": [
+    {
+      "distance_from_classifier_threshold": "[0, 0.05)",
+      "rows": 713,
+      "disagreements": 349,
+      "regressor_only_correct": 186,
+      "classifier_only_correct": 163,
+      "classifier_accuracy": 52.45441795231417,
+      "regressor_accuracy": 55.68022440392707
+    },
+    {
+      "distance_from_classifier_threshold": "[0.05, 0.15)",
+      "rows": 1521,
+      "disagreements": 560,
+      "regressor_only_correct": 261,
+      "classifier_only_correct": 299,
+      "classifier_accuracy": 58.57988165680473,
+      "regressor_accuracy": 56.081525312294545
+    },
+    {
+      "distance_from_classifier_threshold": "[0.15, 0.3)",
+      "rows": 3016,
+      "disagreements": 691,
+      "regressor_only_correct": 223,
+      "classifier_only_correct": 468,
+      "classifier_accuracy": 69.89389920424404,
+      "regressor_accuracy": 61.770557029177716
+    },
+    {
+      "distance_from_classifier_threshold": "[0.3, 1.01)",
+      "rows": 12270,
+      "disagreements": 352,
+      "regressor_only_correct": 78,
+      "classifier_only_correct": 274,
+      "classifier_accuracy": 91.21434392828036,
+      "regressor_accuracy": 89.61695191524043
+    }
+  ]
+}

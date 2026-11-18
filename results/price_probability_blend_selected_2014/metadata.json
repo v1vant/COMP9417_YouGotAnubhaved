@@ -1,0 +1,18 @@
+{
+  "calibration_years": [
+    2011,
+    2012
+  ],
+  "selection_year": 2013,
+  "evaluation_year": 2014,
+  "selection_metric": "balanced_accuracy",
+  "threshold": 0.5,
+  "grid_step": 0.05,
+  "selected": {
+    "classifier_weight": 1.0,
+    "regressor_weight": 0.0,
+    "balanced_accuracy_2013": 82.6863012303131,
+    "accuracy_2013": 82.53995433789954
+  },
+  "calibration_refitted_after_selection": false
+}

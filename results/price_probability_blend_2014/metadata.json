@@ -1,0 +1,13 @@
+{
+  "calibration_years": [
+    2011,
+    2012,
+    2013
+  ],
+  "evaluation_year": 2014,
+  "classifier_weight": 0.5,
+  "regressor_weight": 0.5,
+  "threshold": 0.5,
+  "calibrator": "StandardScaler + LogisticRegression C=1 balanced; same specification as stacker",
+  "note": "Fixed settings; no tuning on 2014; no new base-model training."
+}

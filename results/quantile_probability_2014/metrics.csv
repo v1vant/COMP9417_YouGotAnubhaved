@@ -1,0 +1,4 @@
+model,accuracy,balanced_accuracy,threshold
+classifier,83.13356164383562,83.16274453938605,0.57
+quantile_probability_default,80.40525114155251,80.41916707902146,0.5
+quantile_probability_oof_selected,79.62328767123287,79.85866082441127,0.42000000000000004

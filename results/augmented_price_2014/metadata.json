@@ -1,0 +1,20 @@
+{
+  "classifier_training_years": [
+    2011,
+    2012,
+    2013
+  ],
+  "validation_year": 2014,
+  "base_config": {
+    "family": "boosted",
+    "trees": 600,
+    "leaves": 31,
+    "learning_rate": 0.04,
+    "threshold": 0.57
+  },
+  "added_features": [
+    "regressed_price",
+    "regressed_price_margin"
+  ],
+  "regression_training_inputs": "Chronological out-of-sample folds"
+}

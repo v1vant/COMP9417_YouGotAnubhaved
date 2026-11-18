@@ -1,0 +1,21 @@
+{
+  "training_years": [
+    2011,
+    2012,
+    2013
+  ],
+  "validation_year": 2014,
+  "config": {
+    "family": "boosted",
+    "trees": 600,
+    "leaves": 31,
+    "learning_rate": 0.04,
+    "threshold": 0.57
+  },
+  "features": 572,
+  "added_features": [
+    "regressed_price_margin"
+  ],
+  "seconds": 38.476659665990155,
+  "regression_inputs": "Same chronological OOF folds as two-feature augmentation; no retuning."
+}

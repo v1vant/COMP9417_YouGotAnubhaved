@@ -1,0 +1,17 @@
+{
+  "config": {
+    "family": "boosted",
+    "leaves": 31,
+    "trees": 600,
+    "learning_rate": 0.04,
+    "threshold": 0.5700000000000001
+  },
+  "data_hash": "c13711002906140eaf7cc67c1ce17a49facd359cf3d1a84722aaa3ccd647752c",
+  "sources": {
+    "code/simulate_augmented_price.py": "663a3fe4801cc8539945b0c1a3793867428db59253bcb5beafbaacd85323cf32",
+    "code/price_regression.py": "ab9224c7d538d4cba2b87ec0a1bd79cf736e9bfcd18024bbf21a7d503e79f8dc",
+    "code/forecast_package/model.py": "c2bae5a05d1c7300aa0f2b623583ef0facb7edc63326df490855e6be209a97ac",
+    "code/forecast_package/train.py": "93c73a2fd969a357aac13765248c1015af5ff372c4c4340389497a41f6d49b7a",
+    "code/run_experiments.py": "05d3d2ccb58cccc98cfca5e8b3eceb80b6d14f15f2a5f31177aca47ee79917c9"
+  }
+}

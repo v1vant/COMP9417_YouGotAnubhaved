@@ -1,0 +1,20 @@
+{
+  "config": {
+    "family": "boosted",
+    "trees": 600,
+    "leaves": 31,
+    "learning_rate": 0.04,
+    "threshold": 0.57
+  },
+  "quantiles": [
+    0.1,
+    0.5,
+    0.9
+  ],
+  "source_hashes": {
+    "code/validate_quantile_price.py": "7e2b980659f584ceec27de55f2eae8e42a053c2702d2106afaa6e955f24c9fe4",
+    "code/price_regression.py": "ba0b81c47d620d09339b015c8387a92a9c494e28bc05d21b2933cb50f0f8deb9",
+    "code/forecast_package/model.py": "c2bae5a05d1c7300aa0f2b623583ef0facb7edc63326df490855e6be209a97ac",
+    "code/forecast_package/train.py": "93c73a2fd969a357aac13765248c1015af5ff372c4c4340389497a41f6d49b7a"
+  }
+}

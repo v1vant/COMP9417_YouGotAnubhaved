@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "seconds": 402.77372729196213,
+  "classifier_training_years": [
+    2011,
+    2012,
+    2013
+  ],
+  "validation_year": 2014,
+  "holdout_evaluated": false
+}

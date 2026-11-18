@@ -1,0 +1,27 @@
+{
+  "base_config": {
+    "family": "boosted",
+    "trees": 600,
+    "leaves": 31,
+    "learning_rate": 0.04,
+    "threshold": 0.57
+  },
+  "folds": [
+    {
+      "forecast_year": 2011,
+      "training_end": "2010-12-31",
+      "rows": 17520
+    },
+    {
+      "forecast_year": 2012,
+      "training_end": "2011-12-31",
+      "rows": 17568
+    },
+    {
+      "forecast_year": 2013,
+      "training_end": "2012-12-31",
+      "rows": 17520
+    }
+  ],
+  "stacker_threshold": 0.5
+}

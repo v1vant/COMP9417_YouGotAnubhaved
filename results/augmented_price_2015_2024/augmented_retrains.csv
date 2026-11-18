@@ -1,0 +1,6 @@
+task,strategy,effective_day,training_end,training_start,training_rows,cause
+price,periodic_expanding,2016-01-01,2015-12-31,2011-01-01,87648,schedule
+price,periodic_expanding,2018-01-01,2017-12-31,2011-01-01,122736,schedule
+price,periodic_expanding,2020-01-01,2019-12-31,2011-01-01,157776,schedule
+price,periodic_expanding,2022-01-01,2021-12-31,2011-01-01,192864,schedule
+price,periodic_expanding,2024-01-01,2023-12-31,2011-01-01,227904,schedule
