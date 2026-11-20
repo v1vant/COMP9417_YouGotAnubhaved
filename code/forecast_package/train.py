@@ -6,6 +6,8 @@ import platform
 import time
 import subprocess
 import sys
+import shutil
+import tempfile
 
 import joblib
 import numpy as np
@@ -18,8 +20,10 @@ from sklearn.preprocessing import StandardScaler
 
 from model import load_data, market_days, predict_task, training_table
 
+from c2_price import price_table, fit_c2
+
 SEED = 9417
-DEFAULT_SELECTION = {'demand': {'name': 'demand_boosted_3', 'config': {'family': 'boosted', 'leaves': 63, 'trees': 900, 'learning_rate': 0.025}, 'window_years': None, 'strategy': 'periodic_expanding', 'training_end': None}, 'price': {'name': 'price_boosted_2', 'config': {'family': 'boosted', 'leaves': 31, 'trees': 600, 'learning_rate': 0.04, 'threshold': 0.5700000000000001}, 'window_years': None, 'strategy': 'periodic_expanding', 'training_end': None}, 'strategy_selection_end': '2024-12-31', 'quick': False}
+DEFAULT_SELECTION = {'demand': {'name': 'demand_boosted_3', 'config': {'family': 'boosted', 'leaves': 63, 'trees': 900, 'learning_rate': 0.025}, 'window_years': None, 'strategy': 'periodic_expanding', 'training_end': None}, 'price': {'name': 'price_c2_bag5', 'config': {'name': 'C2_bag5_cutoff0.50', 'threshold': 0.5, 'half_life_years': None, 'seeds': [9417, 9418, 9419, 9420, 9421], 'weather_shape': True, 'params': {'num_leaves': 63, 'learning_rate': 0.02, 'n_estimators': 1200, 'colsample_bytree': 0.5, 'min_child_samples': 300}, 'source': 'code/price_v3/choose_candidate.py (round 2)', 'family': 'c2'}, 'window_years': None, 'strategy': 'periodic_expanding', 'training_end': None}, 'strategy_selection_end': '2024-12-31', 'quick': False}
 
 
 def candidates(task, quick=False):
@@ -35,6 +39,8 @@ def candidates(task, quick=False):
 
 def fit_model(task, config, features, truth):
     # Keep the price-profile additions exclusive to classification.
+    if task == "price" and config["family"] == "c2":
+        return fit_c2(features, truth, config)
     if task == "demand":
         features = features.drop(columns=[
             col for col in features if col.startswith("nsw_price_") and (
@@ -152,6 +158,8 @@ def main():
               flush=True)
     days = market_days(features.index)
     models = {}
+    price_features, price_truth = (price_table(load_data(args.csv))
+        if selection["price"]["config"]["family"] == "c2" else (features, truth))
     for task in ("demand", "price"):
         policy = selection[task]
         end = days.max() if not policy.get("training_end") else pd.Timestamp(policy["training_end"])
@@ -161,10 +169,25 @@ def main():
         config = dict(policy["config"])
         if args.quick and config["family"] == "boosted":
             config["trees"] = min(config["trees"], 120)
-        models[task] = fit_model(task, config, features.loc[mask], truth.loc[mask])
+        if task == "price" and config["family"] == "c2":
+            if args.quick:
+                config = dict(config, seeds=config['seeds'][:1], params=dict(config['params'], n_estimators=120))
+            task_days = market_days(price_features.index)
+            task_mask = task_days <= end
+            if policy.get('window_years'):
+                task_mask &= task_days > end - pd.DateOffset(years=policy['window_years'])
+            models[task] = fit_model(task, config, price_features.loc[task_mask], price_truth.loc[task_mask])
+        else:
+            models[task] = fit_model(task, config, features.loc[mask], truth.loc[mask])
     output = os.path.join(os.path.dirname(os.path.abspath(__file__)), "artifacts")
     os.makedirs(output, exist_ok=True)
-    joblib.dump(models, os.path.join(output, "models.joblib"), compress=3)
+    # Serialize locally, then replace atomically to avoid partial synced artifacts.
+    with tempfile.TemporaryDirectory(prefix="forecast_artifact_") as directory:
+        local = os.path.join(directory, "models.joblib")
+        joblib.dump(models, local, compress=3)
+        pending = os.path.join(output, "models.joblib.pending")
+        shutil.copyfile(local, pending)
+        os.replace(pending, os.path.join(output, "models.joblib"))
     import lightgbm
     import sklearn
     manifest = {

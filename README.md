@@ -1,36 +1,44 @@
 # COMP9417 26T3 Project Kit
 
-## Current validated model
+## Current adopted model
 
-The current demand forecast is a frozen **50/50 blend** of the 900-tree LightGBM
-and a **ten-epoch MLP (405 → 128 → 64 → 1)**, both using 405 demand features.
-Price uses the unchanged **571-feature LightGBM classifier** (600 trees,
-probability threshold 0.57). The context gate is disabled.
-Weather-shape features are disabled. Both `code/forecast_package/` and the staged
-`code/submission_package/` contain this model and its full-data artifacts.
-Running either package's `train.py CSV` uses the selected expanding-window
-configuration by default and trains the MLP in an isolated subprocess. PyTorch
-is required for training. Inference uses exported NumPy MLP weights, avoiding
-PyTorch/LightGBM model-loading conflicts in the same process.
+Price is **C2**, averaging probabilities from **five LightGBM models** (seeds
+9417–9421), using **597 features**: the existing 571 plus 26 Sydney temperature
+and solar weather-shape inputs. Each member has 63 leaves, 1,200 trees, learning
+rate 0.02, feature sampling 0.50 and minimum leaf samples 300. Predict class 1
+when the mean probability is strictly greater than **0.50**.
 
-| Holdout metric, January 2025–October 2026 | Current blend | Previous updated LightGBM | Original LightGBM | Yesterday baseline |
-| --- | ---: | ---: | ---: | ---: |
-| Price accuracy | 85.08% | 85.08% | 82.65% | 76.96% |
-| Price balanced accuracy | 85.03% | 85.03% | 82.57% | 76.97% |
-| Demand MAPE | 3.18% | 3.61% | 3.67% | 7.53% |
+Demand remains the validated **50/50 blend of LightGBM and a ten-epoch MLP**
+(405 → 128 → 64 → 1), using the same 405 features and unchanged fitted demand
+artifacts. The context gate is disabled. Inference requires no PyTorch import;
+training runs the MLP in an isolated subprocess.
 
-The current-model record is in `results/current_model.json`. Full holdout results
-for the blend are in `results/frozen_demand_blend_holdout/`; prior holdout results
-are in `results/holdout_original_vs_current/`. The cross-model holdout table is
-`results/holdout_model_comparison.csv`. Pre-holdout MLP and blend results are in
-`results/demand_mlp_10epoch_2015_2024/` and
-`results/demand_error_complementarity_2015_2024/`. Earlier results and model backups remain
-in their original directories. The optional weather candidate did not improve
-2014 validation. Price-regression experiments are on the separate
-`feature/price-regression` branch and are not part of the current model.
+`code/forecast_package/` and `code/submission_package/` contain identical source
+and fitted artifacts. Run `python code/forecast_package/train.py CSV` to rebuild
+both tasks from the supplied dataset with the adopted defaults.
 
-Current artifacts were trained locally with Python 3.12.12; the prescribed
-Python 3.11 marking environment remains a separate compatibility/rebuild check.
+The authoritative record is `results/current_model.json`. Build timings, package
+checks and source reports are under `results/current_c2_build/`. The previous
+current, commit **f92a38e** (571-feature single price LightGBM at 0.57), is preserved
+under `results/previous_current_f92a38e/`; older experiment results retain their
+original meanings and were not relabelled as C2 results.
+
+Saved C2 price comparisons (balanced accuracy):
+
+| Protocol | Current-recipe control | C2 | Notes |
+| --- | ---: | ---: | --- |
+| Biennial, 2015–2022 | 79.173% | 79.337% | Three seeds each, cutoff 0.50 |
+| Biennial, 2023–2024 | 83.121% | 83.325% | Three seeds each, cutoff 0.50 |
+| Biennial, 2025–October 2026 | 85.320% | 85.451% | Three seeds each, reused period |
+| Fixed training through 2024, 2025–October 2026 | 85.316% | 85.621% | Single-seed control vs five-seed C2, cutoff 0.50 |
+
+These protocols differ; they are not a single untouched holdout comparison.
+The unchanged demand blend previously scored **3.180% MAPE** on its biennial
+2025–October 2026 evaluation. Full-data output checks verify package correctness,
+not out-of-sample accuracy.
+
+Artifacts are built locally with **Python 3.12.12**. A complete rebuild under the
+exact prescribed Python 3.11 environment remains a separate compatibility check.
 
 Everything you need for the project, apart from the specification on Moodle.
 

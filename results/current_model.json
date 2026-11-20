@@ -1,10 +1,26 @@
 {
   "status": "current",
   "branch": "feature/aligned-demand-features",
+  "adoption_branch": "feature/current-c2",
+  "previous_current_commit": "f92a38e",
   "demand_features": 405,
-  "price_features": 571,
-  "weather_shape": false,
-  "price_probability_threshold": 0.57,
+  "price_features": 597,
+  "demand_weather_shape": false,
+  "price_weather_shape": true,
+  "price_probability_threshold": 0.5,
+  "price_model": "C2: five LightGBM members, mean probabilities",
+  "price_seeds": [
+    9417,
+    9418,
+    9419,
+    9420,
+    9421
+  ],
+  "demand_model": "Frozen 50/50 LightGBM + ten-epoch MLP",
+  "demand_blend": {
+    "LightGBM": 0.5,
+    "MLP": 0.5
+  },
   "config": {
     "demand": {
       "name": "demand_boosted_3",
@@ -19,13 +35,28 @@
       "training_end": null
     },
     "price": {
-      "name": "price_boosted_2",
+      "name": "price_c2_bag5",
       "config": {
-        "family": "boosted",
-        "leaves": 31,
-        "trees": 600,
-        "learning_rate": 0.04,
-        "threshold": 0.5700000000000001
+        "name": "C2_bag5_cutoff0.50",
+        "threshold": 0.5,
+        "half_life_years": null,
+        "seeds": [
+          9417,
+          9418,
+          9419,
+          9420,
+          9421
+        ],
+        "weather_shape": true,
+        "params": {
+          "num_leaves": 63,
+          "learning_rate": 0.02,
+          "n_estimators": 1200,
+          "colsample_bytree": 0.5,
+          "min_child_samples": 300
+        },
+        "source": "code/price_v3/choose_candidate.py (round 2)",
+        "family": "c2"
       },
       "window_years": null,
       "strategy": "periodic_expanding",
@@ -36,17 +67,8 @@
   },
   "artifacts": "code/forecast_package/artifacts",
   "staged_submission": "code/submission_package",
-  "holdout_results": "results/frozen_demand_blend_holdout/aggregate_metrics.csv",
-  "pre_holdout_results": "results/feature_comparison_2015_2024/aggregate_metrics.csv",
-  "separate_candidate_branch": "feature/price-regression",
-  "demand_model": "Frozen 50/50 current LightGBM + ten-epoch demand MLP",
-  "demand_blend": {
-    "LightGBM": 0.5,
-    "MLP": 0.5
-  },
-  "mlp_epochs": 10,
-  "context_gate_enabled": false,
-  "price_model": "Unchanged 571-feature LightGBM classifier",
-  "price_holdout_results": "results/holdout_original_vs_current/aggregate_metrics.csv",
-  "source_branch": "feature/demand-mlp"
+  "build_results": "results/current_c2_build",
+  "previous_current_backup": "results/previous_current_f92a38e",
+  "evaluation_note": "Adoption uses saved C2 research; no new holdout tuning. C2 reports use multiple protocols and seed counts; see source_reports.",
+  "compatibility_note": "Built locally with Python 3.12.12. Exact pinned Python 3.11 rebuild not verified."
 }

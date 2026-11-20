@@ -1,0 +1,12 @@
+{
+  "status": "passed",
+  "days": 7,
+  "init_seconds": 0.87035741598811,
+  "max_predict_seconds": 0.20263308298308402,
+  "demand_predictions_exactly_unchanged": true,
+  "price_mean_probability_verified": true,
+  "staged_matches": true,
+  "torch_imported": false,
+  "artifact_bytes": 22824666,
+  "note": "Output validity and parity checks, not accuracy: these dates were used in final fitting."
+}

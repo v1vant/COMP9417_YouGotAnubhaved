@@ -215,7 +215,8 @@ def predict_task(bundle, features):
     if bundle["task"] == "demand":
         residual = bundle["estimator"].predict(x)
         return np.clip(features["demand_anchor"].to_numpy() + residual, 0, 20000)
-    probability = bundle["estimator"].predict_proba(x)[:, 1]
+    members = bundle.get("members") or [bundle["estimator"]]
+    probability = np.mean([member.predict_proba(x)[:, 1] for member in members], axis=0)
     return (probability > bundle["threshold"]).astype(np.int64)
 
 
@@ -236,9 +237,9 @@ class Forecaster:
     def __init__(self, artifact_dir: str):
         self.models = joblib.load(os.path.join(artifact_dir, "models.joblib"))
         for bundle in self.models.values():
-            estimator = bundle["estimator"]
-            if "n_jobs" in estimator.get_params():
-                estimator.set_params(n_jobs=2)
+            for estimator in bundle.get("members") or [bundle["estimator"]]:
+                if "n_jobs" in estimator.get_params():
+                    estimator.set_params(n_jobs=2)
         self.demand_mlp = None
         manifest_path = os.path.join(artifact_dir, "manifest.json")
         if os.path.exists(manifest_path):
@@ -255,7 +256,9 @@ class Forecaster:
         demand = predict_task(self.models["demand"], features)
         if self.demand_mlp is not None:
             demand = 0.5*demand + 0.5*predict_numpy_mlp(self.demand_mlp, features)
+        price_features = (forecast_features(history, weather_next, weather_shape=True)
+                          if self.models["price"].get("config", {}).get("weather_shape") else features)
         return pd.DataFrame({
             "nsw_demand_mw": demand,
-            "nsw_price_up": predict_task(self.models["price"], features),
+            "nsw_price_up": predict_task(self.models["price"], price_features),
         }, index=weather_next.index)

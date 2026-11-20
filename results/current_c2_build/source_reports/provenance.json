@@ -1,0 +1,5 @@
+{
+  "price_c2_commit": "ad82bc59c78d8cfabf7f6347ee63c1e070302ca5",
+  "thomas_commit": "c72fc3e1fb0817d2b541d18597c973d5259aa68a",
+  "note": "Saved reported scores only; protocols differ. No new holdout evaluation or tuning for this adoption."
+}

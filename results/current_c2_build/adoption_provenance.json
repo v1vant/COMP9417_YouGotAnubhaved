@@ -1,0 +1,8 @@
+{
+  "adopted_price": "C2_bag5_cutoff0.50",
+  "price_source_commit": "ad82bc59c78d8cfabf7f6347ee63c1e070302ca5",
+  "previous_current_commit": "f92a38e",
+  "demand": "Existing 50/50 LightGBM + ten-epoch MLP; unchanged fitted demand artifacts",
+  "validation": "No new holdout tuning. Full-data build plus package checks.",
+  "training_environment": "Local Python 3.12.12; pinned marking-environment rebuild remains unverified."
+}

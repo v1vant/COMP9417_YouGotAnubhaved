@@ -15,13 +15,28 @@
       "training_end": null
     },
     "price": {
-      "name": "price_boosted_2",
+      "name": "price_c2_bag5",
       "config": {
-        "family": "boosted",
-        "leaves": 31,
-        "trees": 600,
-        "learning_rate": 0.04,
-        "threshold": 0.5700000000000001
+        "name": "C2_bag5_cutoff0.50",
+        "threshold": 0.5,
+        "half_life_years": null,
+        "seeds": [
+          9417,
+          9418,
+          9419,
+          9420,
+          9421
+        ],
+        "weather_shape": true,
+        "params": {
+          "num_leaves": 63,
+          "learning_rate": 0.02,
+          "n_estimators": 1200,
+          "colsample_bytree": 0.5,
+          "min_child_samples": 300
+        },
+        "source": "code/price_v3/choose_candidate.py (round 2)",
+        "family": "c2"
       },
       "window_years": null,
       "strategy": "periodic_expanding",
@@ -42,7 +57,7 @@
   },
   "task_feature_counts": {
     "demand": 405,
-    "price": 571
+    "price": 597
   },
   "composition": {
     "demand": "Restored from results/full_profiles_2014/artifacts_405_features; trained on full released CSV",
@@ -81,5 +96,20 @@
     ],
     "inference": "NumPy, no PyTorch import required",
     "numpy_torch_max_difference_MW": 0.00048828125
-  }
+  },
+  "price_c2": {
+    "seeds": [
+      9417,
+      9418,
+      9419,
+      9420,
+      9421
+    ],
+    "threshold": 0.5,
+    "training_rows": 293712,
+    "training_end": "2026-10-31"
+  },
+  "previous_current": "f92a38e",
+  "price_build_seconds": 1436.5246629159665,
+  "price_member_training_seconds": 1431.7679593750509
 }
