@@ -1,0 +1,14 @@
+{
+  "years": [
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020
+  ],
+  "rows": 105216,
+  "advantage_definition": "LightGBM absolute percentage error minus MLP absolute percentage error; positive favours MLP",
+  "features_screened": 406,
+  "note": "Exploratory marginal associations, not causal or validated gating rules. No data after 2020 used; no stacker fitted."
+}

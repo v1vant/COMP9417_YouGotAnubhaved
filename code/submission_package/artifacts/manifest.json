@@ -15,13 +15,28 @@
       "training_end": null
     },
     "price": {
-      "name": "price_boosted_2",
+      "name": "price_c2_bag5",
       "config": {
-        "family": "boosted",
-        "leaves": 31,
-        "trees": 600,
-        "learning_rate": 0.04,
-        "threshold": 0.5700000000000001
+        "name": "C2_bag5_cutoff0.50",
+        "threshold": 0.5,
+        "half_life_years": null,
+        "seeds": [
+          9417,
+          9418,
+          9419,
+          9420,
+          9421
+        ],
+        "weather_shape": true,
+        "params": {
+          "num_leaves": 63,
+          "learning_rate": 0.02,
+          "n_estimators": 1200,
+          "colsample_bytree": 0.5,
+          "min_child_samples": 300
+        },
+        "source": "code/price_v3/choose_candidate.py (round 2)",
+        "family": "c2"
       },
       "window_years": null,
       "strategy": "periodic_expanding",
@@ -31,13 +46,70 @@
     "quick": false
   },
   "quick": false,
-  "seconds": 416.422,
+  "seconds": 584.5549904580112,
   "versions": {
-    "python": "3.11.14",
-    "numpy": "2.4.6",
-    "pandas": "3.1.0",
+    "python": "3.12.12",
+    "numpy": "2.5.3",
+    "pandas": "3.0.5",
     "sklearn": "1.9.1",
     "lightgbm": "4.7.0",
     "joblib": "1.6.0"
-  }
+  },
+  "task_feature_counts": {
+    "demand": 405,
+    "price": 597
+  },
+  "composition": {
+    "demand": "Restored from results/full_profiles_2014/artifacts_405_features; trained on full released CSV",
+    "price": "Retained from 571-feature full-data run"
+  },
+  "seconds_note": "seconds describes the 571-feature run; demand was subsequently restored from its preserved 405-feature run.",
+  "demand_blend": {
+    "LightGBM": 0.5,
+    "MLP": 0.5
+  },
+  "mlp_epochs": 10,
+  "inference": "LightGBM plus NumPy MLP; PyTorch used only in isolated training process",
+  "mlp_training": {
+    "architecture": [
+      405,
+      128,
+      64,
+      1
+    ],
+    "epochs": 10,
+    "seed": 9417,
+    "training_rows": 293756,
+    "data_end": "2026-10-31 00:00:00",
+    "torch": "2.15.0",
+    "epoch_seconds": [
+      1.9459675410180353,
+      1.7684111669659615,
+      1.8432902920176275,
+      1.6721194999990985,
+      1.8009789159987122,
+      1.6703513340326026,
+      1.812946791993454,
+      1.7259377910522744,
+      1.7279604590148665,
+      1.6635660830070265
+    ],
+    "inference": "NumPy, no PyTorch import required",
+    "numpy_torch_max_difference_MW": 0.00048828125
+  },
+  "price_c2": {
+    "seeds": [
+      9417,
+      9418,
+      9419,
+      9420,
+      9421
+    ],
+    "threshold": 0.5,
+    "training_rows": 293712,
+    "training_end": "2026-10-31"
+  },
+  "previous_current": "f92a38e",
+  "price_build_seconds": 1436.5246629159665,
+  "price_member_training_seconds": 1431.7679593750509
 }

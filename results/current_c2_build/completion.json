@@ -1,0 +1,10 @@
+{
+  "status": "built",
+  "seconds": 4.756703540915623,
+  "member_training_seconds": 1431.7679593750509,
+  "demand_artifacts_unchanged": true,
+  "artifact_bytes": 22824666,
+  "price_members": 5,
+  "price_features": 597,
+  "threshold": 0.5
+}

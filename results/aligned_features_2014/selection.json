@@ -1,0 +1,128 @@
+{
+  "selected": {
+    "demand": {
+      "name": "demand_boosted_3",
+      "config": {
+        "family": "boosted",
+        "leaves": 63,
+        "trees": 900,
+        "learning_rate": 0.025
+      }
+    },
+    "price": {
+      "name": "price_boosted_3",
+      "config": {
+        "family": "boosted",
+        "leaves": 63,
+        "trees": 900,
+        "learning_rate": 0.025,
+        "threshold": 0.6000000000000001
+      }
+    }
+  },
+  "validation": [
+    {
+      "model": "demand_linear_0",
+      "task": "demand",
+      "config": {
+        "family": "linear",
+        "regularization": 10.0
+      },
+      "validation_MAPE_or_negative_BA": 2.9948187771311465,
+      "MAPE": 2.9948187771311465,
+      "MAE": 232.45964390919303
+    },
+    {
+      "model": "demand_linear_1",
+      "task": "demand",
+      "config": {
+        "family": "linear",
+        "regularization": 1000.0
+      },
+      "validation_MAPE_or_negative_BA": 2.9096911062368993,
+      "MAPE": 2.9096911062368993,
+      "MAE": 226.2713564954784
+    },
+    {
+      "model": "demand_boosted_2",
+      "task": "demand",
+      "config": {
+        "family": "boosted",
+        "leaves": 31,
+        "trees": 600,
+        "learning_rate": 0.04
+      },
+      "validation_MAPE_or_negative_BA": 2.06955734256856,
+      "MAPE": 2.06955734256856,
+      "MAE": 165.06360136445625
+    },
+    {
+      "model": "demand_boosted_3",
+      "task": "demand",
+      "config": {
+        "family": "boosted",
+        "leaves": 63,
+        "trees": 900,
+        "learning_rate": 0.025
+      },
+      "validation_MAPE_or_negative_BA": 2.06423831330944,
+      "MAPE": 2.06423831330944,
+      "MAE": 164.93546032103768
+    },
+    {
+      "model": "price_linear_0",
+      "task": "price",
+      "config": {
+        "family": "linear",
+        "regularization": 0.01,
+        "threshold": 0.5700000000000001
+      },
+      "validation_MAPE_or_negative_BA": -79.28848119143782,
+      "balanced_accuracy": 79.28848119143782,
+      "accuracy": 79.2579908675799
+    },
+    {
+      "model": "price_linear_1",
+      "task": "price",
+      "config": {
+        "family": "linear",
+        "regularization": 0.1,
+        "threshold": 0.55
+      },
+      "validation_MAPE_or_negative_BA": -79.30220780336403,
+      "balanced_accuracy": 79.30220780336403,
+      "accuracy": 79.26369863013699
+    },
+    {
+      "model": "price_boosted_2",
+      "task": "price",
+      "config": {
+        "family": "boosted",
+        "leaves": 31,
+        "trees": 600,
+        "learning_rate": 0.04,
+        "threshold": 0.6000000000000001
+      },
+      "validation_MAPE_or_negative_BA": -81.90669271151792,
+      "balanced_accuracy": 81.90669271151792,
+      "accuracy": 81.82648401826485
+    },
+    {
+      "model": "price_boosted_3",
+      "task": "price",
+      "config": {
+        "family": "boosted",
+        "leaves": 63,
+        "trees": 900,
+        "learning_rate": 0.025,
+        "threshold": 0.6000000000000001
+      },
+      "validation_MAPE_or_negative_BA": -81.9762901746945,
+      "balanced_accuracy": 81.9762901746945,
+      "accuracy": 81.90639269406392
+    }
+  ],
+  "seconds": 222.15961987501942,
+  "python": "3.12.12 (main, Oct  9 2025, 11:07:00) [Clang 17.0.0 (clang-1700.0.13.3)]",
+  "feature_count": 254
+}

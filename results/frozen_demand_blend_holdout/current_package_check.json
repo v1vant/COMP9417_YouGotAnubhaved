@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "days": 7,
+  "init_seconds": 0.7488196669728495,
+  "max_predict_seconds": 0.12739699997473508,
+  "staged_matches": true,
+  "price_unchanged": true,
+  "torch_imported": false,
+  "note": "Output validity and package equality only; these dates were used during final fitting."
+}

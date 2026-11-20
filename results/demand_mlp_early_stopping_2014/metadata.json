@@ -1,0 +1,45 @@
+{
+  "selection_training_years": [
+    2010,
+    2011,
+    2012
+  ],
+  "selection_year": 2013,
+  "max_epochs": 100,
+  "patience": 10,
+  "selected_epochs": 11,
+  "selection_epochs_run": 21,
+  "best_selection_MAPE": 1.8132091918853808,
+  "refit_training_years": [
+    2010,
+    2011,
+    2012,
+    2013
+  ],
+  "evaluation_year": 2014,
+  "architecture": [
+    405,
+    128,
+    64,
+    1
+  ],
+  "device": "cpu",
+  "threads": 2,
+  "torch": "2.15.0",
+  "refit_epoch_seconds": [
+    0.3643048749654554,
+    0.4364331249962561,
+    0.41473279101774096,
+    0.42060845805099234,
+    0.5088817910291255,
+    0.47904474998358637,
+    0.5027928749914281,
+    0.4710507499985397,
+    0.4487253339611925,
+    0.7311302910093218,
+    0.5092604999663308
+  ],
+  "state_dict_reload_passed": true,
+  "holdout_evaluated": false,
+  "seconds_total": 14.37147058401024
+}

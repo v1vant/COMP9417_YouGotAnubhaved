@@ -1,0 +1,5 @@
+version,task,trees,MAPE,MAE,balanced_accuracy,accuracy,threshold
+price_profiles_571,demand,600,2.065833250648767,164.93045511211122,,,
+price_profiles_571,demand,900,2.032582087732354,162.50701240074977,,,
+price_profiles_571,price,600,,,83.2040339220177,83.162100456621,0.56
+price_profiles_571,price,900,,,83.18905012953981,83.15639269406392,0.56

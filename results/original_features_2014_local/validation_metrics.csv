@@ -1,0 +1,9 @@
+model,task,config,validation_MAPE_or_negative_BA,MAPE,MAE,balanced_accuracy,accuracy
+demand_linear_0,demand,"{'family': 'linear', 'regularization': 10.0}",3.0220229479835377,3.0220229479835377,234.36196860842074,,
+demand_linear_1,demand,"{'family': 'linear', 'regularization': 1000.0}",2.9442992731751976,2.9442992731751976,228.77346619042524,,
+demand_boosted_2,demand,"{'family': 'boosted', 'leaves': 31, 'trees': 600, 'learning_rate': 0.04}",2.1317975513788734,2.1317975513788734,170.06962560107607,,
+demand_boosted_3,demand,"{'family': 'boosted', 'leaves': 63, 'trees': 900, 'learning_rate': 0.025}",2.1124743261539694,2.1124743261539694,168.6687104702375,,
+price_linear_0,price,"{'family': 'linear', 'regularization': 0.01, 'threshold': 0.5800000000000001}",-79.26249706913264,,,79.26249706913264,79.25228310502284
+price_linear_1,price,"{'family': 'linear', 'regularization': 0.1, 'threshold': 0.55}",-79.1996973794267,,,79.1996973794267,79.14383561643835
+price_boosted_2,price,"{'family': 'boosted', 'leaves': 31, 'trees': 600, 'learning_rate': 0.04, 'threshold': 0.6600000000000001}",-81.84960771597954,,,81.84960771597954,81.85502283105023
+price_boosted_3,price,"{'family': 'boosted', 'leaves': 63, 'trees': 900, 'learning_rate': 0.025, 'threshold': 0.6300000000000001}",-81.78230552020025,,,81.78230552020025,81.75228310502283
