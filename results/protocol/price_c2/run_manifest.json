@@ -1,0 +1,35 @@
+{
+  "seconds": 5455.137862591999,
+  "data": "/home/suhan/uni/comp9417/COMP9417_YouGotAnubhaved/data/nem_weather_halfhourly_2010_2026.csv",
+  "data_end": "2026-10-31 00:00:00",
+  "rerun": "/home/suhan/uni/comp9417/COMP9417_YouGotAnubhaved/results/protocol/run_experiments",
+  "config": {
+    "name": "price_c2",
+    "seeds": [
+      9417,
+      9418,
+      9419,
+      9420,
+      9421
+    ],
+    "params": {
+      "num_leaves": 63,
+      "learning_rate": 0.02,
+      "n_estimators": 1200,
+      "colsample_bytree": 0.5,
+      "min_child_samples": 300
+    }
+  },
+  "c2_selected": true,
+  "cutoff_grid": [
+    0.2,
+    0.8,
+    61
+  ],
+  "simulation_start": "2015-01-01",
+  "strategy_selection_end": "2024-12-31",
+  "bootstrap": 1000,
+  "workers": 2,
+  "threads": 2,
+  "reference": "Detectors calibrated on 2014; PCA/clustering fit on 2010-2013"
+}

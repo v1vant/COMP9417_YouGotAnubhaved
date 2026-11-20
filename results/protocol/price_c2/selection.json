@@ -1,0 +1,84 @@
+{
+  "selected": {
+    "model": "price_c2",
+    "source": "run_price_protocol",
+    "cutoff": 0.53
+  },
+  "c2": {
+    "config": {
+      "name": "price_c2",
+      "seeds": [
+        9417,
+        9418,
+        9419,
+        9420,
+        9421
+      ],
+      "params": {
+        "num_leaves": 63,
+        "learning_rate": 0.02,
+        "n_estimators": 1200,
+        "colsample_bytree": 0.5,
+        "min_child_samples": 300
+      }
+    },
+    "cutoff": 0.53,
+    "scores": {
+      "tuned_2014": {
+        "balanced_accuracy": 83.34865989443674,
+        "accuracy": 83.28196347031962
+      },
+      "fixed_0.50": {
+        "balanced_accuracy": 83.25840698087843,
+        "accuracy": 83.162100456621
+      }
+    }
+  },
+  "candidates": [
+    {
+      "model": "price_linear_0",
+      "source": "run_experiments",
+      "cutoff_tuned": 0.5800000000000001,
+      "BA_tuned": 79.27392124095091,
+      "accuracy_tuned": 79.26369863013699,
+      "BA_fixed_0.50": NaN,
+      "accuracy_fixed_0.50": NaN
+    },
+    {
+      "model": "price_linear_1",
+      "source": "run_experiments",
+      "cutoff_tuned": 0.55,
+      "BA_tuned": 79.21017866583122,
+      "accuracy_tuned": 79.15525114155251,
+      "BA_fixed_0.50": NaN,
+      "accuracy_fixed_0.50": NaN
+    },
+    {
+      "model": "price_boosted_2",
+      "source": "run_experiments",
+      "cutoff_tuned": 0.5700000000000001,
+      "BA_tuned": 81.74244937556271,
+      "accuracy_tuned": 81.64383561643835,
+      "BA_fixed_0.50": NaN,
+      "accuracy_fixed_0.50": NaN
+    },
+    {
+      "model": "price_boosted_3",
+      "source": "run_experiments",
+      "cutoff_tuned": 0.5900000000000001,
+      "BA_tuned": 81.72128922717943,
+      "accuracy_tuned": 81.64954337899543,
+      "BA_fixed_0.50": NaN,
+      "accuracy_fixed_0.50": NaN
+    },
+    {
+      "model": "price_c2",
+      "source": "run_price_protocol",
+      "cutoff_tuned": 0.53,
+      "BA_tuned": 83.34865989443674,
+      "accuracy_tuned": 83.28196347031962,
+      "BA_fixed_0.50": 83.25840698087843,
+      "accuracy_fixed_0.50": 83.162100456621
+    }
+  ]
+}

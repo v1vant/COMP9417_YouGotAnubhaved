@@ -28,8 +28,13 @@ STRATEGIES = {
 
 
 def simulate_policy(task, strategy, initial, config, features, truth, simulation_days,
-                    input_scores, input_reference, error_reference):
-    """Predict D first, then observe D; any triggered replacement starts on D+1."""
+                    input_scores, input_reference, error_reference, fit=None, predict=None):
+    """Predict D first, then observe D; any triggered replacement starts on D+1.
+
+    fit/predict default to this module's fit_model/predict_task; other model
+    families (e.g. run_price_protocol.py) pass their own with the same signatures.
+    """
+    fit, predict = fit or fit_model, predict or predict_task
     training_span(features, truth)
     if (len(simulation_days) == 0 or not simulation_days.equals(
             pd.date_range(simulation_days[0], simulation_days[-1], freq="D"))):
@@ -55,7 +60,7 @@ def simulate_policy(task, strategy, initial, config, features, truth, simulation
             window = STRATEGIES[strategy]["window_years"]
             if window:
                 mask &= feature_days >= day - pd.DateOffset(years=window)
-            model = fit_model(task, config, features.loc[mask], truth.loc[mask])
+            model = fit(task, config, features.loc[mask], truth.loc[mask])
             last_fit = day - pd.Timedelta(days=1)
             retrains.append({
                 "task": task, "strategy": strategy, "effective_day": str(day.date()),
@@ -70,7 +75,7 @@ def simulate_policy(task, strategy, initial, config, features, truth, simulation
         if cached is None or i >= cache_end:
             cache_end = min(i + 64, len(simulation_days))
             rows = features.iloc[positions[i * 48]:positions[(cache_end - 1) * 48 + 47] + 1]
-            cached = predict_task(model, rows).reshape(-1, 48)
+            cached = predict(model, rows).reshape(-1, 48)
             cache_start = i
         output[i] = cached[i - cache_start]
         actual = truth.iloc[positions[i * 48]:positions[i * 48 + 47] + 1][task].to_numpy()

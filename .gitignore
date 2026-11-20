@@ -10,3 +10,4 @@ results/cache/
 *.pem
 *.key
 unimportant.txt
+results/protocol/*/cache/

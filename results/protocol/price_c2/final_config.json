@@ -1,0 +1,29 @@
+{
+  "price": {
+    "name": "price_c2",
+    "selected_by_protocol": true,
+    "config": {
+      "name": "price_c2",
+      "seeds": [
+        9417,
+        9418,
+        9419,
+        9420,
+        9421
+      ],
+      "params": {
+        "num_leaves": 63,
+        "learning_rate": 0.02,
+        "n_estimators": 1200,
+        "colsample_bytree": 0.5,
+        "min_child_samples": 300
+      },
+      "threshold": 0.53
+    },
+    "window_years": null,
+    "strategy": "periodic_expanding",
+    "training_end": null
+  },
+  "strategy_selection_end": "2024-12-31",
+  "quick": false
+}
