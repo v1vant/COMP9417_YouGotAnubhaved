@@ -1,0 +1,15 @@
+{
+  "status": "complete",
+  "seconds": 2902.7722802079516,
+  "evaluation_start": "2015-01-01",
+  "evaluation_end": "2024-12-31",
+  "seeds": [
+    9417,
+    9418,
+    9419,
+    9420,
+    9421
+  ],
+  "holdout_evaluated": false,
+  "production_artifacts_modified": false
+}

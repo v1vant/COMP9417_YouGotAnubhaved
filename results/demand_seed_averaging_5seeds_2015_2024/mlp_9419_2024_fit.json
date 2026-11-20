@@ -1,0 +1,10 @@
+{
+  "kind": "mlp",
+  "seed": 9419,
+  "effective_year": 2024,
+  "evaluation_end_year": 2024,
+  "training_start": "2010-01-29",
+  "training_end": "2023-12-31",
+  "training_rows": 244076,
+  "seconds": 16.01656549994368
+}

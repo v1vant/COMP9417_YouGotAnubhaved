@@ -1,0 +1,42 @@
+{
+  "status": "completed_2014",
+  "base_current_commit": "1aa8067",
+  "seeds": [
+    9417,
+    9418,
+    9419,
+    9420,
+    9421
+  ],
+  "task": "demand",
+  "price": "C2 unchanged",
+  "demand_features": 405,
+  "MLP_epochs": 10,
+  "fixed_blend_weights": {
+    "LightGBM": 0.5,
+    "MLP": 0.5
+  },
+  "comparisons": [
+    "original LightGBM + original MLP (current)",
+    "mean of 5 LightGBMs + original MLP",
+    "original LightGBM + mean of 5 MLPs",
+    "mean of 5 LightGBMs + mean of 5 MLPs"
+  ],
+  "protocol": {
+    "initial_screen": 2014,
+    "later_development_check": [
+      2015,
+      2020
+    ],
+    "holdout": false,
+    "chronological": true,
+    "reuse_verified_seed_9417_predictions": true,
+    "no_training_authorized_yet": false
+  },
+  "constraints": [
+    "Keep all other hyperparameters unchanged",
+    "Train Torch separately from LightGBM artifact loading",
+    "Preserve previous predictions and artifacts",
+    "Do not alter production packages"
+  ]
+}
