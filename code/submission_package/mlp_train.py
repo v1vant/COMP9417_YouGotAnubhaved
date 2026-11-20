@@ -21,7 +21,7 @@ class DemandMLP(nn.Module):
         return self.network(x).squeeze(-1)
 
 
-def fit_demand_mlp(features, demand, epochs=5, validation=None, patience=10):
+def fit_demand_mlp(features, demand, epochs=5, validation=None, patience=10, seed=9417):
     if features.empty or not features.index.equals(demand.index):
         raise ValueError("Expected nonempty, aligned features and demand")
     if features.shape[1] != 405:
@@ -30,7 +30,7 @@ def fit_demand_mlp(features, demand, epochs=5, validation=None, patience=10):
         raise ValueError("Features must be finite")
     if not np.isfinite(demand.to_numpy()).all() or not demand.gt(0).all():
         raise ValueError("Demand must be finite and positive")
-    torch.manual_seed(9417)
+    torch.manual_seed(seed)
     torch.set_num_threads(2)
     scaler = StandardScaler()
     x = scaler.fit_transform(features).astype(np.float32)
@@ -61,7 +61,7 @@ def fit_demand_mlp(features, demand, epochs=5, validation=None, patience=10):
     )
     loader = DataLoader(
         dataset, batch_size=1024, shuffle=True, num_workers=0,
-        generator=torch.Generator().manual_seed(9417),
+        generator=torch.Generator().manual_seed(seed),
     )
     model = DemandMLP(x.shape[1])
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
@@ -142,23 +142,34 @@ if __name__ == "__main__":
         features, labels = training_table(frame)
         columns = json.loads((Path(__file__).parent / "demand_feature_columns.json").read_text())
         features = features.loc[:, columns]
-        bundle = fit_demand_mlp(features, labels["demand"], epochs=10)
-        state = bundle["model"].state_dict()
-        arrays = {name.replace(".", "_"): tensor.detach().cpu().numpy()
-                  for name, tensor in state.items()}
-        arrays.update(mean=bundle["scaler"].mean_, scale=bundle["scaler"].scale_,
-                      features=np.array(columns))
         output.mkdir(parents=True, exist_ok=True)
-        np.savez_compressed(output / "demand_mlp.npz", **arrays)
-        metadata = {"architecture": [405,128,64,1], "epochs": 10, "seed": 9417,
-                    "training_rows": len(features), "data_end": str(market_days(frame.index).max()),
-                    "torch": torch.__version__, "epoch_seconds": bundle["epoch_seconds"],
-                    "inference": "NumPy, no PyTorch import required"}
-        # Verify the exported inference path against PyTorch on actual feature rows.
+        seeds = selection["demand"].get("mlp_seeds", [9417])
+        if not seeds or len(set(seeds)) != len(seeds):
+            raise ValueError("Expected distinct MLP seeds")
+        members = []
         from model import predict_numpy_mlp
-        numpy_prediction = predict_numpy_mlp(arrays, features.iloc[-48:])
-        torch_prediction = predict_demand_mlp(bundle, features.iloc[-48:])
-        np.testing.assert_allclose(numpy_prediction, torch_prediction, rtol=1e-6, atol=0.002)
-        metadata["numpy_torch_max_difference_MW"] = float(np.max(np.abs(numpy_prediction-torch_prediction)))
+        for seed in seeds:
+            print(f"Training full-data demand MLP seed {seed}", flush=True)
+            bundle = fit_demand_mlp(features, labels["demand"], epochs=10, seed=seed)
+            state = bundle["model"].state_dict()
+            arrays = {name.replace(".", "_"): tensor.detach().cpu().numpy()
+                      for name, tensor in state.items()}
+            arrays.update(mean=bundle["scaler"].mean_, scale=bundle["scaler"].scale_,
+                          features=np.array(columns))
+            filename = "demand_mlp.npz" if seed == 9417 else f"demand_mlp_seed_{seed}.npz"
+            np.savez_compressed(output / filename, **arrays)
+            sample = features.iloc[-7*48:]
+            numpy_prediction = predict_numpy_mlp(arrays, sample)
+            torch_prediction = predict_demand_mlp(bundle, sample)
+            np.testing.assert_allclose(numpy_prediction, torch_prediction, rtol=1e-6, atol=0.002)
+            members.append({"seed": seed, "file": filename,
+                            "epoch_seconds": bundle["epoch_seconds"],
+                            "numpy_torch_max_difference_MW": float(np.max(np.abs(numpy_prediction-torch_prediction)))})
+        metadata = {"architecture": [405,128,64,1], "epochs": 10, "seeds": seeds,
+                    "training_rows": len(features), "data_end": str(market_days(frame.index).max()),
+                    "torch": torch.__version__, "members": members,
+                    "epoch_seconds": [seconds for member in members for seconds in member["epoch_seconds"]],
+                    "inference": "NumPy, no PyTorch import required"}
+        metadata["numpy_torch_max_difference_MW"] = max(member["numpy_torch_max_difference_MW"] for member in members)
         (output / "demand_mlp_manifest.json").write_text(json.dumps(metadata, indent=2))
         print(json.dumps(metadata, indent=2), flush=True)

@@ -1,0 +1,14 @@
+{
+  "status": "built",
+  "seconds": 99.66356849996373,
+  "seeds": [
+    9417,
+    9418,
+    9419,
+    9420,
+    9421
+  ],
+  "price_C2_and_demand_LightGBM_artifacts_byte_identical": true,
+  "artifact_bytes": 23767190,
+  "numpy_torch_max_difference_MW": 0.0009765625
+}

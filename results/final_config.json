@@ -1,6 +1,6 @@
 {
   "demand": {
-    "name": "demand_boosted_3",
+    "name": "demand_single_lgbm_mlp5",
     "config": {
       "family": "boosted",
       "leaves": 63,
@@ -9,7 +9,14 @@
     },
     "window_years": null,
     "strategy": "periodic_expanding",
-    "training_end": null
+    "training_end": null,
+    "mlp_seeds": [
+      9417,
+      9418,
+      9419,
+      9420,
+      9421
+    ]
   },
   "price": {
     "name": "price_c2_bag5",

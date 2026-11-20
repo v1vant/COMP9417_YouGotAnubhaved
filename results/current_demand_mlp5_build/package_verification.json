@@ -1,0 +1,15 @@
+{
+  "status": "passed",
+  "days": 7,
+  "init_seconds": 1.2238612920045853,
+  "max_predict_seconds": 0.2299902921076864,
+  "artifact_bytes": 23767190,
+  "MLP_members": 5,
+  "price_C2_and_demand_LightGBM_byte_identical": true,
+  "original_seed_9417_arrays_identical": true,
+  "price_outputs_unchanged": true,
+  "demand_blend_verified": true,
+  "staged_matches": true,
+  "torch_imported": false,
+  "note": "Output validity and parity, not an accuracy evaluation: final-fit dates were used."
+}

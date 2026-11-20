@@ -1,8 +1,8 @@
 {
   "status": "current",
   "branch": "main",
-  "adoption_branch": "feature/current-c2",
-  "previous_current_commit": "f92a38e",
+  "adoption_branch": "feature/current-demand-mlp5",
+  "previous_current_commit": "30d9c60",
   "demand_features": 405,
   "price_features": 597,
   "demand_weather_shape": false,
@@ -16,14 +16,14 @@
     9420,
     9421
   ],
-  "demand_model": "Frozen 50/50 LightGBM + ten-epoch MLP",
+  "demand_model": "Frozen 50/50 single LightGBM + mean of five ten-epoch MLPs",
   "demand_blend": {
     "LightGBM": 0.5,
     "MLP": 0.5
   },
   "config": {
     "demand": {
-      "name": "demand_boosted_3",
+      "name": "demand_single_lgbm_mlp5",
       "config": {
         "family": "boosted",
         "leaves": 63,
@@ -32,7 +32,14 @@
       },
       "window_years": null,
       "strategy": "periodic_expanding",
-      "training_end": null
+      "training_end": null,
+      "mlp_seeds": [
+        9417,
+        9418,
+        9419,
+        9420,
+        9421
+      ]
     },
     "price": {
       "name": "price_c2_bag5",
@@ -67,9 +74,19 @@
   },
   "artifacts": "code/forecast_package/artifacts",
   "staged_submission": "code/submission_package",
-  "build_results": "results/current_c2_build",
-  "previous_current_backup": "results/previous_current_f92a38e",
-  "evaluation_note": "Adoption uses saved C2 research; no new holdout tuning. C2 reports use multiple protocols and seed counts; see source_reports.",
+  "build_results": "results/current_demand_mlp5_build",
+  "previous_current_backup": "results/previous_current_30d9c60",
+  "evaluation_note": "Demand: frozen five-MLP candidate on existing biennial holdout schedule; holdout previously inspected. Price: C2 unchanged; source report protocols remain separate.",
   "compatibility_note": "Built locally with Python 3.12.12. Exact pinned Python 3.11 rebuild not verified.",
-  "promoted_from_commit": "1aa8067"
+  "demand_mlp_seeds": [
+    9417,
+    9418,
+    9419,
+    9420,
+    9421
+  ],
+  "demand_LightGBM_seed": 9417,
+  "MLP_epochs": 10,
+  "demand_development_results": "results/demand_seed_averaging_5seeds_2015_2024",
+  "demand_holdout_results": "results/demand_single_lgbm_5mlp_holdout"
 }

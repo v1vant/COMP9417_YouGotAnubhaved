@@ -1,0 +1,7 @@
+{
+  "status": "passed",
+  "clean_directory": "/private/tmp/mlp5_smoke_qwc78eb2",
+  "quick": true,
+  "synthetic_days": 85,
+  "MLP_members": 5
+}

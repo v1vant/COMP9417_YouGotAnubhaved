@@ -2,44 +2,57 @@
 
 ## Current adopted model
 
-**`main` is the canonical current branch**, promoted from validated adoption
-commit `1aa8067`. The demand seed-averaging experiment remains separate on
-`feature/demand-seed-averaging` and has not been run.
+**`main` is the canonical current branch.**
 
-Price is **C2**, averaging probabilities from **five LightGBM models** (seeds
-9417–9421), using **597 features**: the existing 571 plus 26 Sydney temperature
-and solar weather-shape inputs. Each member has 63 leaves, 1,200 trees, learning
-rate 0.02, feature sampling 0.50 and minimum leaf samples 300. Predict class 1
-when the mean probability is strictly greater than **0.50**.
+**Demand:** a frozen **50/50 blend** of one 900-tree LightGBM (seed 9417) and the
+mean prediction of **five ten-epoch MLPs** (seeds 9417–9421). Each MLP is
+405 → 128 → 64 → 1. All models use the existing 405 demand features. Each MLP
+therefore has 10% of the final demand prediction; LightGBM has 50%. The context
+gate is disabled. Inference is NumPy only; PyTorch is isolated to training.
 
-Demand remains the validated **50/50 blend of LightGBM and a ten-epoch MLP**
-(405 → 128 → 64 → 1), using the same 405 features and unchanged fitted demand
-artifacts. The context gate is disabled. Inference requires no PyTorch import;
-training runs the MLP in an isolated subprocess.
+**Price:** unchanged **C2**, averaging five LightGBMs (seeds 9417–9421) on
+597 features: 571 base plus 26 Sydney temperature/solar shape features. Each
+member has 63 leaves, 1,200 trees, learning rate 0.02, feature sampling 0.50,
+minimum leaf samples 300, and the mean probability is compared strictly to 0.50.
 
-`code/forecast_package/` and `code/submission_package/` contain identical source
-and fitted artifacts. Run `python code/forecast_package/train.py CSV` to rebuild
-both tasks from the supplied dataset with the adopted defaults.
+`code/forecast_package/` and `code/submission_package/` have identical source
+and fitted artifacts. Rebuild from the supplied data with
+`python code/forecast_package/train.py CSV`; this trains one demand LightGBM,
+five price LightGBMs, then all five demand MLPs in an isolated process.
 
-The authoritative record is `results/current_model.json`. Build timings, package
-checks and source reports are under `results/current_c2_build/`. The previous
-current, commit **f92a38e** (571-feature single price LightGBM at 0.57), is preserved
-under `results/previous_current_f92a38e/`; older experiment results retain their
-original meanings and were not relabelled as C2 results.
+The authoritative configuration is `results/current_model.json`. Build/export
+checks and a clean rebuild smoke test are in `results/current_demand_mlp5_build/`.
+The previous C2/single-MLP current (`30d9c60`) is preserved in
+`results/previous_current_30d9c60/`; the older pre-C2 current (`f92a38e`) is
+preserved in `results/previous_current_f92a38e/`. Earlier reports retain their
+original model labels and should not be interpreted as the new current.
+
+Demand comparisons (50/50 weights, chronological biennial schedule):
+
+| Demand version | 2015–2024 MAPE | 2025–October 2026 MAPE | Holdout MAE |
+| --- | ---: | ---: | ---: |
+| Previous current: single LightGBM + single MLP | 2.2939% | 3.1797% | 219.78 MW |
+| **Current: single LightGBM + five MLPs** | **2.2367%** | **3.1197%** | **215.46 MW** |
+
+The holdout improvement is 0.0600 percentage points, paired seven-day bootstrap
+95% CI [0.0361, 0.0834]; the period was inspected previously. It improved in
+both years and 19/22 months. Full results, predictions and frozen protocol are
+in `results/demand_single_lgbm_5mlp_holdout/`. Development results are in
+`results/demand_seed_averaging_5seeds_2015_2024/`. Historical demand comparisons
+are in `results/demand_holdout_model_comparison.csv`.
 
 Saved C2 price comparisons (balanced accuracy):
 
-| Protocol | Current-recipe control | C2 | Notes |
+| Protocol | Previous 31-leaf recipe | C2 | Notes |
 | --- | ---: | ---: | --- |
 | Biennial, 2015–2022 | 79.173% | 79.337% | Three seeds each, cutoff 0.50 |
 | Biennial, 2023–2024 | 83.121% | 83.325% | Three seeds each, cutoff 0.50 |
 | Biennial, 2025–October 2026 | 85.320% | 85.451% | Three seeds each, reused period |
 | Fixed training through 2024, 2025–October 2026 | 85.316% | 85.621% | Single-seed control vs five-seed C2, cutoff 0.50 |
 
-These protocols differ; they are not a single untouched holdout comparison.
-The unchanged demand blend previously scored **3.180% MAPE** on its biennial
-2025–October 2026 evaluation. Full-data output checks verify package correctness,
-not out-of-sample accuracy.
+These price protocols differ from each other and must remain labelled.
+The source reports are in `results/current_c2_build/source_reports/`.
+Full-data package checks establish output validity and parity, not accuracy.
 
 Artifacts are built locally with **Python 3.12.12**. A complete rebuild under the
 exact prescribed Python 3.11 environment remains a separate compatibility check.

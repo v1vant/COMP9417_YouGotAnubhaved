@@ -23,7 +23,7 @@ from model import load_data, market_days, predict_task, training_table
 from c2_price import price_table, fit_c2
 
 SEED = 9417
-DEFAULT_SELECTION = {'demand': {'name': 'demand_boosted_3', 'config': {'family': 'boosted', 'leaves': 63, 'trees': 900, 'learning_rate': 0.025}, 'window_years': None, 'strategy': 'periodic_expanding', 'training_end': None}, 'price': {'name': 'price_c2_bag5', 'config': {'name': 'C2_bag5_cutoff0.50', 'threshold': 0.5, 'half_life_years': None, 'seeds': [9417, 9418, 9419, 9420, 9421], 'weather_shape': True, 'params': {'num_leaves': 63, 'learning_rate': 0.02, 'n_estimators': 1200, 'colsample_bytree': 0.5, 'min_child_samples': 300}, 'source': 'code/price_v3/choose_candidate.py (round 2)', 'family': 'c2'}, 'window_years': None, 'strategy': 'periodic_expanding', 'training_end': None}, 'strategy_selection_end': '2024-12-31', 'quick': False}
+DEFAULT_SELECTION = {'demand': {'name': 'demand_single_lgbm_mlp5', 'config': {'family': 'boosted', 'leaves': 63, 'trees': 900, 'learning_rate': 0.025}, 'window_years': None, 'strategy': 'periodic_expanding', 'training_end': None, 'mlp_seeds': [9417, 9418, 9419, 9420, 9421]}, 'price': {'name': 'price_c2_bag5', 'config': {'name': 'C2_bag5_cutoff0.50', 'threshold': 0.5, 'half_life_years': None, 'seeds': [9417, 9418, 9419, 9420, 9421], 'weather_shape': True, 'params': {'num_leaves': 63, 'learning_rate': 0.02, 'n_estimators': 1200, 'colsample_bytree': 0.5, 'min_child_samples': 300}, 'source': 'code/price_v3/choose_candidate.py (round 2)', 'family': 'c2'}, 'window_years': None, 'strategy': 'periodic_expanding', 'training_end': None}, 'strategy_selection_end': '2024-12-31', 'quick': False}
 
 
 def candidates(task, quick=False):
@@ -212,6 +212,8 @@ def main():
     manifest["mlp_epochs"] = 10
     with open(os.path.join(output, "demand_mlp_manifest.json"), encoding="utf-8") as handle:
         manifest["mlp_training"] = json.load(handle)
+    manifest["demand_mlp_members"] = [member["file"] for member in manifest["mlp_training"]["members"]]
+    manifest["demand_mlp_seeds"] = manifest["mlp_training"]["seeds"]
     manifest["inference"] = "LightGBM plus NumPy MLP; PyTorch used only in isolated training process"
     manifest["seconds"] = time.monotonic() - started
     with open(os.path.join(output, "manifest.json"), "w", encoding="utf-8") as handle:

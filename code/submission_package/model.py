@@ -241,6 +241,7 @@ class Forecaster:
                 if "n_jobs" in estimator.get_params():
                     estimator.set_params(n_jobs=2)
         self.demand_mlp = None
+        self.demand_mlp_members = []
         manifest_path = os.path.join(artifact_dir, "manifest.json")
         if os.path.exists(manifest_path):
             with open(manifest_path, encoding="utf-8") as handle:
@@ -248,14 +249,21 @@ class Forecaster:
             if manifest.get("demand_blend"):
                 if manifest["demand_blend"] != {"LightGBM": 0.5, "MLP": 0.5}:
                     raise ValueError("Expected frozen 50/50 demand blend")
-                with np.load(os.path.join(artifact_dir, "demand_mlp.npz"), allow_pickle=False) as saved:
-                    self.demand_mlp = {key: saved[key] for key in saved.files}
+                filenames = manifest.get("demand_mlp_members", ["demand_mlp.npz"])
+                if not filenames or len(set(filenames)) != len(filenames):
+                    raise ValueError("Expected distinct demand MLP member files")
+                for filename in filenames:
+                    with np.load(os.path.join(artifact_dir, filename), allow_pickle=False) as saved:
+                        self.demand_mlp_members.append({key: saved[key] for key in saved.files})
+                self.demand_mlp = self.demand_mlp_members[0]
 
     def predict(self, history: pd.DataFrame, weather_next: pd.DataFrame) -> pd.DataFrame:
         features = forecast_features(history, weather_next)
         demand = predict_task(self.models["demand"], features)
         if self.demand_mlp is not None:
-            demand = 0.5*demand + 0.5*predict_numpy_mlp(self.demand_mlp, features)
+            members = getattr(self, "demand_mlp_members", None) or [self.demand_mlp]
+            mlp_mean = np.mean([predict_numpy_mlp(member, features) for member in members], axis=0, dtype=np.float64)
+            demand = 0.5*demand + 0.5*mlp_mean
         price_features = (forecast_features(history, weather_next, weather_shape=True)
                           if self.models["price"].get("config", {}).get("weather_shape") else features)
         return pd.DataFrame({
