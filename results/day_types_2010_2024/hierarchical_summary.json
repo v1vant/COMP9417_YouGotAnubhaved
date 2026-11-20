@@ -1,0 +1,8 @@
+{
+ "pca_components": 5,
+ "chosen_k": 2,
+ "k_passing": [
+  2
+ ],
+ "threshold": 0.8
+}
