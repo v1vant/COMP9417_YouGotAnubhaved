@@ -1,0 +1,32 @@
+{
+  "seeds": [
+    9417,
+    9418,
+    9419,
+    9420,
+    9421
+  ],
+  "MLP_epochs": 10,
+  "demand_features": 405,
+  "blend_weights": {
+    "single_LightGBM": 0.5,
+    "mean_5_MLP": 0.5
+  },
+  "periods": [
+    [
+      2025,
+      "2023-12-31"
+    ],
+    [
+      2026,
+      "2025-12-31"
+    ]
+  ],
+  "evaluation_start": "2025-01-01",
+  "evaluation_end": "2026-10-31",
+  "tuning_on_holdout": false,
+  "holdout_previously_inspected": true,
+  "price": "C2 unchanged",
+  "source_sha256": "82db0ff63469bbcf50616f81b593c68a995adaa45c12efb3153e4ec7b361b872",
+  "comparison": "Frozen current single-LightGBM/single-MLP vs single-LightGBM/five-MLP only"
+}

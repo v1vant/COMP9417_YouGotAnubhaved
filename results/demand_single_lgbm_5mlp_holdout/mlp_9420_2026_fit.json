@@ -1,0 +1,8 @@
+{
+  "seed": 9420,
+  "forecast_year": 2026,
+  "training_end": "2025-12-31",
+  "training_rows": 279164,
+  "epochs": 10,
+  "seconds": 16.842739874962717
+}
