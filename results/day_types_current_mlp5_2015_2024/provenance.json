@@ -1,0 +1,14 @@
+{
+  "current_commit": "783e503",
+  "predictions_source": "results/demand_seed_averaging_5seeds_2015_2024/predictions.csv",
+  "predictions_sha256": "d62fabd524e2804379f48054d9bbb8b281e1e2dfe7ee6f4293b40b456d4097e2",
+  "cluster_source": "results/day_type_models.joblib",
+  "cluster_reference": "2010-2013",
+  "clusters_refitted": false,
+  "evaluation_start": "2015-01-01",
+  "evaluation_end": "2024-12-31",
+  "holdout_used": false,
+  "price_analysis_included": false,
+  "rows": 175344,
+  "days": 3653
+}
