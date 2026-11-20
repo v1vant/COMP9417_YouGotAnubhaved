@@ -2,6 +2,10 @@
 
 ## Current adopted model
 
+**`main` is the canonical current branch**, promoted from validated adoption
+commit `1aa8067`. The demand seed-averaging experiment remains separate on
+`feature/demand-seed-averaging` and has not been run.
+
 Price is **C2**, averaging probabilities from **five LightGBM models** (seeds
 9417–9421), using **597 features**: the existing 571 plus 26 Sydney temperature
 and solar weather-shape inputs. Each member has 63 leaves, 1,200 trees, learning

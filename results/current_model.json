@@ -1,6 +1,6 @@
 {
   "status": "current",
-  "branch": "feature/aligned-demand-features",
+  "branch": "main",
   "adoption_branch": "feature/current-c2",
   "previous_current_commit": "f92a38e",
   "demand_features": 405,
@@ -70,5 +70,6 @@
   "build_results": "results/current_c2_build",
   "previous_current_backup": "results/previous_current_f92a38e",
   "evaluation_note": "Adoption uses saved C2 research; no new holdout tuning. C2 reports use multiple protocols and seed counts; see source_reports.",
-  "compatibility_note": "Built locally with Python 3.12.12. Exact pinned Python 3.11 rebuild not verified."
+  "compatibility_note": "Built locally with Python 3.12.12. Exact pinned Python 3.11 rebuild not verified.",
+  "promoted_from_commit": "1aa8067"
 }

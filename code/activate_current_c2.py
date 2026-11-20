@@ -12,7 +12,7 @@ for name in ['model.py','train.py','mlp_train.py','demand_feature_columns.json',
 for path in (source/'artifacts').iterdir():
     if path.is_file(): shutil.copy2(path,staged/'artifacts'/path.name)
 selection=json.loads((ROOT/'results/final_config.json').read_text())
-record=dict(status='current',branch='feature/aligned-demand-features',adoption_branch='feature/current-c2',
+record=dict(status='current',branch='main',adoption_branch='feature/current-c2',
     previous_current_commit='f92a38e',demand_features=405,price_features=597,
     demand_weather_shape=False,price_weather_shape=True,price_probability_threshold=.5,
     price_model='C2: five LightGBM members, mean probabilities',price_seeds=[9417,9418,9419,9420,9421],
