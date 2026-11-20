@@ -1,0 +1,21 @@
+{
+  "validation": "passed",
+  "rows": 175344,
+  "new_LightGBM_fits": 24,
+  "new_MLP_fits": 24,
+  "seeds": [
+    9417,
+    9418,
+    9419,
+    9420,
+    9421
+  ],
+  "years_improved_vs_current": {
+    "bagged_LGBM_only_5": 5,
+    "bagged_MLP_only_5": 10,
+    "both_bagged_5": 10
+  },
+  "current_MAPE": 2.2939196774809525,
+  "production_unchanged": true,
+  "holdout_evaluated": false
+}

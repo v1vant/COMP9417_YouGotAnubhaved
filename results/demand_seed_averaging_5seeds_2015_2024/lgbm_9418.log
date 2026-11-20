@@ -1,0 +1,12 @@
+Fitting lgbm seed 9418 for 2015–2015, 86300 training rows
+Completed lgbm 9418 2015–2015: 79.8s
+Fitting lgbm seed 9418 for 2016–2017, 103820 training rows
+Completed lgbm 9418 2016–2017: 115.7s
+Fitting lgbm seed 9418 for 2018–2019, 138908 training rows
+Completed lgbm 9418 2018–2019: 175.9s
+Fitting lgbm seed 9418 for 2020–2021, 173948 training rows
+Completed lgbm 9418 2020–2021: 226.8s
+Fitting lgbm seed 9418 for 2022–2023, 209036 training rows
+Completed lgbm 9418 2022–2023: 284.0s
+Fitting lgbm seed 9418 for 2024–2024, 244076 training rows
+Completed lgbm 9418 2024–2024: 336.4s

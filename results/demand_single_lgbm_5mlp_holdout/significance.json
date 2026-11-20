@@ -1,0 +1,16 @@
+{
+  "MAPE_reduction_pp": 0.06002775187347456,
+  "relative_MAPE_reduction_percent": 1.887821437725437,
+  "paired_7day_MAPE_CI95_pp": [
+    0.036078904235842056,
+    0.08337200123145286
+  ],
+  "MAE_reduction_MW": 4.326619624494147,
+  "paired_7day_MAE_CI95_MW": [
+    2.6798483649583194,
+    5.934898074451476
+  ],
+  "days": 669,
+  "replicates": 5000,
+  "seed": 9417
+}

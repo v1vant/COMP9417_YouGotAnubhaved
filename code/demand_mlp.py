@@ -21,7 +21,7 @@ class DemandMLP(nn.Module):
         return self.network(x).squeeze(-1)
 
 
-def fit_demand_mlp(features, demand, epochs=5, validation=None, patience=10):
+def fit_demand_mlp(features, demand, epochs=5, validation=None, patience=10, seed=9417):
     if features.empty or not features.index.equals(demand.index):
         raise ValueError("Expected nonempty, aligned features and demand")
     if features.shape[1] != 405:
@@ -30,7 +30,7 @@ def fit_demand_mlp(features, demand, epochs=5, validation=None, patience=10):
         raise ValueError("Features must be finite")
     if not np.isfinite(demand.to_numpy()).all() or not demand.gt(0).all():
         raise ValueError("Demand must be finite and positive")
-    torch.manual_seed(9417)
+    torch.manual_seed(seed)
     torch.set_num_threads(2)
     scaler = StandardScaler()
     x = scaler.fit_transform(features).astype(np.float32)
@@ -61,7 +61,7 @@ def fit_demand_mlp(features, demand, epochs=5, validation=None, patience=10):
     )
     loader = DataLoader(
         dataset, batch_size=1024, shuffle=True, num_workers=0,
-        generator=torch.Generator().manual_seed(9417),
+        generator=torch.Generator().manual_seed(seed),
     )
     model = DemandMLP(x.shape[1])
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)

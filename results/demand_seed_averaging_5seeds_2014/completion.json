@@ -1,0 +1,15 @@
+{
+  "status": "complete",
+  "seconds": 133.5169428329682,
+  "seeds": [
+    9417,
+    9418,
+    9419,
+    9420,
+    9421
+  ],
+  "training_end": "2013-12-31",
+  "evaluation_year": 2014,
+  "holdout_evaluated": false,
+  "production_artifacts_modified": false
+}

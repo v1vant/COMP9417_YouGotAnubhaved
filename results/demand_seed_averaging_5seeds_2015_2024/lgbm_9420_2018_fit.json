@@ -1,0 +1,10 @@
+{
+  "kind": "lgbm",
+  "seed": 9420,
+  "effective_year": 2018,
+  "evaluation_end_year": 2019,
+  "training_start": "2010-01-29",
+  "training_end": "2017-12-31",
+  "training_rows": 138908,
+  "seconds": 202.20121674996335
+}

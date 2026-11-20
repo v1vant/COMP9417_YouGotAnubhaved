@@ -1,0 +1,23 @@
+{
+  "bagged_LGBM_only": {
+    "five_vs_three_MAPE_reduction_pp": -0.002303812797718909,
+    "paired_7day_CI95_pp": [
+      -0.005076428207072852,
+      0.0003025716650645433
+    ]
+  },
+  "bagged_MLP_only": {
+    "five_vs_three_MAPE_reduction_pp": 0.0035966915607398833,
+    "paired_7day_CI95_pp": [
+      -0.006162124301816599,
+      0.013336320801702464
+    ]
+  },
+  "both_bagged": {
+    "five_vs_three_MAPE_reduction_pp": 0.0012172664692178775,
+    "paired_7day_CI95_pp": [
+      -0.008584314211673737,
+      0.01119915521855881
+    ]
+  }
+}

@@ -1,0 +1,72 @@
+Fitting mlp seed 9420 for 2015–2015, 86300 training rows
+Epoch 1: loss=0.17690, time=0.63s
+Epoch 2: loss=0.11669, time=0.67s
+Epoch 3: loss=0.10107, time=0.73s
+Epoch 4: loss=0.09112, time=0.63s
+Epoch 5: loss=0.08486, time=0.66s
+Epoch 6: loss=0.07993, time=0.53s
+Epoch 7: loss=0.07625, time=0.50s
+Epoch 8: loss=0.07374, time=0.49s
+Epoch 9: loss=0.07040, time=0.42s
+Epoch 10: loss=0.06696, time=0.51s
+Completed mlp 9420 2015–2015: 6.9s
+Fitting mlp seed 9420 for 2016–2017, 103820 training rows
+Epoch 1: loss=0.16964, time=0.59s
+Epoch 2: loss=0.11570, time=0.59s
+Epoch 3: loss=0.10077, time=0.57s
+Epoch 4: loss=0.09194, time=0.73s
+Epoch 5: loss=0.08608, time=0.82s
+Epoch 6: loss=0.08154, time=0.92s
+Epoch 7: loss=0.07729, time=0.83s
+Epoch 8: loss=0.07451, time=0.72s
+Epoch 9: loss=0.07125, time=0.59s
+Epoch 10: loss=0.06958, time=0.62s
+Completed mlp 9420 2016–2017: 7.3s
+Fitting mlp seed 9420 for 2018–2019, 138908 training rows
+Epoch 1: loss=0.16527, time=0.69s
+Epoch 2: loss=0.11453, time=0.78s
+Epoch 3: loss=0.10179, time=1.09s
+Epoch 4: loss=0.09355, time=1.09s
+Epoch 5: loss=0.08738, time=1.07s
+Epoch 6: loss=0.08342, time=0.78s
+Epoch 7: loss=0.07927, time=0.82s
+Epoch 8: loss=0.07670, time=0.71s
+Epoch 9: loss=0.07420, time=0.70s
+Epoch 10: loss=0.07268, time=0.73s
+Completed mlp 9420 2018–2019: 8.8s
+Fitting mlp seed 9420 for 2020–2021, 173948 training rows
+Epoch 1: loss=0.16284, time=0.96s
+Epoch 2: loss=0.11525, time=0.91s
+Epoch 3: loss=0.10378, time=2.07s
+Epoch 4: loss=0.09515, time=1.58s
+Epoch 5: loss=0.09048, time=1.10s
+Epoch 6: loss=0.08652, time=0.83s
+Epoch 7: loss=0.08257, time=0.93s
+Epoch 8: loss=0.08010, time=0.91s
+Epoch 9: loss=0.07724, time=0.92s
+Epoch 10: loss=0.07509, time=0.89s
+Completed mlp 9420 2020–2021: 11.6s
+Fitting mlp seed 9420 for 2022–2023, 209036 training rows
+Epoch 1: loss=0.16598, time=2.98s
+Epoch 2: loss=0.11895, time=1.57s
+Epoch 3: loss=0.10714, time=1.34s
+Epoch 4: loss=0.09949, time=1.11s
+Epoch 5: loss=0.09399, time=1.17s
+Epoch 6: loss=0.09035, time=1.29s
+Epoch 7: loss=0.08731, time=1.24s
+Epoch 8: loss=0.08443, time=1.20s
+Epoch 9: loss=0.08333, time=1.11s
+Epoch 10: loss=0.08002, time=1.58s
+Completed mlp 9420 2022–2023: 15.4s
+Fitting mlp seed 9420 for 2024–2024, 244076 training rows
+Epoch 1: loss=0.16775, time=1.72s
+Epoch 2: loss=0.12500, time=1.64s
+Epoch 3: loss=0.11319, time=1.44s
+Epoch 4: loss=0.10521, time=1.28s
+Epoch 5: loss=0.10064, time=1.36s
+Epoch 6: loss=0.09610, time=1.41s
+Epoch 7: loss=0.09284, time=1.41s
+Epoch 8: loss=0.09037, time=1.64s
+Epoch 9: loss=0.08799, time=1.41s
+Epoch 10: loss=0.08588, time=1.48s
+Completed mlp 9420 2024–2024: 16.4s

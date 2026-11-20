@@ -1,0 +1,10 @@
+{
+  "source": "results/demand_seed_averaging_2014",
+  "seeds": [
+    9417,
+    9418,
+    9419
+  ],
+  "training_end": "2013-12-31",
+  "evaluation_year": 2014
+}

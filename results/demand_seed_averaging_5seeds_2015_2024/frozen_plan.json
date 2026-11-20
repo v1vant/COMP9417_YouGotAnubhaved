@@ -1,0 +1,53 @@
+{
+  "seeds": [
+    9417,
+    9418,
+    9419,
+    9420,
+    9421
+  ],
+  "MLP_epochs": 10,
+  "demand_features": 405,
+  "blend_weights": [
+    0.5,
+    0.5
+  ],
+  "LightGBM": {
+    "family": "boosted",
+    "leaves": 63,
+    "trees": 900,
+    "learning_rate": 0.025
+  },
+  "periods": [
+    [
+      2015,
+      2015
+    ],
+    [
+      2016,
+      2017
+    ],
+    [
+      2018,
+      2019
+    ],
+    [
+      2020,
+      2021
+    ],
+    [
+      2022,
+      2023
+    ],
+    [
+      2024,
+      2024
+    ]
+  ],
+  "threshold_tuning": false,
+  "holdout_evaluated": false,
+  "source_seed_9417": "Saved chronological forecasts from current demand recipe",
+  "maximum_LightGBM_workers": 2,
+  "threads_per_worker": 2,
+  "MLP_source_sha256": "82db0ff63469bbcf50616f81b593c68a995adaa45c12efb3153e4ec7b361b872"
+}
