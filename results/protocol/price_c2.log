@@ -1,0 +1,74 @@
+          model             source  cutoff_tuned  BA_tuned  accuracy_tuned  BA_fixed_0.50  accuracy_fixed_0.50
+ price_linear_0    run_experiments          0.58 79.273921       79.263699            NaN                  NaN
+ price_linear_1    run_experiments          0.55 79.210179       79.155251            NaN                  NaN
+price_boosted_2    run_experiments          0.57 81.742449       81.643836            NaN                  NaN
+price_boosted_3    run_experiments          0.59 81.721289       81.649543            NaN                  NaN
+       price_c2 run_price_protocol          0.53 83.348660       83.281963      83.258407              83.1621
+Stage 1 selects price_c2 (run_price_protocol)
+Policy frozen at tuned_2014: 0 retrains
+Retrain price/periodic_sliding effective 2016-01-01 (1/6)
+Retrain price/periodic_expanding effective 2016-01-01 (1/6)
+Retrain price/periodic_sliding effective 2018-01-01 (2/6)
+Retrain price/periodic_sliding effective 2020-01-01 (3/6)
+Retrain price/periodic_sliding effective 2022-01-01 (4/6)
+Retrain price/periodic_expanding effective 2018-01-01 (2/6)
+Retrain price/periodic_sliding effective 2024-01-01 (5/6)
+Retrain price/periodic_sliding effective 2026-01-01 (6/6)
+Policy periodic_sliding at tuned_2014: 6 retrains
+Retrain price/drift_sliding effective 2015-01-02 (1/6)
+Retrain price/periodic_expanding effective 2020-01-01 (3/6)
+Retrain price/drift_sliding effective 2015-07-24 (2/6)
+Retrain price/drift_sliding effective 2016-01-28 (3/6)
+Retrain price/periodic_expanding effective 2022-01-01 (4/6)
+Retrain price/drift_sliding effective 2016-08-08 (4/6)
+Retrain price/drift_sliding effective 2017-02-08 (5/6)
+Retrain price/drift_sliding effective 2017-09-02 (6/6)
+Policy drift_sliding at tuned_2014: 6 retrains
+Retrain price/periodic_expanding effective 2024-01-01 (5/6)
+Retrain price/periodic_expanding effective 2026-01-01 (6/6)
+Policy periodic_expanding at tuned_2014: 6 retrains
+Retrain price/periodic_expanding effective 2016-01-01 (1/6)
+Retrain price/periodic_expanding effective 2018-01-01 (2/6)
+Retrain price/periodic_expanding effective 2020-01-01 (3/6)
+Retrain price/periodic_expanding effective 2022-01-01 (4/6)
+Retrain price/periodic_expanding effective 2024-01-01 (5/6)
+Policy frozen at fixed_0.50: 0 retrains
+Retrain price/periodic_expanding effective 2026-01-01 (6/6)
+Policy periodic_expanding at fixed_0.50: 6 retrains
+Retrain price/drift_sliding effective 2015-01-02 (1/6)
+Retrain price/periodic_sliding effective 2016-01-01 (1/6)
+Retrain price/drift_sliding effective 2015-07-24 (2/6)
+Retrain price/drift_sliding effective 2016-01-28 (3/6)
+Retrain price/drift_sliding effective 2016-08-08 (4/6)
+Retrain price/periodic_sliding effective 2018-01-01 (2/6)
+Retrain price/drift_sliding effective 2017-02-08 (5/6)
+Retrain price/drift_sliding effective 2017-09-02 (6/6)
+Retrain price/periodic_sliding effective 2020-01-01 (3/6)
+Retrain price/periodic_sliding effective 2022-01-01 (4/6)
+Retrain price/periodic_sliding effective 2024-01-01 (5/6)
+Retrain price/periodic_sliding effective 2026-01-01 (6/6)
+Policy periodic_sliding at fixed_0.50: 6 retrains
+Policy drift_sliding at fixed_0.50: 6 retrains
+                        model     cutoff             period  accuracy  balanced_accuracy
+                    frozen_c2 tuned_2014 strategy_selection 79.325782          77.534642
+                    frozen_c2 tuned_2014            holdout 80.343797          80.135245
+                    frozen_c2 fixed_0.50 strategy_selection 79.570444          77.983660
+                    frozen_c2 fixed_0.50            holdout 80.832711          80.656609
+            adapted_c2_frozen tuned_2014 strategy_selection 79.325782          77.534642
+            adapted_c2_frozen tuned_2014            holdout 80.343797          80.135245
+adapted_c2_periodic_expanding tuned_2014 strategy_selection 80.784059          79.975440
+adapted_c2_periodic_expanding tuned_2014            holdout 85.506976          85.497049
+  adapted_c2_periodic_sliding tuned_2014 strategy_selection 80.074596          79.313411
+  adapted_c2_periodic_sliding tuned_2014            holdout 84.772048          84.740247
+     adapted_c2_drift_sliding tuned_2014 strategy_selection 79.089105          78.464321
+     adapted_c2_drift_sliding tuned_2014            holdout 79.428251          79.340361
+            adapted_c2_frozen fixed_0.50 strategy_selection 79.570444          77.983660
+            adapted_c2_frozen fixed_0.50            holdout 80.832711          80.656609
+adapted_c2_periodic_expanding fixed_0.50 strategy_selection 80.773793          80.190734
+adapted_c2_periodic_expanding fixed_0.50            holdout 85.466492          85.483450
+  adapted_c2_periodic_sliding fixed_0.50 strategy_selection 79.993613          79.436793
+  adapted_c2_periodic_sliding fixed_0.50            holdout 84.803189          84.794697
+     adapted_c2_drift_sliding fixed_0.50 strategy_selection 79.017246          78.622526
+     adapted_c2_drift_sliding fixed_0.50            holdout 79.683607          79.635752
+Final price policy: {"name": "price_c2", "selected_by_protocol": true, "config": {"name": "price_c2", "seeds": [9417, 9418, 9419, 9420, 9421], "params": {"num_leaves": 63, "learning_rate": 0.02, "n_estimators": 1200, "colsample_bytree": 0.5, "min_child_samples": 300}, "threshold": 0.53}, "window_years": null, "strategy": "periodic_expanding", "training_end": null}
+Outputs saved to /home/suhan/uni/comp9417/COMP9417_YouGotAnubhaved/results/protocol/price_c2 in 5455.1s

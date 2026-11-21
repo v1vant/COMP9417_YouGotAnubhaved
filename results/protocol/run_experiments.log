@@ -1,0 +1,56 @@
+2014 validation demand_linear_0: 3.022
+2014 validation demand_linear_1: 2.944
+2014 validation demand_boosted_2: 2.124
+2014 validation demand_boosted_3: 2.114
+2014 validation price_linear_0: -79.274
+2014 validation price_linear_1: -79.210
+2014 validation price_boosted_2: -81.742
+2014 validation price_boosted_3: -81.721
+Retrain demand/periodic_expanding effective 2016-01-01 (1/6)
+Retrain demand/periodic_expanding effective 2018-01-01 (2/6)
+Retrain demand/periodic_expanding effective 2020-01-01 (3/6)
+Retrain demand/periodic_expanding effective 2022-01-01 (4/6)
+Retrain demand/periodic_expanding effective 2024-01-01 (5/6)
+Retrain demand/periodic_expanding effective 2026-01-01 (6/6)
+Retrain price/periodic_expanding effective 2016-01-01 (1/6)
+Retrain price/periodic_expanding effective 2018-01-01 (2/6)
+Retrain price/periodic_expanding effective 2020-01-01 (3/6)
+Retrain price/periodic_expanding effective 2022-01-01 (4/6)
+Retrain price/periodic_expanding effective 2024-01-01 (5/6)
+Retrain price/periodic_expanding effective 2026-01-01 (6/6)
+Retrain demand/periodic_sliding effective 2016-01-01 (1/6)
+Retrain demand/periodic_sliding effective 2018-01-01 (2/6)
+Retrain demand/periodic_sliding effective 2020-01-01 (3/6)
+Retrain demand/periodic_sliding effective 2022-01-01 (4/6)
+Retrain demand/periodic_sliding effective 2024-01-01 (5/6)
+Retrain demand/periodic_sliding effective 2026-01-01 (6/6)
+Retrain price/periodic_sliding effective 2016-01-01 (1/6)
+Retrain price/periodic_sliding effective 2018-01-01 (2/6)
+Retrain price/periodic_sliding effective 2020-01-01 (3/6)
+Retrain price/periodic_sliding effective 2022-01-01 (4/6)
+Retrain price/periodic_sliding effective 2024-01-01 (5/6)
+Retrain price/periodic_sliding effective 2026-01-01 (6/6)
+Retrain demand/drift_sliding effective 2015-01-02 (1/6)
+Retrain demand/drift_sliding effective 2015-07-24 (2/6)
+Retrain demand/drift_sliding effective 2016-01-28 (3/6)
+Retrain demand/drift_sliding effective 2016-08-08 (4/6)
+Retrain demand/drift_sliding effective 2017-02-07 (5/6)
+Retrain demand/drift_sliding effective 2017-09-02 (6/6)
+Retrain price/drift_sliding effective 2015-01-02 (1/6)
+Retrain price/drift_sliding effective 2015-07-24 (2/6)
+Retrain price/drift_sliding effective 2016-01-28 (3/6)
+Retrain price/drift_sliding effective 2016-08-08 (4/6)
+Retrain price/drift_sliding effective 2017-02-08 (5/6)
+Retrain price/drift_sliding effective 2017-09-02 (6/6)
+                     model  period      MAPE        MAE  accuracy  balanced_accuracy
+               baseline_1d holdout  7.533000 532.345776 76.958769          76.974656
+               baseline_7d holdout 10.000662 703.824671 73.066143          73.031402
+          frozen_boosted_2 holdout  5.273324 361.767890 78.920653          78.691873
+          frozen_boosted_3 holdout  5.187377 353.635476 79.390882          79.173021
+           frozen_linear_0 holdout  6.435841 429.583739 67.825112          67.356934
+           frozen_linear_1 holdout  6.340201 422.338699 67.828226          67.357666
+            adapted_frozen holdout  5.187377 353.635476 78.920653          78.691873
+adapted_periodic_expanding holdout  3.665529 253.491219 82.607748          82.543786
+  adapted_periodic_sliding holdout  3.875466 271.230822 82.953413          82.901672
+     adapted_drift_sliding holdout  5.302461 353.994003 79.204036          79.039756
+Experiment outputs saved to ../results/protocol/run_experiments in 1565.9s
