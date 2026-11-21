@@ -22,7 +22,7 @@ for k, r in R.items():
     for trig in ("input", "error"):
         for b in r[trig]["baselines"]:
             bl.append({"model": NAMES[k], "policy": f"{trig}-triggered", "effective from": b["effective_day"],
-                       "detectors fitted on": b["fit"], "reference": b["reference"], "k (day types)": b["k"],
+                       "detectors fitted on": b["fit"], "reference": b["reference"],
                        "input threshold": round(b["input_threshold"], 4), "error threshold": round(b["error_threshold"], 4)})
         for variant, src in (("re-baselined", r), ("fixed 2014 baseline", O[k])):
             L = pd.Series([x["error"] for x in src[trig]["log"]], index=IDX)

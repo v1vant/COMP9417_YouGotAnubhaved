@@ -1,17 +1,17 @@
 model,policy,period,signals of the triggering detector,retrains effective,mean daily error,frozen mean daily error
-Demand · LightGBM (63 leaves),input-triggered,2015-24,113,6,3.117,3.122
-Demand · LightGBM (63 leaves),input-triggered,2025-26,24,0,5.364,5.187
+Demand · LightGBM (63 leaves),input-triggered,2015-24,58,6,3.05,3.122
+Demand · LightGBM (63 leaves),input-triggered,2025-26,8,0,5.278,5.187
 Demand · LightGBM (63 leaves),error-triggered,2015-24,69,6,2.999,3.122
 Demand · LightGBM (63 leaves),error-triggered,2025-26,23,0,5.256,5.187
-Demand · Ridge (α = 1000),input-triggered,2015-24,113,6,4.123,4.276
-Demand · Ridge (α = 1000),input-triggered,2025-26,24,0,6.266,6.34
+Demand · Ridge (α = 1000),input-triggered,2015-24,58,6,4.231,4.276
+Demand · Ridge (α = 1000),input-triggered,2025-26,8,0,7.139,6.34
 Demand · Ridge (α = 1000),error-triggered,2015-24,65,6,4.182,4.276
 Demand · Ridge (α = 1000),error-triggered,2025-26,21,0,6.978,6.34
-"Price · LightGBM (31 leaves), cut-off 0.5",input-triggered,2015-24,113,6,21.93,21.79
-"Price · LightGBM (31 leaves), cut-off 0.5",input-triggered,2025-26,24,0,20.288,20.472
+"Price · LightGBM (31 leaves), cut-off 0.5",input-triggered,2015-24,58,6,21.23,21.79
+"Price · LightGBM (31 leaves), cut-off 0.5",input-triggered,2025-26,8,0,20.102,20.472
 "Price · LightGBM (31 leaves), cut-off 0.5",error-triggered,2015-24,41,6,21.302,21.79
 "Price · LightGBM (31 leaves), cut-off 0.5",error-triggered,2025-26,5,0,20.513,20.472
-"Price · Logistic (C = 0.01), cut-off 0.5",input-triggered,2015-24,113,6,29.018,30.552
-"Price · Logistic (C = 0.01), cut-off 0.5",input-triggered,2025-26,24,0,28.572,31.079
+"Price · Logistic (C = 0.01), cut-off 0.5",input-triggered,2015-24,58,6,23.76,30.552
+"Price · Logistic (C = 0.01), cut-off 0.5",input-triggered,2025-26,8,0,22.867,31.079
 "Price · Logistic (C = 0.01), cut-off 0.5",error-triggered,2015-24,26,6,23.752,30.552
 "Price · Logistic (C = 0.01), cut-off 0.5",error-triggered,2025-26,4,0,22.661,31.079

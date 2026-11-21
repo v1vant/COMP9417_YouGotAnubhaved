@@ -3,12 +3,13 @@
 Same models, detectors and retraining rules as simulate_drift.py (statistic: 28-day rolling mean; threshold: 99th
 percentile of the reference's 28-day rolling means; >= 28 days between signals; retrain from D+1 on the 4 years up to the
 end of D; budget 6 per model and strategy; no minimum gap between retrains), except that BOTH detectors are re-baselined on
-the data seen so far, at the start and at every retrain (refitting the clustering is part of that retraining):
-  input detector  - PCA (95%) + k-means (k = 2..6 by silhouette, as in analysis_tools.day_type_analysis) refitted on the
-                    first 3 years of the 4-year window; reference = the drift scores of the window's last year.
+the data seen so far, at the start and at every retrain (refitting the weather scorer is part of that retraining):
+  input detector  - weather scorer (weather_drift.py: seasonal climatology, seasonal spread and covariance of the
+                    Sydney / Melbourne / Brisbane weather summaries) refitted on the first 3 years of the 4-year window;
+                    reference = the weather drift scores of the window's last year.
   error detector  - the model refitted on the first 3 years of the window; reference = its daily errors on the last year.
   The deployed model is fitted on the whole window; after each reset the 28-day window starts empty.
-At the start (2015) this is the original setup: clusters on 2010-2013, model on 2010-2013, reference 2014.
+At the start (2015) this is the original setup: weather scorer on 2010-2013, model on 2010-2013, reference 2014.
 Optional: INPUT_QUANTILE=0.999 uses the 99.9th percentile for the input detector (output in rebaselined_input99.9/).
 Run from the repo root: python plots/simulate_drift_rebaselined.py"""
 import json, os, sys, time
@@ -42,40 +43,17 @@ class Detector:
         return False
 
 
-def day_type_scorer(shapes_fit):
-    """Fit the team's day-type pipeline on mean-normalised day shapes; return a function scoring new shapes."""
-    from sklearn.cluster import KMeans
-    from sklearn.decomposition import PCA
-    from sklearn.metrics import silhouette_score
-    from analysis_tools import SEED
-    pca = PCA(n_components=0.95, svd_solver="full").fit(shapes_fit)
-    z = pca.transform(shapes_fit)
-    best = None
-    for k in range(2, 7):
-        km = KMeans(n_clusters=k, n_init=20, random_state=SEED).fit(z)
-        s = silhouette_score(z, km.labels_, sample_size=min(1000, len(z)), random_state=SEED)
-        if best is None or s > best[0]:
-            best = (s, km)
-    km = best[1]
-
-    def score(shapes):
-        e = pca.transform(shapes)
-        dist = np.min(km.transform(e), axis=1)
-        recon = np.linalg.norm(shapes - pca.inverse_transform(e), axis=1)
-        return np.sqrt(dist ** 2 + recon ** 2)
-    return score, km.n_clusters
-
-
 def run_model(key):
     base.step1_package()
     from model import market_days
     from train import fit_model
     task, config = base.MODELS[key]
-    x, y, score0 = base.data()                                    # score0: original team scores (2010-13 clusters)
+    from weather_drift import daily_weather, weather_scorer
+    x, y = base.data()
     days = market_days(x.index)
     col = "demand" if task == "demand" else "price"
     uday = pd.DatetimeIndex(np.unique(np.asarray(days)))
-    D = y["demand"].to_numpy().reshape(-1, 48); shapes = D / D.mean(axis=1, keepdims=True)   # one row per market day
+    weather = daily_weather(base.CSV).reindex(uday)               # one row per market day
     sim_days = pd.date_range(base.START, base.END, freq="D")
     rows = np.asarray((days >= base.START) & (days <= base.END))
     xs, actual = x[rows], y[col].to_numpy()[rows]
@@ -83,24 +61,22 @@ def run_model(key):
 
     def reset(day_end):
         """Baseline at the end of day_end (window = 4 years up to day_end, or 2010-2014 at the start)."""
-        if day_end == pd.Timestamp("2014-12-31"):
+        if day_end == pd.Timestamp("2014-12-31"):                   # identical to the fixed-baseline run
             fit_days, ref_days = uday[uday.year <= 2013], uday[uday.year == 2014]
-            sc = score0.reindex(uday).to_numpy()                   # team clustering, identical to the original
-            inp_ref, scores_all, k = sc[np.isin(uday, ref_days)], sc, 2
         else:
             win = uday[(uday <= day_end) & (uday > day_end - pd.DateOffset(years=base.WINDOW_YEARS))]
             ref_days = win[win > day_end - pd.DateOffset(years=1)]; fit_days = win[win <= day_end - pd.DateOffset(years=1)]
-            scorer, k = day_type_scorer(shapes[np.isin(uday, fit_days)])
-            scores_all = np.full(len(uday), np.nan)
-            later = uday >= ref_days.min()
-            scores_all[later] = scorer(shapes[later])
-            inp_ref = scores_all[np.isin(uday, ref_days)]
+        scorer = weather_scorer(weather.loc[fit_days])
+        scores_all = np.full(len(uday), np.nan)
+        later = uday >= ref_days.min()
+        scores_all[later] = scorer(weather[later]).to_numpy()
+        inp_ref = scores_all[np.isin(uday, ref_days)]
         fm = np.isin(np.asarray(days), np.asarray(fit_days)); rm = np.isin(np.asarray(days), np.asarray(ref_days))
         ref_model = fit_model(task, config, x[fm], y[fm])
         err_ref = base.daily_error(task, y[col].to_numpy()[rm], base.predict(task, ref_model, x[rm]))
         return Detector(inp_ref, quantile=INPUT_Q), Detector(err_ref), scores_all, {
             "baseline_end": str(day_end.date()), "fit": f"{fit_days.min().date()}..{fit_days.max().date()}",
-            "reference": f"{ref_days.min().date()}..{ref_days.max().date()}", "k": int(k)}
+            "reference": f"{ref_days.min().date()}..{ref_days.max().date()}"}
 
     frozen = fit_model(task, config, x[days.year <= 2014], y[days.year <= 2014])
     frozen_pred = base.predict(task, frozen, xs)

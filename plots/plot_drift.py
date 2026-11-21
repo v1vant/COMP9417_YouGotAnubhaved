@@ -16,8 +16,8 @@ setup, summary, retr = [], [], []
 for k, r in R.items():
     unit = "MAPE (%)" if r["task"] == "demand" else "error rate (% of half-hours wrong)"
     setup.append({"model": NAMES[k], "detector": "input",
-                  "monitored statistic": "28-day rolling mean of the daily day-type drift score",
-                  "reference period": "2014 (day types fitted on 2010-2013)",
+                  "monitored statistic": "28-day rolling mean of the daily weather drift score (seasonally adjusted Mahalanobis distance)",
+                  "reference period": "2014 (weather climatology and covariance fitted on 2010-2013)",
                   "threshold": round(r["input"]["input_threshold"], 4),
                   "how chosen": "99th percentile of the 28-day rolling means over 2014"})
     setup.append({"model": NAMES[k], "detector": "error",

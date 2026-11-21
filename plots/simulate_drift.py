@@ -4,9 +4,9 @@ Models (Step 1 candidates, best per family on 2014; price cut-off fixed at 0.5):
   demand LightGBM 63 leaves, demand Ridge alpha=1000, price LightGBM 31 leaves, price Logistic C=0.01.
 Step 1 code with the original 240 features: code/forecast_package of branch price-c2 (extracted at run time).
 Detectors: analysis_tools.OnlineDetector (the team implementation), exactly as in run_experiments.simulate_policy:
-  input detector  - daily value: day-type drift score of day D (distance of D's mean-normalised demand shape to the nearest
-                    2010-2013 k-means centroid, PCA distance + reconstruction error; day_type_analysis);
-                    reference: the 2014 daily scores.
+  input detector  - daily value: weather drift score of day D (weather_drift.py: Mahalanobis distance of D's
+                    seasonally-adjusted temperature / humidity / cloud / solar summaries for Sydney, Melbourne and
+                    Brisbane, climatology and covariance fitted on 2010-2013); reference: the 2014 daily scores.
   error detector  - daily value: the deployed model's error on day D (demand: MAPE %, price: % of half-hours wrong);
                     reference: the daily 2014 errors of the same model fitted on 2010-2013 (its Step 1 validation year).
   both            - statistic: 28-day rolling mean; threshold: 99th percentile of the reference's 28-day rolling means;
@@ -42,21 +42,24 @@ def step1_package():
         tmp = os.path.join(d, f"{f}.{os.getpid()}.tmp")
         open(tmp, "w").write(src)
         os.replace(tmp, os.path.join(d, f))
-    sys.path[:0] = [d, CODE]
+    sys.path[:0] = [d, CODE, HERE]
 
 
 def data():
     cache = os.path.join(OUT, "cache_table.pkl")
     if not os.path.exists(cache):
-        from model import load_data, training_table, market_days
-        from analysis_tools import day_type_analysis
-        frame = load_data(CSV)
-        x, y = training_table(frame)
+        from model import load_data, training_table
+        x, y = training_table(load_data(CSV))
         assert x.shape[1] == 240
-        types, _, _, info = day_type_analysis(frame)          # PCA + k-means fitted on 2010-2013 (fixed)
-        assert info["reference"] == "2010-2013"
-        pd.to_pickle((x, y, types["input_drift_score"]), cache)
-    return pd.read_pickle(cache)
+        pd.to_pickle((x, y), cache)
+    return pd.read_pickle(cache)[:2]                          # older caches also hold a third (unused) item
+
+
+def weather_scores(fit_end_year=2013):
+    """Daily weather drift scores for every market day, scorer fitted on 2010..fit_end_year (fixed)."""
+    from weather_drift import daily_weather, weather_scorer
+    w = daily_weather(CSV)
+    return weather_scorer(w[w.index.year <= fit_end_year])(w)
 
 
 def predict(task, model, rows):
@@ -77,7 +80,8 @@ def run_model(key):
     from train import fit_model
     from analysis_tools import OnlineDetector
     task, config = MODELS[key]
-    x, y, score = data()
+    x, y = data()
+    score = weather_scores()                                         # weather scorer fitted on 2010-2013
     days = market_days(x.index)
     col = "demand" if task == "demand" else "price"
     # error-detector reference: the model fitted on 2010-2013, its daily errors on 2014
