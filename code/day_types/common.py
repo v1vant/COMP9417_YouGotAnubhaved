@@ -1,7 +1,8 @@
 """Shared helpers for the day-type scripts in this folder.
 
-Data are read with nrows from the start of the repo CSV, so rows after the requested market day (in particular the
-2025-2026 holdout) are never loaded. Clustering uses the team's day_type_analysis in code/analysis_tools.py
+Data are read with nrows from the start of the repo CSV, so rows after the requested market day are never loaded.
+Figures that go past 2014 run to the end of the data (END = 2026-10-31), including 2025-2026; these are descriptive
+day-type figures, not model testing, and nothing is chosen or tuned from them. Clustering uses the team's day_type_analysis in code/analysis_tools.py
 (shape = day / day mean; PCA 95% + k-means, both fitted on 2010-2013 only)."""
 import os, sys, tempfile
 import numpy as np, pandas as pd
@@ -10,7 +11,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 CODE = os.path.dirname(HERE)
 ROOT = os.path.dirname(CODE)
 CSV = os.path.join(ROOT, "data", "nem_weather_halfhourly_2010_2026.csv")
-OUT = os.path.join(ROOT, "results", "day_types_2010_2024")
+OUT = os.path.join(ROOT, "results", "day_types_2010_2026")
+END = "2026-10-31"  # last market day in the data
 sys.path.insert(0, CODE)
 import analysis_tools as team  # noqa: E402  (the team's day-type code, unmodified)
 
@@ -28,7 +30,7 @@ def load_demand(last_day):
     return frame
 
 
-def team_day_types(last_day="2024-12-31"):
+def team_day_types(last_day=END):
     types, shares, typical, info = team.day_type_analysis(load_demand(last_day))
     assert info["reference"] == "2010-2013" and info["selected_clusters"] == 2
     return types, shares, typical, info
