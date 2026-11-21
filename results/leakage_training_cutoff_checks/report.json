@@ -1,0 +1,43 @@
+{
+  "status": "passed",
+  "tests_run": 20,
+  "skipped": 0,
+  "seconds": 5.647659957990982,
+  "python": "3.12.12",
+  "production_artifacts_unchanged": true,
+  "production_artifact_sha256": {
+    "code/forecast_package/artifacts/demand_mlp.npz": "3be1540d4fab7f2a9e8937d38838c215a1640d316bf41043ba1e7f8e88d4b1af",
+    "code/forecast_package/artifacts/demand_mlp_manifest.json": "4cd034d1f9570621d5878cb5522bb35c6e9d52b0a40aea36e35b9a1152df4bc6",
+    "code/forecast_package/artifacts/manifest.json": "54556ea85e80752a3fb50fd1b2f50ecc8008e0ed91e7eb4988ea9581ab9622a7",
+    "code/forecast_package/artifacts/models.joblib": "6e4789681aa58f823580f01eacb744f81c8474e4014ea4a5fb81f8293f233c44",
+    "code/forecast_package/artifacts/demand_mlp_seed_9418.npz": "bc41ff81dcd6ec577ee4ab17f3c299eccac1268f3a2c2e09791facbb14eb1180",
+    "code/forecast_package/artifacts/demand_mlp_seed_9419.npz": "ebf49221f7d07ea71ba8fc06428fadff9cac66fbe32e283bf4f4981ce9d3019f",
+    "code/forecast_package/artifacts/blend_training_selection.json": "5684992291732d6c6c00f377547b3a74e860164da1f0501d1cc7088825fe7f68",
+    "code/forecast_package/artifacts/demand_mlp_seed_9421.npz": "3451140e205fe9bb049a7cd84bcdee0c22ef4839053ace614379b3dca9cf191b",
+    "code/forecast_package/artifacts/demand_mlp_seed_9420.npz": "5b1bcdb6e92ead1fab16c73d342e67ff353f86634699e8793e76d4eb74475d69",
+    "code/submission_package/artifacts/demand_mlp.npz": "3be1540d4fab7f2a9e8937d38838c215a1640d316bf41043ba1e7f8e88d4b1af",
+    "code/submission_package/artifacts/manifest.json.fetch": "9d8d9e49057112c321b461f63fea5046c497266da89576b3993390bf9ba199f6",
+    "code/submission_package/artifacts/demand_mlp_manifest.json": "4cd034d1f9570621d5878cb5522bb35c6e9d52b0a40aea36e35b9a1152df4bc6",
+    "code/submission_package/artifacts/manifest.json": "54556ea85e80752a3fb50fd1b2f50ecc8008e0ed91e7eb4988ea9581ab9622a7",
+    "code/submission_package/artifacts/models.joblib": "6e4789681aa58f823580f01eacb744f81c8474e4014ea4a5fb81f8293f233c44",
+    "code/submission_package/artifacts/demand_mlp_seed_9418.npz": "bc41ff81dcd6ec577ee4ab17f3c299eccac1268f3a2c2e09791facbb14eb1180",
+    "code/submission_package/artifacts/demand_mlp_seed_9419.npz": "ebf49221f7d07ea71ba8fc06428fadff9cac66fbe32e283bf4f4981ce9d3019f",
+    "code/submission_package/artifacts/blend_training_selection.json": "5684992291732d6c6c00f377547b3a74e860164da1f0501d1cc7088825fe7f68",
+    "code/submission_package/artifacts/demand_mlp_seed_9421.npz": "3451140e205fe9bb049a7cd84bcdee0c22ef4839053ace614379b3dca9cf191b",
+    "code/submission_package/artifacts/demand_mlp_seed_9420.npz": "5b1bcdb6e92ead1fab16c73d342e67ff353f86634699e8793e76d4eb74475d69"
+  },
+  "new_tests": [
+    "demand retraining invariance",
+    "C2 retraining and probability invariance",
+    "MLP scaler weights export and prediction invariance",
+    "deliberate lookahead detection"
+  ],
+  "synthetic_training_cutoff": "2015-12-31",
+  "synthetic_forecast_day": "2016-01-01",
+  "LightGBM_trees": 8,
+  "MLP_epochs": 2,
+  "future_market_values_perturbed": true,
+  "weather_after_forecast_day_perturbed": true,
+  "forecast_day_weather_preserved": true,
+  "scope": "Real walk-forward cutoff path and fitters; synthetic fast regression tests, not full-budget model rebuilds."
+}

@@ -181,6 +181,23 @@ To run only the model tests:
 python -m unittest discover -s code/tests -v
 ```
 
+For the fast end-to-end cutoff leakage checks only:
+
+```
+python -m unittest discover -s code/tests -p test_training_cutoff_leakage.py -v
+```
+
+These use synthetic data, eight-tree demand/C2 models and a two-epoch MLP.
+They perturb forecast-day and later market values plus weather after the forecast
+day, keeping the permitted forecast-day weather fixed. They exercise the actual
+walk-forward retraining mask and compare training features/targets, exact fitted
+trees, probabilities and predictions. An isolated MLP process checks the fitted
+scaler, weights and NumPy export. A deliberately leaky next-day-demand feature
+must fail the invariance check. Production artifacts are checked for unchanged
+hashes. The MLP check requires PyTorch and is skipped if it is unavailable.
+These are fast regression tests, not a full five-seed historical rebuild or
+proof against all forms of leakage and repeated-holdout selection bias.
+
 ZIP creation, ZIP checking, and clean-rebuild helper scripts have been removed.
 Historical validation results have been preserved; the generated ZIP archives have been
 removed. Rerunning training does not create archives.
