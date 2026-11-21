@@ -1,7 +1,7 @@
 """Plots and tables for simulate_drift.py: model error (28-day rolling mean of daily error, i.e. the error detector's
 statistic) under input-triggered and error-triggered retraining, against the frozen model, with detector signals and
 the days retrains take effect. Run from the repo root after simulate_drift.py."""
-import json, os, tempfile
+import itertools, json, os, tempfile
 import numpy as np, pandas as pd
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))          # plots/ -> repo root
@@ -56,9 +56,9 @@ plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 9.5, 'axes.title
 
 def figure(task, fname, ylabel):
     keys = [k for k in NAMES if R[k]["task"] == task]
-    fig, axes = plt.subplots(4, 1, figsize=(14, 14), sharex=True)
-    for row, (k, trig) in enumerate([(k, t) for k in keys for t in ("input", "error")]):
-        ax, r = axes[row], R[k]
+    fig, axes = plt.subplots(2, 2, figsize=(22, 9.5), sharex=True)   # rows: models; columns: input / error
+    for (row, k), (col, trig) in itertools.product(enumerate(keys), enumerate(("input", "error"))):
+        ax, r = axes[row, col], R[k]
         L = pd.DataFrame(r[trig]["log"]); L["day"] = pd.to_datetime(L.day); L = L.set_index("day")
         fz = pd.Series(r["frozen_daily_error"], index=L.index).rolling(28).mean()
         ax.plot(fz.index, fz.values, color='#98A2B3', lw=1.1, label='Frozen model (trained 2010–2014)')
@@ -83,16 +83,17 @@ def figure(task, fname, ylabel):
         ax.set_title(f'{NAMES[k]} — {trig}-triggered retraining ({n} retrain{"s" if n != 1 else ""}, budget 6)', loc='left', pad=40)
         ax.set_ylabel(ylabel)
         ax.grid(axis='y', color='#EAECF0', lw=.7); ax.set_axisbelow(True)
-    axes[-1].set_xlabel('Day (28-day rolling mean of daily error; dotted line = start of 2025)')
-    axes[-1].set_xlim(pd.Timestamp("2015-01-01"), pd.Timestamp("2026-11-01"))
+    for ax in axes[-1]:
+        ax.set_xlabel('Day (28-day rolling mean of daily error; dotted line = start of 2025)')
+    axes[-1, 0].set_xlim(pd.Timestamp("2015-01-01"), pd.Timestamp("2026-11-01"))
     handles = [Line2D([], [], color='#98A2B3', lw=1.1, label='Frozen model (trained 2010–2014)'),
                Line2D([], [], color=COL["input"], lw=1.5, label='Retrained when the input detector signals'),
                Line2D([], [], color=COL["error"], lw=1.5, label='Retrained when the error detector signals'),
                Line2D([], [], color='#344054', lw=1, ls='--', label='Error-detector threshold (99th pct of 2014)'),
                Line2D([], [], color='#475467', marker='|', ls='', ms=10, label='Detector signal (input / error; faint = not triggering)'),
                Line2D([], [], color='#475467', marker='^', ls='', ms=8, label='Retrain takes effect (next day)')]
-    fig.legend(handles=handles, loc='lower center', ncol=3, fontsize=8.5, bbox_to_anchor=(.5, -.005))
-    fig.tight_layout(rect=(0, .04, 1, 1))
+    fig.legend(handles=handles, loc='lower center', ncol=6, fontsize=8.5, bbox_to_anchor=(.5, -.005))
+    fig.tight_layout(rect=(0, .035, 1, 1), w_pad=4)
     for ext in ("png", "pdf"):
         fig.savefig(os.path.join(OUT, f"{fname}.{ext}"), dpi=200)
     print("saved", os.path.join(OUT, fname + ".png"))
