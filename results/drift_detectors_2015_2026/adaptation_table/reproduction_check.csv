@@ -1,0 +1,5 @@
+row,period,MAPE diff,MAE diff,accuracy diff,balanced_accuracy diff
+frozen,2015-2024,-4.440892098500626e-16,0.0,0.0,0.0
+frozen,2025-Oct 2026,0.0,0.0,0.0,0.0
+original,2015-2024,0.0,0.0,0.0,0.0
+original,2025-Oct 2026,0.0,-5.684341886080802e-14,0.0,0.0

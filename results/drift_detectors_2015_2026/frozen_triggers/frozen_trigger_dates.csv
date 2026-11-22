@@ -1,0 +1,409 @@
+detector,model,day
+input (weather),all,2015-04-07
+input (weather),all,2016-05-11
+input (weather),all,2016-07-20
+input (weather),all,2017-02-17
+input (weather),all,2017-04-03
+input (weather),all,2017-06-23
+input (weather),all,2017-07-21
+input (weather),all,2017-08-18
+input (weather),all,2017-09-28
+input (weather),all,2018-02-10
+input (weather),all,2018-03-27
+input (weather),all,2018-04-24
+input (weather),all,2018-05-22
+input (weather),all,2018-06-19
+input (weather),all,2018-07-17
+input (weather),all,2018-08-14
+input (weather),all,2018-09-11
+input (weather),all,2019-02-26
+input (weather),all,2019-03-26
+input (weather),all,2019-04-23
+input (weather),all,2019-05-21
+input (weather),all,2019-06-18
+input (weather),all,2019-07-16
+input (weather),all,2019-08-13
+input (weather),all,2019-09-10
+input (weather),all,2019-11-12
+input (weather),all,2019-12-10
+input (weather),all,2020-03-21
+input (weather),all,2020-04-20
+input (weather),all,2020-05-18
+input (weather),all,2020-06-15
+input (weather),all,2020-07-13
+input (weather),all,2020-08-10
+input (weather),all,2021-04-10
+input (weather),all,2021-05-08
+input (weather),all,2021-06-05
+input (weather),all,2021-07-03
+input (weather),all,2021-07-31
+input (weather),all,2022-05-07
+input (weather),all,2022-06-04
+input (weather),all,2022-07-02
+input (weather),all,2022-07-30
+input (weather),all,2022-11-26
+input (weather),all,2022-12-24
+input (weather),all,2023-02-20
+input (weather),all,2023-03-20
+input (weather),all,2023-04-17
+input (weather),all,2023-05-15
+input (weather),all,2023-06-12
+input (weather),all,2023-07-10
+input (weather),all,2023-08-07
+input (weather),all,2023-09-04
+input (weather),all,2023-10-02
+input (weather),all,2024-03-31
+input (weather),all,2024-05-29
+input (weather),all,2024-06-26
+input (weather),all,2024-07-24
+input (weather),all,2024-08-21
+input (weather),all,2025-06-13
+input (weather),all,2025-07-11
+input (weather),all,2025-08-08
+input (weather),all,2025-10-21
+input (weather),all,2025-12-04
+input (weather),all,2026-01-01
+input (weather),all,2026-02-18
+input (weather),all,2026-04-17
+error,Demand · LightGBM (63 leaves),2015-01-01
+error,Demand · LightGBM (63 leaves),2016-01-11
+error,Demand · LightGBM (63 leaves),2016-12-31
+error,Demand · LightGBM (63 leaves),2017-01-28
+error,Demand · LightGBM (63 leaves),2017-02-25
+error,Demand · LightGBM (63 leaves),2017-12-24
+error,Demand · LightGBM (63 leaves),2018-01-21
+error,Demand · LightGBM (63 leaves),2018-02-18
+error,Demand · LightGBM (63 leaves),2018-04-05
+error,Demand · LightGBM (63 leaves),2018-10-04
+error,Demand · LightGBM (63 leaves),2018-12-26
+error,Demand · LightGBM (63 leaves),2019-01-23
+error,Demand · LightGBM (63 leaves),2019-02-20
+error,Demand · LightGBM (63 leaves),2019-06-17
+error,Demand · LightGBM (63 leaves),2019-09-03
+error,Demand · LightGBM (63 leaves),2019-12-22
+error,Demand · LightGBM (63 leaves),2020-01-19
+error,Demand · LightGBM (63 leaves),2020-02-16
+error,Demand · LightGBM (63 leaves),2020-08-13
+error,Demand · LightGBM (63 leaves),2020-09-10
+error,Demand · LightGBM (63 leaves),2020-10-08
+error,Demand · LightGBM (63 leaves),2020-11-05
+error,Demand · LightGBM (63 leaves),2020-12-03
+error,Demand · LightGBM (63 leaves),2020-12-31
+error,Demand · LightGBM (63 leaves),2021-01-28
+error,Demand · LightGBM (63 leaves),2021-02-25
+error,Demand · LightGBM (63 leaves),2021-03-25
+error,Demand · LightGBM (63 leaves),2021-04-22
+error,Demand · LightGBM (63 leaves),2021-05-26
+error,Demand · LightGBM (63 leaves),2021-06-23
+error,Demand · LightGBM (63 leaves),2021-07-21
+error,Demand · LightGBM (63 leaves),2021-08-18
+error,Demand · LightGBM (63 leaves),2021-09-15
+error,Demand · LightGBM (63 leaves),2021-10-13
+error,Demand · LightGBM (63 leaves),2021-11-10
+error,Demand · LightGBM (63 leaves),2021-12-08
+error,Demand · LightGBM (63 leaves),2022-01-05
+error,Demand · LightGBM (63 leaves),2022-02-02
+error,Demand · LightGBM (63 leaves),2022-03-02
+error,Demand · LightGBM (63 leaves),2022-03-30
+error,Demand · LightGBM (63 leaves),2022-04-27
+error,Demand · LightGBM (63 leaves),2022-05-25
+error,Demand · LightGBM (63 leaves),2022-06-22
+error,Demand · LightGBM (63 leaves),2022-07-20
+error,Demand · LightGBM (63 leaves),2022-08-17
+error,Demand · LightGBM (63 leaves),2022-09-14
+error,Demand · LightGBM (63 leaves),2022-10-12
+error,Demand · LightGBM (63 leaves),2022-11-09
+error,Demand · LightGBM (63 leaves),2022-12-07
+error,Demand · LightGBM (63 leaves),2023-01-04
+error,Demand · LightGBM (63 leaves),2023-02-01
+error,Demand · LightGBM (63 leaves),2023-03-01
+error,Demand · LightGBM (63 leaves),2023-03-29
+error,Demand · LightGBM (63 leaves),2023-04-26
+error,Demand · LightGBM (63 leaves),2023-05-24
+error,Demand · LightGBM (63 leaves),2023-06-21
+error,Demand · LightGBM (63 leaves),2023-07-19
+error,Demand · LightGBM (63 leaves),2023-08-16
+error,Demand · LightGBM (63 leaves),2023-09-13
+error,Demand · LightGBM (63 leaves),2023-10-11
+error,Demand · LightGBM (63 leaves),2023-11-08
+error,Demand · LightGBM (63 leaves),2023-12-06
+error,Demand · LightGBM (63 leaves),2024-01-03
+error,Demand · LightGBM (63 leaves),2024-01-31
+error,Demand · LightGBM (63 leaves),2024-02-28
+error,Demand · LightGBM (63 leaves),2024-03-27
+error,Demand · LightGBM (63 leaves),2024-04-24
+error,Demand · LightGBM (63 leaves),2024-05-22
+error,Demand · LightGBM (63 leaves),2024-06-19
+error,Demand · LightGBM (63 leaves),2024-07-17
+error,Demand · LightGBM (63 leaves),2024-08-14
+error,Demand · LightGBM (63 leaves),2024-09-11
+error,Demand · LightGBM (63 leaves),2024-10-09
+error,Demand · LightGBM (63 leaves),2024-11-06
+error,Demand · LightGBM (63 leaves),2024-12-04
+error,Demand · LightGBM (63 leaves),2025-01-01
+error,Demand · LightGBM (63 leaves),2025-01-29
+error,Demand · LightGBM (63 leaves),2025-02-26
+error,Demand · LightGBM (63 leaves),2025-03-26
+error,Demand · LightGBM (63 leaves),2025-04-23
+error,Demand · LightGBM (63 leaves),2025-05-21
+error,Demand · LightGBM (63 leaves),2025-06-18
+error,Demand · LightGBM (63 leaves),2025-07-16
+error,Demand · LightGBM (63 leaves),2025-08-13
+error,Demand · LightGBM (63 leaves),2025-09-10
+error,Demand · LightGBM (63 leaves),2025-10-08
+error,Demand · LightGBM (63 leaves),2025-11-05
+error,Demand · LightGBM (63 leaves),2025-12-03
+error,Demand · LightGBM (63 leaves),2025-12-31
+error,Demand · LightGBM (63 leaves),2026-01-28
+error,Demand · LightGBM (63 leaves),2026-02-25
+error,Demand · LightGBM (63 leaves),2026-03-25
+error,Demand · LightGBM (63 leaves),2026-04-22
+error,Demand · LightGBM (63 leaves),2026-05-20
+error,Demand · LightGBM (63 leaves),2026-06-17
+error,Demand · LightGBM (63 leaves),2026-07-15
+error,Demand · LightGBM (63 leaves),2026-08-12
+error,Demand · LightGBM (63 leaves),2026-09-09
+error,Demand · LightGBM (63 leaves),2026-10-07
+error,Demand · Ridge (α = 1000),2015-12-26
+error,Demand · Ridge (α = 1000),2016-06-30
+error,Demand · Ridge (α = 1000),2016-12-04
+error,Demand · Ridge (α = 1000),2017-01-18
+error,Demand · Ridge (α = 1000),2017-02-15
+error,Demand · Ridge (α = 1000),2017-03-15
+error,Demand · Ridge (α = 1000),2017-04-28
+error,Demand · Ridge (α = 1000),2017-12-19
+error,Demand · Ridge (α = 1000),2018-01-16
+error,Demand · Ridge (α = 1000),2018-04-02
+error,Demand · Ridge (α = 1000),2018-12-21
+error,Demand · Ridge (α = 1000),2019-01-18
+error,Demand · Ridge (α = 1000),2019-02-15
+error,Demand · Ridge (α = 1000),2020-01-01
+error,Demand · Ridge (α = 1000),2020-01-29
+error,Demand · Ridge (α = 1000),2020-04-25
+error,Demand · Ridge (α = 1000),2020-09-03
+error,Demand · Ridge (α = 1000),2020-10-01
+error,Demand · Ridge (α = 1000),2020-11-30
+error,Demand · Ridge (α = 1000),2020-12-28
+error,Demand · Ridge (α = 1000),2021-01-27
+error,Demand · Ridge (α = 1000),2021-04-03
+error,Demand · Ridge (α = 1000),2021-06-09
+error,Demand · Ridge (α = 1000),2021-07-07
+error,Demand · Ridge (α = 1000),2021-08-04
+error,Demand · Ridge (α = 1000),2021-09-01
+error,Demand · Ridge (α = 1000),2021-09-29
+error,Demand · Ridge (α = 1000),2021-10-27
+error,Demand · Ridge (α = 1000),2021-11-24
+error,Demand · Ridge (α = 1000),2021-12-22
+error,Demand · Ridge (α = 1000),2022-01-19
+error,Demand · Ridge (α = 1000),2022-02-16
+error,Demand · Ridge (α = 1000),2022-03-16
+error,Demand · Ridge (α = 1000),2022-04-13
+error,Demand · Ridge (α = 1000),2022-05-11
+error,Demand · Ridge (α = 1000),2022-06-08
+error,Demand · Ridge (α = 1000),2022-07-06
+error,Demand · Ridge (α = 1000),2022-08-03
+error,Demand · Ridge (α = 1000),2022-08-31
+error,Demand · Ridge (α = 1000),2022-09-28
+error,Demand · Ridge (α = 1000),2022-10-26
+error,Demand · Ridge (α = 1000),2022-11-23
+error,Demand · Ridge (α = 1000),2022-12-21
+error,Demand · Ridge (α = 1000),2023-01-18
+error,Demand · Ridge (α = 1000),2023-02-15
+error,Demand · Ridge (α = 1000),2023-03-15
+error,Demand · Ridge (α = 1000),2023-04-12
+error,Demand · Ridge (α = 1000),2023-05-10
+error,Demand · Ridge (α = 1000),2023-06-08
+error,Demand · Ridge (α = 1000),2023-07-06
+error,Demand · Ridge (α = 1000),2023-08-10
+error,Demand · Ridge (α = 1000),2023-09-07
+error,Demand · Ridge (α = 1000),2023-10-05
+error,Demand · Ridge (α = 1000),2023-11-02
+error,Demand · Ridge (α = 1000),2023-11-30
+error,Demand · Ridge (α = 1000),2023-12-28
+error,Demand · Ridge (α = 1000),2024-01-25
+error,Demand · Ridge (α = 1000),2024-02-22
+error,Demand · Ridge (α = 1000),2024-03-21
+error,Demand · Ridge (α = 1000),2024-04-18
+error,Demand · Ridge (α = 1000),2024-05-16
+error,Demand · Ridge (α = 1000),2024-06-13
+error,Demand · Ridge (α = 1000),2024-07-25
+error,Demand · Ridge (α = 1000),2024-08-22
+error,Demand · Ridge (α = 1000),2024-09-19
+error,Demand · Ridge (α = 1000),2024-10-17
+error,Demand · Ridge (α = 1000),2024-11-14
+error,Demand · Ridge (α = 1000),2024-12-12
+error,Demand · Ridge (α = 1000),2025-01-09
+error,Demand · Ridge (α = 1000),2025-02-06
+error,Demand · Ridge (α = 1000),2025-03-06
+error,Demand · Ridge (α = 1000),2025-04-03
+error,Demand · Ridge (α = 1000),2025-05-01
+error,Demand · Ridge (α = 1000),2025-05-29
+error,Demand · Ridge (α = 1000),2025-06-26
+error,Demand · Ridge (α = 1000),2025-07-24
+error,Demand · Ridge (α = 1000),2025-08-21
+error,Demand · Ridge (α = 1000),2025-09-18
+error,Demand · Ridge (α = 1000),2025-10-16
+error,Demand · Ridge (α = 1000),2025-11-13
+error,Demand · Ridge (α = 1000),2025-12-11
+error,Demand · Ridge (α = 1000),2026-01-08
+error,Demand · Ridge (α = 1000),2026-02-05
+error,Demand · Ridge (α = 1000),2026-03-05
+error,Demand · Ridge (α = 1000),2026-04-02
+error,Demand · Ridge (α = 1000),2026-04-30
+error,Demand · Ridge (α = 1000),2026-08-15
+error,Demand · Ridge (α = 1000),2026-09-12
+error,Demand · Ridge (α = 1000),2026-10-10
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2015-09-23
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2015-12-25
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2016-03-21
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2016-05-02
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2016-05-31
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2016-06-28
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2016-09-14
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2017-01-09
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2017-02-24
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2017-03-30
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2017-04-27
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2017-05-25
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2017-06-24
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2017-08-28
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2017-10-13
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2018-01-10
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2018-02-15
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2018-04-06
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2018-05-16
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2018-10-17
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2018-11-14
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2018-12-12
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2019-01-09
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2019-03-06
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2019-04-03
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2019-05-09
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2019-10-10
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2019-11-11
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2019-12-11
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2020-04-19
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2021-01-07
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2021-11-29
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2021-12-27
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2022-01-24
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2022-02-21
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2022-03-21
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2022-04-18
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2022-05-16
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2022-06-13
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2022-07-11
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2022-08-25
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2022-09-22
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2022-10-25
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2023-01-28
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2023-03-23
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2023-11-27
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2024-02-25
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2026-03-04
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2026-05-27
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2026-06-24
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2026-07-22
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2026-08-19
+error,"Price · LightGBM (31 leaves), cut-off 0.5",2026-10-16
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2016-03-23
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2016-06-03
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2016-07-01
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2017-02-13
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2017-03-13
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2017-04-10
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2017-05-08
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2017-06-05
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2017-07-03
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2017-08-03
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2017-08-31
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2017-10-03
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2017-10-31
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2017-11-28
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2018-01-22
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2018-02-19
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2018-03-19
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2018-04-17
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2018-05-15
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2018-07-01
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2018-09-20
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2018-10-18
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2018-11-15
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2018-12-13
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2019-01-10
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2019-02-15
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2019-03-15
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2019-04-12
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2019-05-10
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2019-06-07
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2019-09-25
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2019-10-23
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2019-11-20
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2019-12-18
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2020-01-15
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2020-02-12
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2020-03-11
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2020-04-08
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2020-05-06
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2020-11-26
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2020-12-26
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2021-01-23
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2021-02-20
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2021-03-20
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2021-04-17
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2021-07-06
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2021-10-19
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2021-11-16
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2021-12-14
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2022-01-11
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2022-02-08
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2022-03-08
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2022-04-05
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2022-05-03
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2022-05-31
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2022-06-28
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2022-07-26
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2022-08-23
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2022-09-20
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2022-10-18
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2022-11-15
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2022-12-13
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2023-01-10
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2023-02-07
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2023-03-07
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2023-04-04
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2023-05-02
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2023-05-30
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2023-06-27
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2023-07-25
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2023-12-01
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2023-12-29
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2024-01-26
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2024-02-23
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2024-03-22
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2024-04-19
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2024-05-17
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2024-06-14
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2024-07-12
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2024-08-11
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2024-11-26
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2024-12-24
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2025-01-25
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2025-02-22
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2025-03-22
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2025-04-20
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2025-05-18
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2025-06-15
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2025-07-13
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2025-08-10
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2025-12-24
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2026-01-21
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2026-02-18
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2026-03-18
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2026-04-15
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2026-05-13
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2026-06-10
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2026-07-08
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2026-08-08
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2026-09-05
+error,"Price · Logistic (C = 0.01), cut-off 0.5",2026-10-11

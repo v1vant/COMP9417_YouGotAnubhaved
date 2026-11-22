@@ -1,0 +1,33 @@
+model,policy,variant,period,signals,mean daily error,frozen,retrain dates
+Demand · LightGBM (63 leaves),input-triggered,re-baselined,2015-24,60,2.969,3.122,"2015-07-28, 2015-08-25, 2016-01-22, 2017-01-16, 2017-02-13, 2019-01-20"
+Demand · LightGBM (63 leaves),input-triggered,re-baselined,2025-26,24,5.129,5.187,
+Demand · LightGBM (63 leaves),input-triggered,fixed 2014 baseline,2015-24,113,3.117,3.122,"2015-01-15, 2015-07-24, 2015-08-21, 2015-12-03, 2015-12-31, 2016-01-28"
+Demand · LightGBM (63 leaves),input-triggered,fixed 2014 baseline,2025-26,24,5.364,5.187,
+Demand · LightGBM (63 leaves),error-triggered,re-baselined,2015-24,7,2.889,3.122,"2016-01-12, 2017-01-01, 2017-01-29, 2017-02-26, 2023-12-26, 2024-02-13"
+Demand · LightGBM (63 leaves),error-triggered,re-baselined,2025-26,5,3.883,5.187,
+Demand · LightGBM (63 leaves),error-triggered,fixed 2014 baseline,2015-24,69,2.999,3.122,"2015-01-02, 2016-01-12, 2017-01-01, 2017-01-29, 2017-02-26, 2017-12-26"
+Demand · LightGBM (63 leaves),error-triggered,fixed 2014 baseline,2025-26,23,5.256,5.187,
+Demand · Ridge (α = 1000),input-triggered,re-baselined,2015-24,60,4.114,4.276,"2015-07-28, 2015-08-25, 2016-01-22, 2017-01-16, 2017-02-13, 2019-01-20"
+Demand · Ridge (α = 1000),input-triggered,re-baselined,2025-26,24,6.743,6.34,
+Demand · Ridge (α = 1000),input-triggered,fixed 2014 baseline,2015-24,113,4.123,4.276,"2015-01-15, 2015-07-24, 2015-08-21, 2015-12-03, 2015-12-31, 2016-01-28"
+Demand · Ridge (α = 1000),input-triggered,fixed 2014 baseline,2025-26,24,6.266,6.34,
+Demand · Ridge (α = 1000),error-triggered,re-baselined,2015-24,11,3.667,4.276,"2015-12-27, 2017-01-18, 2017-02-15, 2020-10-06, 2023-01-03, 2023-10-11"
+Demand · Ridge (α = 1000),error-triggered,re-baselined,2025-26,11,4.736,6.34,
+Demand · Ridge (α = 1000),error-triggered,fixed 2014 baseline,2015-24,65,4.183,4.276,"2015-12-27, 2017-01-19, 2017-02-16, 2017-03-16, 2017-12-28, 2018-01-25"
+Demand · Ridge (α = 1000),error-triggered,fixed 2014 baseline,2025-26,21,6.978,6.34,
+"Price · LightGBM (31 leaves), cut-off 0.5",input-triggered,re-baselined,2015-24,60,21.344,21.79,"2015-07-28, 2015-08-25, 2016-01-22, 2017-01-16, 2017-02-13, 2019-01-20"
+"Price · LightGBM (31 leaves), cut-off 0.5",input-triggered,re-baselined,2025-26,24,20.073,20.472,
+"Price · LightGBM (31 leaves), cut-off 0.5",input-triggered,fixed 2014 baseline,2015-24,113,21.93,21.79,"2015-01-15, 2015-07-24, 2015-08-21, 2015-12-03, 2015-12-31, 2016-01-28"
+"Price · LightGBM (31 leaves), cut-off 0.5",input-triggered,fixed 2014 baseline,2025-26,24,20.288,20.472,
+"Price · LightGBM (31 leaves), cut-off 0.5",error-triggered,re-baselined,2015-24,6,20.838,21.79,"2015-09-24, 2016-03-22, 2016-04-19, 2022-01-12, 2022-03-27, 2022-04-28"
+"Price · LightGBM (31 leaves), cut-off 0.5",error-triggered,re-baselined,2025-26,0,17.697,20.472,
+"Price · LightGBM (31 leaves), cut-off 0.5",error-triggered,fixed 2014 baseline,2015-24,41,21.302,21.79,"2015-09-24, 2016-03-22, 2016-04-19, 2016-06-09, 2016-09-25, 2017-01-03"
+"Price · LightGBM (31 leaves), cut-off 0.5",error-triggered,fixed 2014 baseline,2025-26,5,20.513,20.472,
+"Price · Logistic (C = 0.01), cut-off 0.5",input-triggered,re-baselined,2015-24,60,23.535,30.55,"2015-07-28, 2015-08-25, 2016-01-22, 2017-01-16, 2017-02-13, 2019-01-20"
+"Price · Logistic (C = 0.01), cut-off 0.5",input-triggered,re-baselined,2025-26,24,21.469,31.082,
+"Price · Logistic (C = 0.01), cut-off 0.5",input-triggered,fixed 2014 baseline,2015-24,113,29.009,30.55,"2015-01-15, 2015-07-24, 2015-08-21, 2015-12-03, 2015-12-31, 2016-01-28"
+"Price · Logistic (C = 0.01), cut-off 0.5",input-triggered,fixed 2014 baseline,2025-26,24,28.556,31.082,
+"Price · Logistic (C = 0.01), cut-off 0.5",error-triggered,re-baselined,2015-24,5,23.736,30.55,"2016-03-24, 2016-06-03, 2017-02-17, 2022-01-15, 2022-05-31"
+"Price · Logistic (C = 0.01), cut-off 0.5",error-triggered,re-baselined,2025-26,0,24.137,31.082,
+"Price · Logistic (C = 0.01), cut-off 0.5",error-triggered,fixed 2014 baseline,2015-24,26,23.733,30.55,"2016-03-24, 2016-06-04, 2017-02-16, 2017-05-03, 2017-05-31, 2017-10-14"
+"Price · Logistic (C = 0.01), cut-off 0.5",error-triggered,fixed 2014 baseline,2025-26,4,22.655,31.082,

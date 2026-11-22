@@ -1,0 +1,25 @@
+\begin{table}[htbp]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.15}
+\caption{Adaptation comparison using the original 240-feature LightGBMs: 63 leaves for demand, and 31 leaves with threshold $0.57$ for price. Best result in each column is in bold.}\label{tab:adaptation}
+\begin{tabular}{@{}lrrrr@{\hspace{1.5em}}rrrr@{}}
+\toprule
+& \multicolumn{4}{c}{\textbf{2015-2024}} & \multicolumn{4}{c}{\textbf{2025-Oct.\ 2026}} \\
+\cmidrule(lr){2-5}\cmidrule(l){6-9}
+\textbf{Strategy} & MAPE (\%) & MAE (MW) & Acc.\ (\%) & BA (\%) & MAPE (\%) & MAE (MW) & Acc.\ (\%) & BA (\%) \\
+\midrule
+Yesterday               & 5.90 & 459.34 & 73.23 & 72.67 & 7.53 & 532.35 & 76.96 & 76.97 \\
+Last week               & 6.95 & 545.18 & 70.39 & 69.89 & 10.00 & 703.82 & 73.07 & 73.03 \\
+\midrule
+Frozen                  & 3.12 & 240.19 & 77.63 & 75.32 & 5.19 & 353.64 & 78.92 & 78.69 \\
+Expanding               & \textbf{2.59} & \textbf{200.33} & \textbf{79.56} & \textbf{78.29} & \textbf{3.67} & \textbf{253.49} & 82.61 & 82.54 \\
+Two-year sliding        & 2.84 & 219.29 & 78.87 & 77.90 & 3.88 & 271.23 & \textbf{82.95} & \textbf{82.90} \\
+\midrule
+\multicolumn{9}{@{}l}{\textit{Drift sliding, retrain triggered by:}} \\
+\quad Input detector    & 2.82 & 215.15 & 79.17 & 78.15 & 3.97 & 270.22 & 82.74 & 82.71 \\
+\quad Error detector    & 2.85 & 217.78 & 79.00 & 77.48 & 3.71 & 257.05 & 82.75 & 82.70 \\
+\quad Either detector   & 3.01 & 227.21 & 78.56 & 77.41 & 5.22 & 348.39 & 79.54 & 79.41 \\
+\bottomrule
+\end{tabular}
+\end{table}

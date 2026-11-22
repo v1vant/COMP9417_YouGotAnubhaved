@@ -1,0 +1,12 @@
+demand_ridge1000 [input-triggered, re-baselined]: 6 retrains: ['2015-07-28', '2015-08-25', '2016-01-22', '2017-01-16', '2017-02-13', '2019-01-20']
+demand_ridge1000 [error-triggered, re-baselined]: 6 retrains: ['2015-12-27', '2017-01-18', '2017-02-15', '2020-10-06', '2023-01-03', '2023-10-11']
+price_logistic001 [input-triggered, re-baselined]: 6 retrains: ['2015-07-28', '2015-08-25', '2016-01-22', '2017-01-16', '2017-02-13', '2019-01-20']
+price_logistic001 [error-triggered, re-baselined]: 5 retrains: ['2016-03-24', '2016-06-03', '2017-02-17', '2022-01-15', '2022-05-31']
+price_lightgbm31 [input-triggered, re-baselined]: 6 retrains: ['2015-07-28', '2015-08-25', '2016-01-22', '2017-01-16', '2017-02-13', '2019-01-20']
+price_lightgbm31 [error-triggered, re-baselined]: 6 retrains: ['2015-09-24', '2016-03-22', '2016-04-19', '2022-01-12', '2022-03-27', '2022-04-28']
+demand_lightgbm63 [input-triggered, re-baselined]: 6 retrains: ['2015-07-28', '2015-08-25', '2016-01-22', '2017-01-16', '2017-02-13', '2019-01-20']
+demand_lightgbm63 [error-triggered, re-baselined]: 6 retrains: ['2016-01-12', '2017-01-01', '2017-01-29', '2017-02-26', '2023-12-26', '2024-02-13']
+done demand_lightgbm63
+done demand_ridge1000
+done price_lightgbm31
+done price_logistic001

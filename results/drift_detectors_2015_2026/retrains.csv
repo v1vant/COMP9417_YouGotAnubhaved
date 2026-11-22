@@ -1,0 +1,49 @@
+model,policy,effective_day,training_start,training_end,training_rows,seconds
+Demand · LightGBM (63 leaves),input-triggered,2015-01-15,2011-01-15,2015-01-14,70128,54.4
+Demand · LightGBM (63 leaves),input-triggered,2015-07-24,2011-07-24,2015-07-23,70128,53.5
+Demand · LightGBM (63 leaves),input-triggered,2015-08-21,2011-08-21,2015-08-20,70128,54.6
+Demand · LightGBM (63 leaves),input-triggered,2015-12-03,2011-12-03,2015-12-02,70128,52.6
+Demand · LightGBM (63 leaves),input-triggered,2015-12-31,2011-12-31,2015-12-30,70128,50.0
+Demand · LightGBM (63 leaves),input-triggered,2016-01-28,2012-01-28,2016-01-27,70128,49.3
+Demand · LightGBM (63 leaves),error-triggered,2015-01-02,2011-01-02,2015-01-01,70128,49.7
+Demand · LightGBM (63 leaves),error-triggered,2016-01-12,2012-01-12,2016-01-11,70128,49.1
+Demand · LightGBM (63 leaves),error-triggered,2017-01-01,2013-01-01,2016-12-31,70128,48.0
+Demand · LightGBM (63 leaves),error-triggered,2017-01-29,2013-01-29,2017-01-28,70128,49.7
+Demand · LightGBM (63 leaves),error-triggered,2017-02-26,2013-02-26,2017-02-25,70128,50.0
+Demand · LightGBM (63 leaves),error-triggered,2017-12-26,2013-12-26,2017-12-25,70128,48.5
+Demand · Ridge (α = 1000),input-triggered,2015-01-15,2011-01-15,2015-01-14,70128,0.3
+Demand · Ridge (α = 1000),input-triggered,2015-07-24,2011-07-24,2015-07-23,70128,0.3
+Demand · Ridge (α = 1000),input-triggered,2015-08-21,2011-08-21,2015-08-20,70128,0.3
+Demand · Ridge (α = 1000),input-triggered,2015-12-03,2011-12-03,2015-12-02,70128,0.3
+Demand · Ridge (α = 1000),input-triggered,2015-12-31,2011-12-31,2015-12-30,70128,0.3
+Demand · Ridge (α = 1000),input-triggered,2016-01-28,2012-01-28,2016-01-27,70128,0.3
+Demand · Ridge (α = 1000),error-triggered,2015-12-27,2011-12-27,2015-12-26,70128,0.3
+Demand · Ridge (α = 1000),error-triggered,2017-01-19,2013-01-19,2017-01-18,70128,0.3
+Demand · Ridge (α = 1000),error-triggered,2017-02-16,2013-02-16,2017-02-15,70128,0.2
+Demand · Ridge (α = 1000),error-triggered,2017-03-16,2013-03-16,2017-03-15,70128,0.4
+Demand · Ridge (α = 1000),error-triggered,2017-12-28,2013-12-28,2017-12-27,70128,0.4
+Demand · Ridge (α = 1000),error-triggered,2018-01-25,2014-01-25,2018-01-24,70128,0.3
+"Price · LightGBM (31 leaves), cut-off 0.5",input-triggered,2015-01-15,2011-01-15,2015-01-14,70128,23.6
+"Price · LightGBM (31 leaves), cut-off 0.5",input-triggered,2015-07-24,2011-07-24,2015-07-23,70128,23.9
+"Price · LightGBM (31 leaves), cut-off 0.5",input-triggered,2015-08-21,2011-08-21,2015-08-20,70128,24.4
+"Price · LightGBM (31 leaves), cut-off 0.5",input-triggered,2015-12-03,2011-12-03,2015-12-02,70128,23.9
+"Price · LightGBM (31 leaves), cut-off 0.5",input-triggered,2015-12-31,2011-12-31,2015-12-30,70128,23.2
+"Price · LightGBM (31 leaves), cut-off 0.5",input-triggered,2016-01-28,2012-01-28,2016-01-27,70128,23.4
+"Price · LightGBM (31 leaves), cut-off 0.5",error-triggered,2015-09-24,2011-09-24,2015-09-23,70128,24.1
+"Price · LightGBM (31 leaves), cut-off 0.5",error-triggered,2016-03-22,2012-03-22,2016-03-21,70128,24.1
+"Price · LightGBM (31 leaves), cut-off 0.5",error-triggered,2016-04-19,2012-04-19,2016-04-18,70128,23.3
+"Price · LightGBM (31 leaves), cut-off 0.5",error-triggered,2016-06-09,2012-06-09,2016-06-08,70128,23.8
+"Price · LightGBM (31 leaves), cut-off 0.5",error-triggered,2016-09-25,2012-09-25,2016-09-24,70128,23.0
+"Price · LightGBM (31 leaves), cut-off 0.5",error-triggered,2017-01-03,2013-01-03,2017-01-02,70128,22.5
+"Price · Logistic (C = 0.01), cut-off 0.5",input-triggered,2015-01-15,2011-01-15,2015-01-14,70128,0.9
+"Price · Logistic (C = 0.01), cut-off 0.5",input-triggered,2015-07-24,2011-07-24,2015-07-23,70128,1.4
+"Price · Logistic (C = 0.01), cut-off 0.5",input-triggered,2015-08-21,2011-08-21,2015-08-20,70128,0.8
+"Price · Logistic (C = 0.01), cut-off 0.5",input-triggered,2015-12-03,2011-12-03,2015-12-02,70128,0.8
+"Price · Logistic (C = 0.01), cut-off 0.5",input-triggered,2015-12-31,2011-12-31,2015-12-30,70128,0.7
+"Price · Logistic (C = 0.01), cut-off 0.5",input-triggered,2016-01-28,2012-01-28,2016-01-27,70128,0.7
+"Price · Logistic (C = 0.01), cut-off 0.5",error-triggered,2016-03-24,2012-03-24,2016-03-23,70128,0.7
+"Price · Logistic (C = 0.01), cut-off 0.5",error-triggered,2016-06-04,2012-06-04,2016-06-03,70128,0.8
+"Price · Logistic (C = 0.01), cut-off 0.5",error-triggered,2017-02-16,2013-02-16,2017-02-15,70128,0.7
+"Price · Logistic (C = 0.01), cut-off 0.5",error-triggered,2017-05-03,2013-05-03,2017-05-02,70128,0.8
+"Price · Logistic (C = 0.01), cut-off 0.5",error-triggered,2017-05-31,2013-05-31,2017-05-30,70128,0.7
+"Price · Logistic (C = 0.01), cut-off 0.5",error-triggered,2017-10-14,2013-10-14,2017-10-13,70128,0.9

@@ -1,0 +1,9 @@
+model,period,frozen mean daily error,error signals,input (weather) signals
+Demand · LightGBM (63 leaves),2015-24,3.122,75,58
+Demand · LightGBM (63 leaves),2025-26,5.187,24,8
+Demand · Ridge (α = 1000),2015-24,4.276,68,58
+Demand · Ridge (α = 1000),2025-26,6.34,21,8
+"Price · LightGBM (31 leaves), cut-off 0.5",2015-24,21.79,47,58
+"Price · LightGBM (31 leaves), cut-off 0.5",2025-26,20.472,6,8
+"Price · Logistic (C = 0.01), cut-off 0.5",2015-24,30.55,82,58
+"Price · Logistic (C = 0.01), cut-off 0.5",2025-26,31.082,19,8
