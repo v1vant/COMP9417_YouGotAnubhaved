@@ -1,0 +1,16 @@
+{
+  "status": "ready",
+  "setup_tests_passed": 8,
+  "setup_test_seconds": 14.016,
+  "synthetic_smoke_only": true,
+  "historical_training_started": false,
+  "historical_windows": 21,
+  "seasonal_windows": 11,
+  "recent_windows": 10,
+  "source_recipe_and_dates_verified": true,
+  "cache_hash_validation_tested": true,
+  "bootstrap_pairing_and_direction_tested": true,
+  "production_artifacts_unchanged": true,
+  "estimated_sequential_hours": 8.707654765383452,
+  "experiment_key": "f83265bab8058e7700d592bfa9b01f9224a38de9f2071e6ef170390f507eb1f0"
+}

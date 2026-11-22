@@ -1,0 +1,19 @@
+{
+  "status": "dry_run_no_historical_training_started",
+  "experiment_key": "f83265bab8058e7700d592bfa9b01f9224a38de9f2071e6ef170390f507eb1f0",
+  "seasonal_weeks": 11,
+  "recent_weeks": 10,
+  "exact_historical_snapshots_cached": 10,
+  "snapshots_missing": 11,
+  "new_LightGBM_fits": 66,
+  "new_MLP_fits": 55,
+  "estimated_sequential_hours": 3.79763935952767,
+  "rough_hours_range": [
+    2.848229519645752,
+    5.696459039291504
+  ],
+  "estimate_note": "Linear scaling of existing local timings; serial snapshots, two model threads. Not a benchmark or guaranteed duration.",
+  "current_production_package_matches_actual_live_cutoff": true,
+  "production_package_reused_for_historical_tests": false,
+  "reuse_note": "Exact-cutoff caches only. Biennial models, price-only reports and models trained beyond a test cutoff are not reusable combined snapshots."
+}

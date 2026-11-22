@@ -1,0 +1,44 @@
+{
+  "status": "frozen_plan",
+  "base_current_commit": "0f92325005f422cfd86c836ec839f62aa6cdb586",
+  "live_target": {
+    "training_cutoff": "2026-10-31",
+    "week_start": "2026-12-07",
+    "week_end": "2026-12-13"
+  },
+  "seasonal_years": [
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "recent_cutoffs": {
+    "first": "2024-12-31",
+    "last": "2025-09-30",
+    "frequency": "month_end"
+  },
+  "forecast_start_lag_days": 37,
+  "forecast_days": 7,
+  "bootstrap": {
+    "replicates": 5000,
+    "seed": 9417,
+    "confidence": 0.95,
+    "empirical_quantiles": [
+      0.1,
+      0.9
+    ],
+    "minimum_weeks_for_CI": 5,
+    "recent_sensitivity_block_windows": 2
+  },
+  "baseline": "yesterday same half-hour; price compared with previous-day mean",
+  "model_policy": "Frozen current recipe, expanding training through each cutoff; daily history updates; no refits within the test week",
+  "selection_on_these_results": false,
+  "interpretation": "Previously inspected historical periods. CIs concern historical mean weekly scores, not a calibrated interval for the live week."
+}

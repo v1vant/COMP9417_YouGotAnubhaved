@@ -1,0 +1,12 @@
+{
+  "frozen_package/c2_price.py": "7bebd553d7ec35374ff98bd6bb130dced0d97a7c59dd848e7bd244ad5aae0045",
+  "frozen_package/c2_candidate.json": "ec62c6706a60b366bd3e079024e4b0d6ea25516be5b25e74059b1a542c19237e",
+  "frozen_package/demand_feature_columns.json": "3b3de4aefa058cb63a5631a7b5ef41e8baa8bef5fa02aade6ddd79c3f9e0279d",
+  "frozen_package/c2_recipe.py": "66c7f83d9119b63c7bd3218da2045fe8491dc9df7aad64ea9261f588aa2af4c0",
+  "frozen_package/model.py": "746f6f94fa68fc8ec2d94428d34355153d68e1682e1d3b6a5ce7cb1d101938da",
+  "frozen_package/mlp_train.py": "6413ac2f6e17567e19128e935d0caa6036dc5da5547bde66eb45745b5a41de3e",
+  "frozen_package/train.py": "8db0a39d02af5cd042f60e609538775f3bd136436315c1010deb476d17253a3a",
+  "frozen_package/train-Anubhav\u2019s MacBook Air.py": "d594c930a20f4e89121af3e0a2fc7510dd1fa6de4da6726f85e6e469d2bf2e09",
+  "frozen_harness.py": "8913af39325a5fdeefa5d6a8469acd4712fc981e25192bf3545e7034da88f326",
+  "recipe.json": "5684992291732d6c6c00f377547b3a74e860164da1f0501d1cc7088825fe7f68"
+}
