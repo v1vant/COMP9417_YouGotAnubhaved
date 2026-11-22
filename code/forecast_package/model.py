@@ -15,10 +15,12 @@ LAGS = (1, 2, 3, 7, 14, 21, 28)
 
 
 def market_days(index):
+    """Map interval-end timestamps to their market day (midnight belongs to yesterday)."""
     return (index - pd.Timedelta(minutes=30)).normalize()
 
 
 def load_data(path):
+    """Read a complete, continuous half-hourly CSV indexed by timestamp."""
     frame = pd.read_csv(path, index_col="timestamp", parse_dates=["timestamp"]).sort_index()
     if frame.empty or not frame.index.is_unique:
         raise ValueError("Empty data or duplicate timestamps")
@@ -32,7 +34,11 @@ def load_data(path):
 
 
 def feature_frame(frame, weather_shape=False):
-    """Current-day weather is allowed; all market features use completed days."""
+    """Build causal features from history and known weather, preserving row alignment.
+
+    Market variables are lagged before use; next-day weather may be used for
+    that day. Early rows contain NaNs until the longest lags are available.
+    """
     days = market_days(frame.index)
     start = frame.index - pd.Timedelta(minutes=30)
     slot = np.asarray(start.hour * 2 + start.minute // 30)
@@ -178,6 +184,7 @@ def feature_frame(frame, weather_shape=False):
 
 
 def training_table(frame, weather_shape=False):
+    """Return aligned feature rows and demand/price labels after lag warm-up."""
     features = feature_frame(frame, weather_shape=weather_shape)
     keep = features.notna().all(axis=1)
     features = features.loc[keep]
@@ -192,6 +199,11 @@ def training_table(frame, weather_shape=False):
 
 
 def forecast_features(history, weather_next, weather_shape=False):
+    """Create one day of inference features using no future market observations.
+
+    ``history`` ends at midnight and ``weather_next`` contains the following
+    48 interval ends. Only recent history is needed for the longest features.
+    """
     if len(weather_next) != 48 or set(weather_next.columns) != set(WEATHER):
         raise ValueError("Expected 48 rows and the 12 weather columns")
     if history.empty or not history.index.is_monotonic_increasing or not history.index.is_unique:
@@ -211,6 +223,7 @@ def forecast_features(history, weather_next, weather_shape=False):
 
 
 def predict_task(bundle, features):
+    """Predict demand from residuals or classify averaged price probabilities."""
     x = features.loc[:, bundle["features"]]
     if bundle["task"] == "demand":
         residual = bundle["estimator"].predict(x)
@@ -234,7 +247,10 @@ def predict_numpy_mlp(bundle, features):
 
 
 class Forecaster:
+    """Load a fitted package and forecast 48 intervals without updating its state."""
+
     def __init__(self, artifact_dir: str):
+        """Load LightGBM bundles and any exported MLP weights from artifact_dir."""
         self.models = joblib.load(os.path.join(artifact_dir, "models.joblib"))
         for bundle in self.models.values():
             for estimator in bundle.get("members") or [bundle["estimator"]]:
@@ -258,12 +274,14 @@ class Forecaster:
                 self.demand_mlp = self.demand_mlp_members[0]
 
     def predict(self, history: pd.DataFrame, weather_next: pd.DataFrame) -> pd.DataFrame:
+        """Return indexed demand MW and binary price direction for the next day."""
         features = forecast_features(history, weather_next)
         demand = predict_task(self.models["demand"], features)
         if self.demand_mlp is not None:
             members = getattr(self, "demand_mlp_members", None) or [self.demand_mlp]
             mlp_mean = np.mean([predict_numpy_mlp(member, features) for member in members], axis=0, dtype=np.float64)
             demand = 0.5*demand + 0.5*mlp_mean
+        # C2 uses additional weather-shape columns; demand keeps its own schema.
         price_features = (forecast_features(history, weather_next, weather_shape=True)
                           if self.models["price"].get("config", {}).get("weather_shape") else features)
         return pd.DataFrame({

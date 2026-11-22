@@ -27,6 +27,7 @@ DEFAULT_SELECTION = {'demand': {'name': 'demand_single_lgbm_mlp5', 'config': {'f
 
 
 def candidates(task, quick=False):
+    """Return the original Stage 1 candidates; quick reduces the tree count."""
     linear = [{"family": "linear", "regularization": 10.0 if task == "demand" else 0.01}]
     boosted = [{"family": "boosted", "leaves": 31, "trees": 120 if quick else 600,
                 "learning_rate": 0.04}]
@@ -38,6 +39,11 @@ def candidates(task, quick=False):
 
 
 def fit_model(task, config, features, truth):
+    """Fit one task bundle with its feature schema and prediction threshold.
+
+    Demand fits a weighted residual around the demand anchor. C2 price
+    configurations delegate to the separate ensemble fitting routine.
+    """
     # Keep the price-profile additions exclusive to classification.
     if task == "price" and config["family"] == "c2":
         return fit_c2(features, truth, config)
@@ -87,6 +93,7 @@ def fit_model(task, config, features, truth):
 
 
 def select_models(features, truth, quick=False):
+    """Fit through 2013, choose on 2014, then refit frozen candidate models."""
     days = market_days(features.index)
     train = days.year <= 2013
     valid = days.year == 2014
@@ -156,6 +163,7 @@ def main():
         selection["validation"] = scores
         print("No simulation selection supplied: using an UNVALIDATED four-year final window.",
               flush=True)
+    # The selection controls each task's training end and optional sliding window.
     days = market_days(features.index)
     models = {}
     price_features, price_truth = (price_table(load_data(args.csv))
@@ -179,6 +187,7 @@ def main():
             models[task] = fit_model(task, config, price_features.loc[task_mask], price_truth.loc[task_mask])
         else:
             models[task] = fit_model(task, config, features.loc[mask], truth.loc[mask])
+    # This is the package-local output directory, not the staged submission.
     output = os.path.join(os.path.dirname(os.path.abspath(__file__)), "artifacts")
     os.makedirs(output, exist_ok=True)
     # Serialize locally, then replace atomically to avoid partial synced artifacts.

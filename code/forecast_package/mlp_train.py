@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader, TensorDataset
 
 
 class DemandMLP(nn.Module):
+    """Two-hidden-layer network predicting a scaled demand-anchor residual."""
     def __init__(self, inputs):
         super().__init__()
         self.network = nn.Sequential(
@@ -22,6 +23,11 @@ class DemandMLP(nn.Module):
 
 
 def fit_demand_mlp(features, demand, epochs=5, validation=None, patience=10, seed=9417):
+    """Fit the scaler and weighted residual network on aligned training rows.
+
+    An optional later validation set enables early stopping for experiments;
+    production training supplies no validation set and uses fixed epochs.
+    """
     if features.empty or not features.index.equals(demand.index):
         raise ValueError("Expected nonempty, aligned features and demand")
     if features.shape[1] != 405:
@@ -112,6 +118,7 @@ def fit_demand_mlp(features, demand, epochs=5, validation=None, patience=10, see
 
 
 def predict_demand_mlp(bundle, features):
+    """Predict MW with PyTorch, used to verify the exported NumPy inference."""
     x = bundle["scaler"].transform(
         features.loc[:, bundle["features"]]).astype(np.float32)
     bundle["model"].eval()
@@ -152,6 +159,7 @@ if __name__ == "__main__":
             print(f"Training full-data demand MLP seed {seed}", flush=True)
             bundle = fit_demand_mlp(features, labels["demand"], epochs=10, seed=seed)
             state = bundle["model"].state_dict()
+            # Export weights and scaler together so live inference needs no PyTorch.
             arrays = {name.replace(".", "_"): tensor.detach().cpu().numpy()
                       for name, tensor in state.items()}
             arrays.update(mean=bundle["scaler"].mean_, scale=bundle["scaler"].scale_,

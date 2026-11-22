@@ -1,228 +1,122 @@
-# COMP9417 26T3 Project Kit
+# COMP9417: Day-ahead electricity forecasting
 
-## Current adopted model
+This project forecasts New South Wales electricity demand and price direction for the next 48 half-hour intervals. It uses the supplied National Electricity Market and weather dataset to compare models, study distribution shift, and evaluate retraining strategies chronologically. The price target is whether each next-day NSW spot price exceeds the **previous market day's mean price**. See [the project specification](specs/comp9417_project_spec.md) for the full protocol and marking rules.
 
-**`main` is the canonical current branch.**
+The current model on `main` is:
 
-**Demand:** a frozen **50/50 blend** of one 900-tree LightGBM (seed 9417) and the
-mean prediction of **five ten-epoch MLPs** (seeds 9417–9421). Each MLP is
-405 → 128 → 64 → 1. All models use the existing 405 demand features. Each MLP
-therefore has 10% of the final demand prediction; LightGBM has 50%. The context
-gate is disabled. Inference is NumPy only; PyTorch is isolated to training.
+- **Demand:** a 50/50 blend of one 63-leaf LightGBM and the mean of five ten-epoch MLPs.
+- **Price direction:** five C2 LightGBMs; their mean probability is compared with a 0.50 cutoff.
 
-**Price:** unchanged **C2**, averaging five LightGBMs (seeds 9417–9421) on
-597 features: 571 base plus 26 Sydney temperature/solar shape features. Each
-member has 63 leaves, 1,200 trees, learning rate 0.02, feature sampling 0.50,
-minimum leaf samples 300, and the mean probability is compared strictly to 0.50.
+The current configuration and links to its evidence are in [`results/current_model.json`](results/current_model.json). Historical experiments use other models and cutoffs; check each result's configuration before comparing scores. The 2025–October 2026 period has been inspected during development and is not an untouched test set.
 
-`code/forecast_package/` and `code/submission_package/` have identical source
-and fitted artifacts. Rebuild from the supplied data with
-`python code/forecast_package/train.py CSV`; this trains one demand LightGBM,
-five price LightGBMs, then all five demand MLPs in an isolated process.
+## Repository guide
 
-The authoritative configuration is `results/current_model.json`. Build/export
-checks and a clean rebuild smoke test are in `results/current_demand_mlp5_build/`.
-The previous C2/single-MLP current (`30d9c60`) is preserved in
-`results/previous_current_30d9c60/`; the older pre-C2 current (`f92a38e`) is
-preserved in `results/previous_current_f92a38e/`. Earlier reports retain their
-original model labels and should not be interpreted as the new current.
-
-Demand comparisons (50/50 weights, chronological biennial schedule):
-
-| Demand version | 2015–2024 MAPE | 2025–October 2026 MAPE | Holdout MAE |
-| --- | ---: | ---: | ---: |
-| Previous current: single LightGBM + single MLP | 2.2939% | 3.1797% | 219.78 MW |
-| **Current: single LightGBM + five MLPs** | **2.2367%** | **3.1197%** | **215.46 MW** |
-
-The holdout improvement is 0.0600 percentage points, paired seven-day bootstrap
-95% CI [0.0361, 0.0834]; the period was inspected previously. It improved in
-both years and 19/22 months. Full results, predictions and frozen protocol are
-in `results/demand_single_lgbm_5mlp_holdout/`. Development results are in
-`results/demand_seed_averaging_5seeds_2015_2024/`. Historical demand comparisons
-are in `results/demand_holdout_model_comparison.csv`.
-
-Saved C2 price comparisons (balanced accuracy):
-
-| Protocol | Previous 31-leaf recipe | C2 | Notes |
-| --- | ---: | ---: | --- |
-| Biennial, 2015–2022 | 79.173% | 79.337% | Three seeds each, cutoff 0.50 |
-| Biennial, 2023–2024 | 83.121% | 83.325% | Three seeds each, cutoff 0.50 |
-| Biennial, 2025–October 2026 | 85.320% | 85.451% | Three seeds each, reused period |
-| Fixed training through 2024, 2025–October 2026 | 85.316% | 85.621% | Single-seed control vs five-seed C2, cutoff 0.50 |
-
-These price protocols differ from each other and must remain labelled.
-The source reports are in `results/current_c2_build/source_reports/`.
-Full-data package checks establish output validity and parity, not accuracy.
-
-Artifacts are built locally with **Python 3.12.12**. A complete rebuild under the
-exact prescribed Python 3.11 environment remains a separate compatibility check.
-
-Everything you need for the project, apart from the specification on Moodle.
-
-| Item | What it is |
+| Path | Purpose |
 | --- | --- |
-| `data/nem_weather_halfhourly_2010_2026.csv` | The fixed dataset (see `data/README.md`) |
-| `starter_notebook.ipynb` | Loads the data, builds a day-ahead table, computes both baselines |
-| `template/model.py` | A blank `Forecaster` to start your model package |
-| `example_package/` | A complete working package (a 7-day moving average): `model.py`, `train.py`, `artifacts/` |
-| `code/` | Forecasting package, experiment code, training runner, model tests, and staged submission package |
-| `harness/dayahead.py` | Shared day boundaries, targets, baselines, and metrics used by the notebook and model tests |
-| `results/` | Saved experiments, selected training configuration, and validation results |
-| `requirements.txt` | The exact library versions used in marking |
+| `data/nem_weather_halfhourly_2010_2026.csv` | The fixed released dataset; see [data/README.md](data/README.md). |
+| `harness/dayahead.py` | Authoritative market-day boundaries, targets, baselines and metrics. |
+| `code/forecast_package/` | Current forecasting code, training scripts and fitted artifacts. |
+| `code/submission_package/` | Staged copy of the current package, including its dependencies and artifacts. |
+| `code/run_experiments.py`, `code/analysis_tools.py` | Original chronological model selection, drift detection and adaptation experiments. |
+| `code/tests/` | Tests for features, targets, model inference and temporal leakage. |
+| `results/` | Saved configurations, predictions, metrics and experiment provenance. |
+| `starter_notebook.ipynb`, `example_package/`, `template/` | Course exploration notebook, baseline example and starter interface. |
 
-All commands below are run in a terminal (macOS/Linux) or in Command Prompt or PowerShell
-(Windows), from inside the `comp9417_project_kit` folder.
+In the package, `model.py` builds features and implements `Forecaster`; `train.py` fits the selected LightGBMs and starts MLP training; `mlp_train.py` exports the MLPs for NumPy inference. `c2_price.py` and `c2_recipe.py` build and fit the price ensemble. The two package directories intentionally mirror each other; preserve their source parity when updating the submission.
 
-## 1. Create a new environment (required)
+## Setup
 
-Your models are saved with one set of library versions and loaded in marking with another
-unless you match them exactly. Do **not** install into the Python you already use for other
-courses: create a new environment with **Python 3.11** for this project.
+Run the commands from the repository root. Use Python **3.11**, the version specified for marking:
 
-**Option A: venv** (needs Python 3.11 installed, e.g. from https://www.python.org/downloads/)
-
-macOS / Linux:
-```
+```bash
 python3.11 -m venv .venv
-source .venv/bin/activate
-```
-
-Windows (Command Prompt):
-```
-py -3.11 -m venv .venv
-.venv\Scripts\activate.bat
-```
-
-Windows (PowerShell):
-```
-py -3.11 -m venv .venv
-.venv\Scripts\Activate.ps1
-```
-If PowerShell refuses to run the activation script, run
-`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once, or use Command Prompt.
-
-**Option B: conda** (any operating system)
-```
-conda create -n comp9417 python=3.11
-conda activate comp9417
-```
-
-Then, in the activated environment (on every system):
-```
+source .venv/bin/activate          # macOS / Linux
+# Windows PowerShell: .venv\Scripts\Activate.ps1
+# Windows Command Prompt: .venv\Scripts\activate.bat
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-**PyTorch (only if you use it).** Install version 2.15.0 in the same environment:
-```
+PyTorch 2.15.0 is required for rebuilding and the MLP training tests; the fitted package performs inference with NumPy, without importing PyTorch. Install PyTorch separately:
+
+```bash
 python -m pip install torch==2.15.0
 ```
-On Windows or Linux without an NVIDIA GPU, the smaller CPU build is enough:
-`python -m pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu`.
-PyTorch 2.15 is not available for Intel-based Macs; on those machines use a CSE lab
-computer, Google Colab or another computer for PyTorch models.
 
-Check the environment (it should print the versions in `requirements.txt`):
-```
-python -c "import sklearn, pandas, numpy; print(sklearn.__version__, pandas.__version__, numpy.__version__)"
+On Linux or Windows without an NVIDIA GPU, the CPU build can be installed instead:
+
+```bash
+python -m pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu
 ```
 
-Every time you open a new terminal, activate the environment again before working.
+Use the exact versions in `requirements.txt` for marking compatibility. The checked-in current artifacts were built locally with Python 3.12.12; a full rebuild under the pinned Python 3.11 environment has not been verified. PyTorch 2.15 is not available for Intel-based Macs; use a supported environment such as a CSE lab machine or Colab for training.
 
-## 2. Days and timestamps
+## Run the code
 
-Each timestamp marks the **end** of a half-hour interval, in market time (AEST, UTC+10, no
-daylight saving). Day D consists of the 48 intervals stamped D 00:30 to D 23:30 plus
-(D+1) 00:00. When predicting day D+1, `history` ends with the interval stamped (D+1) 00:00.
+### Run the tests
 
-## 3. Explore the data
-
-```
-python -m notebook starter_notebook.ipynb
-```
-
-## 4. Build your package
-
-```
-my_package/
-├── model.py     defines class Forecaster
-├── train.py     rebuilds artifacts/ from the released CSV only
-└── artifacts/   your fitted models (at most 100 MB in total)
-```
-
-Start from `template/model.py`, or copy `example_package/`. The example is a 7-day moving
-average: it shows the interface and how `artifacts/` is written and read, but it learns
-nothing and is not a good forecaster. Rebuild its `artifacts/` with:
-```
-python example_package/train.py data/nem_weather_halfhourly_2010_2026.csv
-```
-
-Tips:
-* Share one feature function between `train.py` and `model.py` (for example, import it in
-  `train.py` from `model.py`), so that training and prediction compute features in the same way.
-* `__init__` must only load files. `predict` receives the full history; use only what you
-  need (the example uses the last 7 days) to stay well inside the 20-second limit.
-* Build file paths with `os.path.join(artifact_dir, "...")`, never with `\` or `/` typed by
-  hand, so that your code runs on any operating system.
-* PyTorch: save `model.state_dict()` with `torch.save`, rebuild the network in `__init__` and
-  load the weights with `torch.load(path, weights_only=True, map_location="cpu")`.
-
-## 5. Run the project code
-
-```
-python code/run_project.py --resume
-```
-
-This runs the model tests, chronological experiments, and final training. Data and results
-remain in the project root; fitted models are saved in `code/forecast_package/artifacts/`.
-To run only the model tests:
-
-```
+```bash
 python -m unittest discover -s code/tests -v
 ```
 
-For the fast end-to-end cutoff leakage checks only:
+These include synthetic checks for the day-ahead interface, baseline targets, ensemble inference and training-cutoff leakage. The MLP training test is skipped if PyTorch is unavailable. For only the cutoff checks:
 
-```
+```bash
 python -m unittest discover -s code/tests -p test_training_cutoff_leakage.py -v
 ```
 
-These use synthetic data, eight-tree demand/C2 models and a two-epoch MLP.
-They perturb forecast-day and later market values plus weather after the forecast
-day, keeping the permitted forecast-day weather fixed. They exercise the actual
-walk-forward retraining mask and compare training features/targets, exact fitted
-trees, probabilities and predictions. An isolated MLP process checks the fitted
-scaler, weights and NumPy export. A deliberately leaky next-day-demand feature
-must fail the invariance check. Production artifacts are checked for unchanged
-hashes. The MLP check requires PyTorch and is skipped if it is unavailable.
-These are fast regression tests, not a full five-seed historical rebuild or
-proof against all forms of leakage and repeated-holdout selection bias.
+### Produce a forecast from the fitted package
 
-ZIP creation, ZIP checking, and clean-rebuild helper scripts have been removed.
-Historical validation results have been preserved; the generated ZIP archives have been
-removed. Rerunning training does not create archives.
+The following example predicts the **last complete day in the supplied CSV**. It is an interface example, not an out-of-sample accuracy evaluation: those dates were used in training. Use the same idea with genuinely new history and next-day weather for deployment.
 
-In marking, packages run on Linux with no network access, where only `/tmp` is writable,
-with 4 GB of memory and 2 CPUs. Keep your package within these limits.
+```python
+# Run from the repository root, e.g. save this as forecast_example.py.
+import sys
+from pathlib import Path
 
-## 6. Make the zip
+sys.path.insert(0, str(Path('code/forecast_package').resolve()))
+from model import Forecaster, WEATHER, load_data, market_days
 
-The zip must contain `model.py`, `train.py` and `artifacts/`, either at the top level or
-inside a single folder.
+frame = load_data('data/nem_weather_halfhourly_2010_2026.csv')
+days = market_days(frame.index)
+target_day = days.max()
+history = frame.loc[days < target_day]
+weather_next = frame.loc[days == target_day, WEATHER]
 
-* macOS: right-click `my_package` in Finder and choose **Compress**.
-* Windows: right-click `my_package` in File Explorer and choose
-  **Send to > Compressed (zipped) folder** (on Windows 11: **Compress to ZIP file**).
-* Linux or macOS terminal: `zip -r submission.zip my_package`
+model = Forecaster('code/forecast_package/artifacts')
+prediction = model.predict(history, weather_next)
+print(prediction.head())  # nsw_demand_mw and nsw_price_up, 48 rows total
+```
 
-Rename the result to `submission.zip`. The original kit's submission checker is no longer
-included in this cleaned project.
+Each timestamp marks the **end** of a half-hour interval in market time (AEST, UTC+10, no daylight saving). Market day D contains D 00:30 through D 23:30 and D+1 00:00. A forecast may use market history through the end of D, calendar information and weather for D+1, but not D+1 demand or prices.
 
-## Rules in brief
+### Rebuild the current fitted models
 
-* Train only on the released CSV. No external data.
-* No network access and no writing outside `/tmp` during prediction.
-* The package should run on every day of the live week (one failed day costs 2 marks; more than one
-  means no live-evaluation marks).
+```bash
+python code/forecast_package/train.py data/nem_weather_halfhourly_2010_2026.csv
+```
 
-Weather data: Open-Meteo (https://open-meteo.com), CC BY 4.0. Market data: AEMO.
+Without `--selection`, the training script uses its current default: one demand LightGBM, five price C2 LightGBMs and five demand MLPs. It trains on the supplied CSV and writes to **`code/forecast_package/artifacts/`**, replacing the fitted models there. This can take substantial time and requires PyTorch. The staged `code/submission_package/` is **not** automatically updated by this command; check and synchronise it deliberately after validating a rebuild. A `--quick` run uses reduced tree settings and is not the final model; it also writes to the artifacts directory.
+
+### Reproduce the original historical experiments
+
+```bash
+python code/run_experiments.py --output results/local_run --resume
+```
+
+This runs the original Stage 1 selection and day-by-day frozen/adaptation simulation, writing metrics, plots and caches under `results/local_run/`. It is computationally expensive. `--quick` reduces the tree count but still runs the full chronological simulation, so its scores are not final-model results. The output path and code are for the **original model comparison**, not the complete five-MLP/C2 evaluation; consult the relevant saved result folders for those later experiments.
+
+The older `python code/run_project.py --resume` pipeline runs tests, writes to the root `results/` directory, and retrains `code/forecast_package/artifacts/` using the simulation's `final_config.json`. That selection can differ from the current five-MLP/C2 configuration. Use the separate commands above when preserving the current artifacts and saved results matters.
+
+### Explore and package
+
+Open the introductory notebook with `python -m notebook starter_notebook.ipynb`. For submission, package the **contents** of `code/submission_package/`, including `model.py`, `train.py`, `mlp_train.py`, `c2_price.py`, `c2_recipe.py`, configuration files and `artifacts/`; the source imports the accompanying modules. For example, on macOS or Linux:
+
+```bash
+cd code/submission_package
+zip -r ../../submission.zip . -x '*/__pycache__/*' '*.pyc'
+```
+
+Run the course-provided submission checker before submitting; it is not included in this cleaned repository. The marking environment has no network access, allows writes only to `/tmp`, and limits artifacts to 100 MB, memory to 4 GB and inference to 2 CPUs. See the specification for the full interface and time limits.
+
+Market data: Australian Energy Market Operator (AEMO). Weather data: [Open-Meteo](https://open-meteo.com/), CC BY 4.0.

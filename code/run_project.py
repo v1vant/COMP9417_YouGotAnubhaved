@@ -1,4 +1,8 @@
-"""Run the forecasting tests, experiments, and model training."""
+"""Run the legacy selection pipeline; it writes results and retrains artifacts.
+
+The simulation-derived selection can differ from the current adopted model.
+See the README before running this pipeline on an existing checkout.
+"""
 import argparse
 import importlib.metadata
 import os
@@ -10,6 +14,7 @@ ROOT = os.path.dirname(HERE)
 
 
 def check_runtime():
+    """Require the marking Python version and pinned core experiment packages."""
     if sys.version_info[:2] != (3, 11):
         raise RuntimeError("Use a Python 3.11 environment with the kit's pinned requirements")
     required = {"numpy", "pandas", "scipy", "scikit-learn", "lightgbm",

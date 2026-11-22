@@ -11,6 +11,7 @@ SEED = 9417
 
 
 def metric_values(demand, price, predicted_demand, predicted_price):
+    """Calculate demand MAPE/MAE and price accuracy/balanced accuracy."""
     demand = np.asarray(demand, dtype=float)
     price = np.asarray(price, dtype=int)
     predicted_demand = np.asarray(predicted_demand, dtype=float)
@@ -74,6 +75,7 @@ class OnlineDetector:
         self.statistic = None
 
     def observe(self, day, value):
+        """Consume today's observed statistic and emit a cooldown-limited signal."""
         self.values.append(float(value))
         self.statistic = float(np.mean(self.values))
         active = len(self.values) == self.window and self.statistic > self.threshold
@@ -85,6 +87,7 @@ class OnlineDetector:
 
 
 def day_type_analysis(frame, normalize=True):
+    """Fit PCA and clusters on 2010--2013; assign later days to that reference."""
     days = (frame.index - pd.Timedelta(minutes=30)).normalize()
     unique_days = days.unique()
     profiles = frame["nsw_demand"].to_numpy().reshape(-1, 48)
@@ -124,6 +127,7 @@ def day_type_analysis(frame, normalize=True):
 
 
 def period_metrics(days, truth, predictions, bootstrap=1000):
+    """Summarise monthly and yearly forecasts, adding monthly uncertainty intervals."""
     rows = []
     for frequency in ("M", "Y"):
         periods = days.to_period(frequency)

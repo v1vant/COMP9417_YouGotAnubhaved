@@ -41,6 +41,8 @@ def simulate_policy(task, strategy, initial, config, features, truth, simulation
     last_fit = pd.Timestamp("2014-12-31")
     retrains, signals = [], []
     pending = False
+    # Predictions are batched for speed but each feature row is already causal.
+    # Invalidate the batch whenever a replacement model is fitted.
     cached, cache_end = None, 0
     for i, day in enumerate(simulation_days):
         scheduled = strategy.startswith("periodic") and day.month == 1 and day.day == 1 \
@@ -88,6 +90,7 @@ def simulate_policy(task, strategy, initial, config, features, truth, simulation
 
 
 def baseline_predictions(frame, index):
+    """Create one- and seven-day persistence forecasts on the simulation index."""
     day_means = frame["nsw_price"].groupby(market_days(frame.index)).mean().shift(1)
     threshold = pd.Series(market_days(index), index=index).map(day_means)
     result = {}
@@ -101,6 +104,7 @@ def baseline_predictions(frame, index):
 
 
 def validation_analysis(frame, features, labels, selected, frozen, output):
+    """Save 2014 baseline/feature comparisons and training feature importance."""
     days = market_days(features.index)
     train_mask = days.year <= 2013
     valid_mask = days.year == 2014

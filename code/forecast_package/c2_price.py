@@ -7,6 +7,11 @@ from c2_recipe import fit_price, weather_shape_names
 
 
 def price_table(frame):
+    """Build complete-day C2 features and strict previous-day-mean targets.
+
+    Weather-shape columns are appended in a stable order so the saved feature
+    schema agrees with inference. Partial market days are excluded.
+    """
     x,y=training_table(frame,weather_shape=True)
     shape=weather_shape_names()
     x=x.loc[:,[c for c in x if c not in shape]+shape]
@@ -20,6 +25,7 @@ def price_table(frame):
 
 
 def fit_c2(x,y,config):
+    """Fit one classifier per configured seed and return an ensemble bundle."""
     if x.shape[1]!=597 or not set(weather_shape_names()).issubset(x.columns):
         raise ValueError('C2 requires its 597-feature price table, including weather shape')
     if config.get('half_life_years') or config.get('near_threshold_scale'):
