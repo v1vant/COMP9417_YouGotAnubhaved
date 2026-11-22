@@ -28,6 +28,7 @@ def fit_demand_mlp(features, demand, epochs=5, validation=None, patience=10, see
     An optional later validation set enables early stopping for experiments;
     production training supplies no validation set and uses fixed epochs.
     """
+    # Validate the training inputs.
     if features.empty or not features.index.equals(demand.index):
         raise ValueError("Expected nonempty, aligned features and demand")
     if features.shape[1] != 405:
@@ -36,10 +37,16 @@ def fit_demand_mlp(features, demand, epochs=5, validation=None, patience=10, see
         raise ValueError("Features must be finite")
     if not np.isfinite(demand.to_numpy()).all() or not demand.gt(0).all():
         raise ValueError("Demand must be finite and positive")
+
+    # Reproducibility and CPU limits.
     torch.manual_seed(seed)
     torch.set_num_threads(2)
+
+    # Standardise features using training data only.
     scaler = StandardScaler()
     x = scaler.fit_transform(features).astype(np.float32)
+
+    # Optional validation set (experiments only); must follow training in time.
     if validation is not None:
         valid_features, valid_demand = validation
         if not features.index.max() < valid_features.index.min():
@@ -54,12 +61,17 @@ def fit_demand_mlp(features, demand, epochs=5, validation=None, patience=10, see
         valid_x = torch.from_numpy(scaler.transform(valid_features).astype(np.float32))
         valid_y = valid_demand.to_numpy()
         valid_anchor = valid_features["demand_anchor"].to_numpy()
+
     # Predict residuals in units of 1,000 MW for numerical scaling.
     target = (
         (demand.to_numpy() - features["demand_anchor"].to_numpy()) / 1000
     ).astype(np.float32)
+
+    # Inverse-demand weights so the loss approximates a percentage error.
     weights = (1 / demand.to_numpy()).astype(np.float32)
     weights /= weights.mean()
+
+    # Shuffled mini-batches with a seeded generator.
     dataset = TensorDataset(
         torch.from_numpy(x),
         torch.from_numpy(target),
@@ -69,15 +81,20 @@ def fit_demand_mlp(features, demand, epochs=5, validation=None, patience=10, see
         dataset, batch_size=1024, shuffle=True, num_workers=0,
         generator=torch.Generator().manual_seed(seed),
     )
+
+    # Model, optimiser and early-stopping bookkeeping.
     model = DemandMLP(x.shape[1])
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     timings = []
     history = []
     best_score, best_epoch, best_state, stale = float("inf"), None, None, 0
+
     for epoch in range(epochs):
         started = time.monotonic()
         model.train()
         total = 0.0
+
+        # One pass over the training data with a weighted L1 loss.
         for batch_x, batch_y, batch_w in loader:
             optimizer.zero_grad(set_to_none=True)
             loss = (torch.abs(model(batch_x) - batch_y) * batch_w).mean()
@@ -87,6 +104,8 @@ def fit_demand_mlp(features, demand, epochs=5, validation=None, patience=10, see
         elapsed = time.monotonic() - started
         timings.append(elapsed)
         row = {"epoch": epoch+1, "training_loss": total/len(dataset), "seconds": elapsed}
+
+        # Validation MAPE; keep the best weights seen so far.
         if validation is not None:
             model.eval()
             with torch.inference_mode():
@@ -99,13 +118,18 @@ def fit_demand_mlp(features, demand, epochs=5, validation=None, patience=10, see
             else:
                 stale += 1
         history.append(row)
+
+        # Per-epoch progress line.
         print(
             f"Epoch {epoch+1}: loss={total/len(dataset):.5f}, "
             f"time={elapsed:.2f}s" + (
                 f", validation MAPE={score:.4f}%" if validation is not None else ""), flush=True,
         )
+        # Stop early once validation has not improved for `patience` epochs.
         if validation is not None and stale >= patience:
             break
+
+    # Restore the best epoch's weights (only set when validating).
     if best_state is not None:
         model.load_state_dict(best_state)
     return {
@@ -135,21 +159,29 @@ if __name__ == "__main__":
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from model import load_data, market_days, training_table
     from threadpoolctl import threadpool_limits
+
+    # Command-line arguments.
     parser = argparse.ArgumentParser(description="Train and export the frozen ten-epoch demand MLP")
     parser.add_argument("csv")
     parser.add_argument("--output", required=True)
     parser.add_argument("--selection", required=True)
     args = parser.parse_args()
     output = Path(args.output)
+
+    # The frozen blend trains on all released data (no window or cutoff).
     selection = json.loads(Path(args.selection).read_text())
     if selection["demand"].get("window_years") or selection["demand"].get("training_end"):
         raise ValueError("Frozen blend requires full released-data expanding-window training")
+
     with threadpool_limits(limits=2):
+        # Build the demand feature table using the frozen column list.
         frame = load_data(args.csv)
         features, labels = training_table(frame)
         columns = json.loads((Path(__file__).parent / "demand_feature_columns.json").read_text())
         features = features.loc[:, columns]
         output.mkdir(parents=True, exist_ok=True)
+
+        # One MLP per seed; the seeds must be distinct.
         seeds = selection["demand"].get("mlp_seeds", [9417])
         if not seeds or len(set(seeds)) != len(seeds):
             raise ValueError("Expected distinct MLP seeds")
@@ -166,6 +198,8 @@ if __name__ == "__main__":
                           features=np.array(columns))
             filename = "demand_mlp.npz" if seed == 9417 else f"demand_mlp_seed_{seed}.npz"
             np.savez_compressed(output / filename, **arrays)
+
+            # Check the NumPy export against PyTorch on the last week of rows.
             sample = features.iloc[-7*48:]
             numpy_prediction = predict_numpy_mlp(arrays, sample)
             torch_prediction = predict_demand_mlp(bundle, sample)
@@ -173,6 +207,8 @@ if __name__ == "__main__":
             members.append({"seed": seed, "file": filename,
                             "epoch_seconds": bundle["epoch_seconds"],
                             "numpy_torch_max_difference_MW": float(np.max(np.abs(numpy_prediction-torch_prediction)))})
+
+        # Write and print a manifest describing the exported ensemble.
         metadata = {"architecture": [405,128,64,1], "epochs": 10, "seeds": seeds,
                     "training_rows": len(features), "data_end": str(market_days(frame.index).max()),
                     "torch": torch.__version__, "members": members,

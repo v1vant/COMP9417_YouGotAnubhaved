@@ -7,10 +7,15 @@ import joblib
 import numpy as np
 import pandas as pd
 
+# Market columns: demand and price for each state.
 MARKET = [f"{state}_{kind}" for state in ("nsw", "vic", "qld")
           for kind in ("demand", "price")]
+
+# Weather columns: four variables for each city.
 WEATHER = [f"{city}_{kind}" for city in ("syd", "mel", "bne")
            for kind in ("temp", "rh", "cloud", "solar")]
+
+# Lags in days used for market features.
 LAGS = (1, 2, 3, 7, 14, 21, 28)
 
 
@@ -24,9 +29,13 @@ def load_data(path):
     frame = pd.read_csv(path, index_col="timestamp", parse_dates=["timestamp"]).sort_index()
     if frame.empty or not frame.index.is_unique:
         raise ValueError("Empty data or duplicate timestamps")
+
+    # No gaps in the time index and no missing values.
     expected = pd.date_range(frame.index[0], frame.index[-1], freq="30min")
     if not frame.index.equals(expected) or frame[MARKET + WEATHER].isna().any().any():
         raise ValueError("Expected complete consecutive half-hour observations")
+
+    # Every market day must be complete.
     counts = pd.Series(1, index=frame.index).groupby(market_days(frame.index)).sum()
     if not counts.eq(48).all():
         raise ValueError("Each market day must contain 48 intervals")
@@ -40,11 +49,17 @@ def feature_frame(frame, weather_shape=False):
     that day. Early rows contain NaNs until the longest lags are available.
     """
     days = market_days(frame.index)
+
+    # Half-hour slot of day (0-47) from the interval start time.
     start = frame.index - pd.Timedelta(minutes=30)
     slot = np.asarray(start.hour * 2 + start.minute // 30)
+
+    # NSW public holidays covering the data range.
     calendar = holidays.Australia(
         subdiv="NSW", years=range(days.min().year, days.max().year + 1))
     holiday_map = {day: float(day.date() in calendar) for day in days.unique()}
+
+    # Calendar and cyclical time features.
     f = {
         "slot": slot,
         "weekday": np.asarray(days.day_of_week),
@@ -56,12 +71,16 @@ def feature_frame(frame, weather_shape=False):
         "annual_sin": np.sin(2 * np.pi * days.day_of_year / 365.25),
         "annual_cos": np.cos(2 * np.pi * days.day_of_year / 365.25),
     }
+
+    # Day-of-week indicators and their interactions with time of day.
     for weekday in range(7):
         indicator = np.asarray(days.day_of_week == weekday, dtype=float)
         f[f"dow_{weekday}"] = indicator
         f[f"dow_{weekday}_sin"] = indicator * f["hour_sin"]
         f[f"dow_{weekday}_cos"] = indicator * f["hour_cos"]
     lookup = pd.Series(days, index=frame.index)
+
+    # Weather: raw values, changes, and same-day summaries (weather is known ahead).
     for col in WEATHER:
         values = frame[col]
         f[col] = values
@@ -88,6 +107,8 @@ def feature_frame(frame, weather_shape=False):
             f[f"{col}_peak_slot"] = lookup.map(peak_slot)
             f[f"{col}_peak_slot_change_1d"] = lookup.map(
                 peak_slot - peak_slot.shift(1))
+
+    # Heating and cooling degree terms, with time-of-day interactions.
     for city in ("syd", "mel", "bne"):
         temp = frame[f"{city}_temp"]
         for label, values in (
@@ -97,6 +118,8 @@ def feature_frame(frame, weather_shape=False):
             f[f"{city}_{label}"] = values
             f[f"{city}_{label}_sin"] = values * f["hour_sin"]
             f[f"{city}_{label}_cos"] = values * f["hour_cos"]
+
+    # Market history: lags, previous-day stats, rolling means, weekly averages.
     for col in MARKET:
         for lag in LAGS:
             lagged = frame[col].shift(48 * lag)
@@ -111,6 +134,7 @@ def feature_frame(frame, weather_shape=False):
                 daily["mean"].shift(1).rolling(window, min_periods=window).mean())
         f[f"{col}_weekly_mean"] = sum(f[f"{col}_lag_{lag}"] for lag in (7, 14, 21, 28)) / 4
         f[f"{col}_recent_change"] = f[f"{col}_lag_1"] - f[f"{col}_lag_7"]
+
     # Align observed demand shapes to the forecast slot. Backward offsets
     # may cross midnight, but always remain within completed historical days.
     opening_demand = frame["nsw_demand"].groupby(days).first()
@@ -142,6 +166,8 @@ def feature_frame(frame, weather_shape=False):
     weekly_opening = sum(lookup.map(opening_demand.shift(lag))
                          for lag in (7, 14, 21, 28)) / 4
     f["nsw_demand_weekly_change_from_open"] = f["nsw_demand_weekly_mean"] - weekly_opening
+
+    # The price threshold is the previous market day's mean NSW price.
     f["price_threshold"] = f["nsw_price_previous_mean"]
     for lag in LAGS:
         f[f"price_margin_{lag}"] = f[f"nsw_price_lag_{lag}"] - f["price_threshold"]
@@ -179,6 +205,8 @@ def feature_frame(frame, weather_shape=False):
     weekly_opening = sum(lookup.map(opening_price.shift(k))
                          for k in (7, 14, 21, 28)) / 4
     f["nsw_price_weekly_change_from_open"] = weekly_aligned - weekly_opening
+
+    # Baseline for demand: the model predicts residuals around this anchor.
     f["demand_anchor"] = 0.5 * (f["nsw_demand_lag_1"] + f["nsw_demand_lag_7"])
     return pd.DataFrame(f, index=frame.index, dtype=np.float32)
 
@@ -186,8 +214,11 @@ def feature_frame(frame, weather_shape=False):
 def training_table(frame, weather_shape=False):
     """Return aligned feature rows and demand/price labels after lag warm-up."""
     features = feature_frame(frame, weather_shape=weather_shape)
+
+    # Drop warm-up rows that still contain NaNs.
     keep = features.notna().all(axis=1)
     features = features.loc[keep]
+
     # Targets retain the original precision for the strict price comparison.
     means = frame["nsw_price"].groupby(market_days(frame.index)).mean().shift(1)
     threshold = pd.Series(market_days(features.index), index=features.index).map(means)
@@ -208,12 +239,16 @@ def forecast_features(history, weather_next, weather_shape=False):
         raise ValueError("Expected 48 rows and the 12 weather columns")
     if history.empty or not history.index.is_monotonic_increasing or not history.index.is_unique:
         raise ValueError("History must be nonempty, ordered and unique")
-    expected = pd.date_range(history.index[-1] + pd.Timedelta(minutes=30),
+
+    # The weather must be exactly the next market day after the history ends.
+    expected =pd.date_range(history.index[-1] + pd.Timedelta(minutes=30),
                              periods=48, freq="30min")
     if not weather_next.index.equals(expected) or len(market_days(weather_next.index).unique()) != 1:
         raise ValueError("Weather must be the next complete market day")
     if len(history) < 28 * 48:
         raise ValueError("At least 28 complete history days are required")
+
+    # Future market columns are left NaN; only weather is supplied for the new day.
     past = history.iloc[-35 * 48:][MARKET + WEATHER]
     future = weather_next.reindex(columns=MARKET + WEATHER)
     features = feature_frame(pd.concat([past, future]), weather_shape=weather_shape).loc[weather_next.index]
@@ -225,9 +260,13 @@ def forecast_features(history, weather_next, weather_shape=False):
 def predict_task(bundle, features):
     """Predict demand from residuals or classify averaged price probabilities."""
     x = features.loc[:, bundle["features"]]
+
+    # Demand: anchor plus predicted residual, clipped to a plausible MW range.
     if bundle["task"] == "demand":
         residual = bundle["estimator"].predict(x)
         return np.clip(features["demand_anchor"].to_numpy() + residual, 0, 20000)
+
+    # Price: average member probabilities, then apply the decision threshold.
     members = bundle.get("members") or [bundle["estimator"]]
     probability = np.mean([member.predict_proba(x)[:, 1] for member in members], axis=0)
     return (probability > bundle["threshold"]).astype(np.int64)
@@ -237,11 +276,17 @@ def predict_numpy_mlp(bundle, features):
     """Run exported MLP weights without importing PyTorch beside LightGBM."""
     columns = bundle["features"].tolist()
     x = features.loc[:, columns].to_numpy(dtype=np.float32, copy=True)
+
+    # Standardise with the training scaler.
     x -= bundle["mean"]
     x /= bundle["scale"]
+
+    # Two hidden ReLU layers.
     for layer in (0, 2):
         x = np.maximum(x @ bundle[f"network_{layer}_weight"].T +
                        bundle[f"network_{layer}_bias"], 0)
+
+    # Output layer; residual is in units of 1,000 MW.
     residual = (x @ bundle["network_4_weight"].T + bundle["network_4_bias"]).ravel()*1000
     return np.clip(features["demand_anchor"].to_numpy()+residual, 0, 20000)
 
@@ -252,10 +297,14 @@ class Forecaster:
     def __init__(self, artifact_dir: str):
         """Load LightGBM bundles and any exported MLP weights from artifact_dir."""
         self.models = joblib.load(os.path.join(artifact_dir, "models.joblib"))
+
+        # Limit threads per estimator at inference time.
         for bundle in self.models.values():
             for estimator in bundle.get("members") or [bundle["estimator"]]:
                 if "n_jobs" in estimator.get_params():
                     estimator.set_params(n_jobs=2)
+
+        # MLP weights are optional and enabled by the manifest's blend entry.
         self.demand_mlp = None
         self.demand_mlp_members = []
         manifest_path = os.path.join(artifact_dir, "manifest.json")
@@ -276,11 +325,16 @@ class Forecaster:
     def predict(self, history: pd.DataFrame, weather_next: pd.DataFrame) -> pd.DataFrame:
         """Return indexed demand MW and binary price direction for the next day."""
         features = forecast_features(history, weather_next)
+
+        # LightGBM demand forecast.
         demand = predict_task(self.models["demand"], features)
+
+        # Blend 50/50 with the mean of the MLP ensemble, when available.
         if self.demand_mlp is not None:
             members = getattr(self, "demand_mlp_members", None) or [self.demand_mlp]
             mlp_mean = np.mean([predict_numpy_mlp(member, features) for member in members], axis=0, dtype=np.float64)
             demand = 0.5*demand + 0.5*mlp_mean
+
         # C2 uses additional weather-shape columns; demand keeps its own schema.
         price_features = (forecast_features(history, weather_next, weather_shape=True)
                           if self.models["price"].get("config", {}).get("weather_shape") else features)
